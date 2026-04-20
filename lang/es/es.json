@@ -1,0 +1,18 @@
+{
+    "Email": "Correo Electrónico",
+    "Password": "Contraseña",
+    "Remember me": "Recordarme",
+    "Forgot your password?": "¿Olvidaste tu contraseña?",
+    "Log in": "Iniciar Sesión",
+    "Dashboard": "Panel de Control",
+    "Profile": "Perfil",
+    "Log Out": "Cerrar Sesión",
+    "Already registered?": "¿Ya estás registrado?",
+    "Register": "Registrarse",
+    "Name": "Nombre",
+    "Confirm Password": "Confirmar Contraseña",
+    "Whoops! Something went wrong.": "¡Ups! Algo salió mal.",
+    "Click here to request another": "Haz clic aquí para solicitar otro",
+    "A fresh verification link has been sent to your email address.": "Se ha enviado un nuevo enlace de verificación a tu correo.",
+    "Verify Your Email Address": "Verifica tu dirección de correo electrónico"
+}
