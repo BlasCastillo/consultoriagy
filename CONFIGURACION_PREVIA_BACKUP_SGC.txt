@@ -1,0 +1,86 @@
+GUÍA DE CONFIGURACIÓN PREVIA - MÓDULO DE RESPALDOS (SGC-APP v1.3)
+Entorno: Windows + PostgreSQL 17 + Laravel 11/12
+
+Este documento detalla las configuraciones a nivel de sistema y servidor necesarias para 
+que el sistema de copias de seguridad funcione correctamente, evitando errores de 
+autenticación y de rutas en el entorno Windows.
+
+--------------------------------------------------------------------------------
+1. ENLACE SIMBÓLICO PARA RUTAS (SOLUCIÓN A ESPACIOS EN "Program Files")
+--------------------------------------------------------------------------------
+Windows suele tener problemas con las rutas que contienen espacios al ser ejecutadas 
+desde PHP/shell_exec. Se debe crear un enlace simbólico (Junction) para simplificar 
+el acceso al binario de PostgreSQL.
+
+Acción: Abrir PowerShell como ADMINISTRADOR y ejecutar:
+> New-Item -ItemType Junction -Path "C:\pgsql" -Value "C:\Program Files\PostgreSQL\17"
+
+A partir de ahora, la ruta del binario en el sistema será:
+C:\pgsql\bin\pg_dump.exe
+
+--------------------------------------------------------------------------------
+2. PERMISOS DE EJECUCIÓN (SISTEMA DE ARCHIVOS)
+--------------------------------------------------------------------------------
+El usuario que ejecuta el servidor web (ej. el servicio de Apache en XAMPP) debe 
+tener permisos para leer y ejecutar los binarios de PostgreSQL.
+
+Acción:
+1. Ir a C:\Program Files\PostgreSQL\17\bin
+2. Clic derecho -> Propiedades -> Pestaña "Seguridad".
+3. Editar permisos y asegurarse de que el grupo "Usuarios" o "Todos" (Everyone) 
+   tenga activada la casilla de "Lectura y ejecución".
+
+--------------------------------------------------------------------------------
+3. CONFIGURACIÓN DE PHP (php.ini)
+--------------------------------------------------------------------------------
+Se requiere que PHP pueda interactuar con PostgreSQL y gestionar variables de entorno.
+
+Acción (Editar php.ini):
+1. Verificar que las siguientes extensiones no tengan el punto y coma (;) al inicio:
+   extension=pdo_pgsql
+   extension=pgsql
+2. Asegurarse de que la función 'putenv' NO esté presente en la lista de:
+   disable_functions = ...
+
+--------------------------------------------------------------------------------
+4. VARIABLES DE ENTORNO DEL SISTEMA (PATH)
+--------------------------------------------------------------------------------
+Para que el sistema reconozca los comandos de PostgreSQL de forma global:
+
+Acción:
+1. Editar las variables de entorno del sistema.
+2. En la variable 'Path', agregar una nueva entrada: C:\pgsql\bin
+
+--------------------------------------------------------------------------------
+5. CONFIGURACIÓN DEL PROYECTO (Laravel)
+--------------------------------------------------------------------------------
+A. Archivo .env:
+Asegurarse de que las credenciales de la base de datos sean correctas.
+
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=sgc_db
+DB_USERNAME=postgres
+DB_PASSWORD=tu_contraseña_real
+
+B. Carpetas de almacenamiento:
+Laravel requiere que existan estas carpetas con permisos de escritura (Normalmente 
+ya gestionados por XAMPP en htdocs):
+- storage/app/backup-temp (Para archivos SQL temporales)
+- storage/app/SGC-APP (O el valor definido en APP_NAME para los archivos .zip)
+
+--------------------------------------------------------------------------------
+6. NOTAS TÉCNICAS DE IMPLEMENTACIÓN (Versión 1.3)
+--------------------------------------------------------------------------------
+- Autenticación: Se utiliza 'putenv("PGPASSWORD=...")' en el controlador para 
+  evitar la solicitud interactiva de contraseña en la terminal.
+- Optimización de Backup: En el comando Artisan, se debe usar el parámetro 
+  '--only-db' para evitar respaldar la propia carpeta de storage, lo cual 
+  previene bucles infinitos y archivos pesados.
+- Ruta del Binario: En la configuración de Spatie o en el controlador, 
+  referenciar siempre: C:\pgsql\bin\pg_dump.exe
+
+--------------------------------------------------------------------------------
+Generado el 29 de abril de 2026
+SGC-APP - Sistema de Gestión de Configuración
