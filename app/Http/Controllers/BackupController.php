@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Process;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class BackupController extends Controller
 {
@@ -14,87 +16,85 @@ class BackupController extends Controller
 
     public function __construct()
     {
-        $this->backupName = env('APP_NAME', 'laravel-backup');
+        $this->backupName = env('APP_NAME', 'SGCJ');
     }
 
     public function index()
     {
-        $files = Storage::disk($this->disk)->files($this->backupName);
+        $directory = $this->backupName;
+        $files = Storage::disk($this->disk)->files($directory);
         $backups = [];
 
         foreach ($files as $file) {
-            if (substr($file, -4) === '.zip') {
+            if (str_ends_with($file, '.sql') || str_ends_with($file, '.zip')) {
                 $backups[] = [
                     'file_path' => $file,
-                    'file_name' => str_replace($this->backupName . '/', '', $file),
+                    'file_name' => basename($file),
                     'file_size' => $this->humanFilesize(Storage::disk($this->disk)->size($file)),
                     'last_modified' => Carbon::createFromTimestamp(Storage::disk($this->disk)->lastModified($file))->format('d/m/Y H:i:s'),
                 ];
             }
         }
 
-        // Ordenar más reciente primero
-        $backups = array_reverse($backups);
-
-        return view('admin.backups', compact('backups'));
+        return view('admin.backups', ['backups' => array_reverse($backups)]);
     }
-
     public function create()
     {
         try {
-            // 1. Limpieza explicita de carpeta temporal
-            $tempDir = config('backup.backup.temporary_directory') ?? storage_path('app/backup-temp');
-            if (\Illuminate\Support\Facades\File::exists($tempDir)) {
-                \Illuminate\Support\Facades\File::cleanDirectory($tempDir);
+            $storagePath = storage_path("app/{$this->backupName}");
+            if (!File::exists($storagePath)) {
+                File::makeDirectory($storagePath, 0777, true);
             }
 
-            // Guardar total de archivos antes de ejecutar
-            $filesBefore = count(Storage::disk($this->disk)->files($this->backupName));
+            $fileName = "backup-" . date('Y-m-d_H-i-s') . ".sql";
+            $fullOutputPath = $storagePath . DIRECTORY_SEPARATOR . $fileName;
 
-            // 2. Ejecutar el respaldo
-            Artisan::call('backup:run'); 
+            $dumpBinary = trim(str_replace(['"', "'"], '', env('DUMP_BINARY_PATH')));
+            $pgDump = $dumpBinary . DIRECTORY_SEPARATOR . 'pg_dump.exe';
 
-            $output = Artisan::output();
-            $filesAfter = count(Storage::disk($this->disk)->files($this->backupName));
+            // 3. COMANDO REFORZADO PARA CONTRASEÑAS CON CARACTERES ESPECIALES
+            // Usamos comillas dobles para la variable de entorno PGPASSWORD
+            $command = "set \"PGPASSWORD=" . env('DB_PASSWORD') . "\" && " .
+                "\"{$pgDump}\" -U " . env('DB_USERNAME') . " -h " . env('DB_HOST', '127.0.0.1') . " -p " . env('DB_PORT', '5432') . " -f \"{$fullOutputPath}\" " . env('DB_DATABASE') . " 2>&1";
 
-            // 3. Verificar generación de nuevo archivo
-            if ($filesAfter <= $filesBefore) {
-                return redirect()->route('backups.index')->with('error', 'El proceso terminó pero el archivo ZIP no fue creado. Detalles: ' . substr($output, 0, 150));
+            exec($command, $output, $resultCode);
+
+            if ($resultCode === 0) {
+                return redirect()->route('backups.index')->with('success', '¡Sincronización exitosa! Backup generado.');
             }
-            
-            return redirect()->route('backups.index')->with('success', 'Backup generado exitosamente.');
-        } catch (\Exception $e) {
-            return redirect()->route('backups.index')->with('error', 'Error crítico al generar backup: ' . $e->getMessage());
+
+            $error = implode("\n", $output);
+            Log::error("Fallo de backup: " . $error);
+            return redirect()->route('backups.index')->with('error', 'Error del sistema: ' . $error);
+
+        }
+        catch (\Exception $e) {
+            return redirect()->route('backups.index')->with('error', 'Excepción: ' . $e->getMessage());
         }
     }
-
     public function download($fileName)
     {
         $file = $this->backupName . '/' . $fileName;
-
         if (Storage::disk($this->disk)->exists($file)) {
             return Storage::disk($this->disk)->download($file);
         }
-
-        return redirect()->route('backups.index')->with('error', 'El archivo no existe.');
+        return redirect()->back()->with('error', 'Archivo no encontrado.');
     }
 
     public function destroy($fileName)
     {
         $file = $this->backupName . '/' . $fileName;
-
         if (Storage::disk($this->disk)->exists($file)) {
             Storage::disk($this->disk)->delete($file);
-            return redirect()->route('backups.index')->with('success', 'Backup eliminado exitosamente.');
+            return redirect()->back()->with('success', 'Respaldo eliminado.');
         }
-
-        return redirect()->route('backups.index')->with('error', 'El archivo no existe o ya fue eliminado.');
+        return redirect()->back()->with('error', 'No se pudo eliminar.');
     }
 
     private function humanFilesize($bytes, $decimals = 2)
     {
-        $size = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        $size = ['B', 'KB', 'MB', 'GB', 'TB'];
         $factor = floor((strlen($bytes) - 1) / 3);
-        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . ' ' . @$size[$factor];
+        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . ' ' . ($size[$factor] ?? 'B');
     }
 }
