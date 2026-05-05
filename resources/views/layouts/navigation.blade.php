@@ -25,6 +25,10 @@
                         <i class="fa-regular fa-address-card w-5 h-5 mr-1"></i>
                         {{ __('Roles y Permisos') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('institutions.index')" :active="request()->routeIs('institutions.*')">
+                        <i class="fa-solid fa-building w-5 h-5 mr-1"></i>
+                        {{ __('Instituciones') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                         <i class="fa-regular fa-user w-5 h-5 mr-1"></i>
                         {{ __('Usuarios') }}
@@ -109,6 +113,10 @@
             <x-responsive-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.*')">
                 <i class="fa-regular fa-address-card w-5 h-5 mr-1"></i>
                 {{ __('Roles y Permisos') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('institutions.index')" :active="request()->routeIs('institutions.*')">
+                <i class="fa-solid fa-building w-5 h-5 mr-1"></i>
+                {{ __('Instituciones') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                 <i class="fa-regular fa-user w-5 h-5 mr-1"></i>

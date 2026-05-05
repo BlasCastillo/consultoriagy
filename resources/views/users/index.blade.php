@@ -46,6 +46,7 @@
                                 <tr class="bg-slate-100 border-b border-slate-300">
                                     <th class="py-3 px-4 text-left font-semibold text-slate-700">Nombre</th>
                                     <th class="py-3 px-4 text-left font-semibold text-slate-700">Email</th>
+                                    <th class="py-3 px-4 text-left font-semibold text-slate-700">Institución</th>
                                     <th class="py-3 px-4 text-left font-semibold text-slate-700">Rol(es)</th>
                                     <th class="py-3 px-4 text-center font-semibold text-slate-700">Estatus</th>
                                     <th class="py-3 px-4 text-left font-semibold text-slate-700" width="180">Acciones</th>
@@ -56,6 +57,21 @@
                                     <tr class="border-b border-slate-200 hover:bg-slate-50">
                                         <td class="py-3 px-4">{{ $user->name }}</td>
                                         <td class="py-3 px-4">{{ $user->email }}</td>
+                                        <td class="py-3 px-4">
+                                            @if($user->institution)
+                                                @if($user->institution->type === 'consultoria')
+                                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded border border-blue-200" title="{{ $user->institution->name }}">
+                                                        Consultoría Jurídica
+                                                    </span>
+                                                @else
+                                                    <span class="bg-slate-200 text-slate-800 text-xs font-medium px-2.5 py-0.5 rounded border border-slate-300" title="{{ $user->institution->name }}">
+                                                        Ente Adscrito
+                                                    </span>
+                                                @endif
+                                            @else
+                                                <span class="text-slate-400 italic text-sm">N/A</span>
+                                            @endif
+                                        </td>
                                         <td class="py-3 px-4">
                                             <div class="flex flex-wrap gap-1">
                                                 @forelse($user->roles as $role)

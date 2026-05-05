@@ -27,6 +27,7 @@ class User extends Authenticatable
         'email',
         'password',
         'status',
+        'institution_id',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -67,5 +68,20 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function institution()
+    {
+        return $this->belongsTo(Institution::class);
+    }
+
+    public function isEnteAdscrito()
+    {
+        return $this->institution && $this->institution->type === 'ente_adscrito';
+    }
+
+    public function isConsultoria()
+    {
+        return $this->institution && $this->institution->type === 'consultoria';
     }
 }

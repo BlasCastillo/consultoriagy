@@ -46,6 +46,22 @@
 
                         <hr class="my-6 border-slate-200">
 
+                        <h3 class="text-lg font-medium text-slate-800 mb-4">Institución a la que pertenece</h3>
+                        <div class="mb-6">
+                            <label for="institution_id" class="block font-medium text-sm text-slate-700 mb-2">Selecciona la institución <span class="text-red-500">*</span></label>
+                            <select id="institution_id" name="institution_id" required class="block w-full border-slate-300 focus:border-[#1e293b] focus:ring-[#1e293b] rounded-md shadow-sm">
+                                <option value="" disabled selected>-- Seleccione una Institución --</option>
+                                @foreach($institutions as $institution)
+                                    <option value="{{ $institution->id }}" {{ old('institution_id') == $institution->id ? 'selected' : '' }}>
+                                        {{ $institution->name }} ({{ $institution->type == 'consultoria' ? 'Consultoría' : 'Ente Adscrito' }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('institution_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+
+                        <hr class="my-6 border-slate-200">
+
                         <h3 class="text-lg font-medium text-slate-800 mb-4">Roles Asignados</h3>
                         
                         <div class="mb-6">

@@ -5,6 +5,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\InstitutionController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -19,6 +20,7 @@ use App\Models\Role;
 Route::get('/dashboard', function () {
     $totalUsers = User::count();
     $totalRoles = Role::count();
+    $totalInstitutions = \App\Models\Institution::count();
 
     // Distribución por roles (subquery o foreach)
     $rolesDistribution = Role::withCount('users')->get()->map(function ($role) {
@@ -29,7 +31,7 @@ Route::get('/dashboard', function () {
         }
         );
 
-        return view('dashboard', compact('totalUsers', 'totalRoles', 'rolesDistribution'));    })->middleware(['auth', 'verified'])->name('dashboard');
+        return view('dashboard', compact('totalUsers', 'totalRoles', 'rolesDistribution', 'totalInstitutions'));    })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class , 'edit'])->name('profile.edit');
@@ -42,6 +44,9 @@ Route::middleware('auth')->group(function () {
 
             Route::patch('users/{id}/restore', [UserController::class , 'restore'])->name('users.restore');
             Route::resource('users', UserController::class);
+
+            Route::patch('institutions/{id}/restore', [InstitutionController::class , 'restore'])->name('institutions.restore');
+            Route::resource('institutions', InstitutionController::class);
 
             Route::get('/bitacora', [ActivityLogController::class , 'index'])->name('bitacora.index');
 

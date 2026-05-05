@@ -8,7 +8,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                 <!-- Tarjeta Usuarios Totales -->
                 <div
                     class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex items-center justify-between">
@@ -40,6 +40,23 @@
                         </svg>
                     </div>
                 </div>
+
+                <!-- Tarjeta Instituciones Totales -->
+                <div
+                    class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-slate-500 text-sm font-medium uppercase tracking-wider">Instituciones</h3>
+                        <p class="text-3xl font-bold text-slate-900 mt-2">{{ $totalInstitutions }}</p>
+                    </div>
+                    <div class="p-3 bg-purple-100 rounded-full text-purple-800">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+
                 <!-- Tarjeta Documentos/Casos Totales -->
                 <div
                     class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex items-center justify-between">

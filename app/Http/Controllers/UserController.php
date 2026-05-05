@@ -15,7 +15,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::with('roles');
+        $query = User::with(['roles', 'institution']);
 
         if ($request->has('trashed')) {
             $query->onlyTrashed();
@@ -31,7 +31,8 @@ class UserController extends Controller
     public function create()
     {
         $roles = Role::where('status', true)->get();
-        return view('users.create', compact('roles'));
+        $institutions = \App\Models\Institution::where('status', 'active')->orderBy('name')->get();
+        return view('users.create', compact('roles', 'institutions'));
     }
 
     /**
@@ -44,6 +45,7 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'roles' => ['required', 'array'],
+            'institution_id' => ['required', 'exists:institutions,id'],
         ]);
 
         $user = User::create([
@@ -51,6 +53,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'status' => true,
+            'institution_id' => $request->institution_id,
         ]);
 
         $user->syncRoles($request->roles);
@@ -64,7 +67,8 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roles = Role::where('status', true)->get();
-        return view('users.edit', compact('user', 'roles'));
+        $institutions = \App\Models\Institution::where('status', 'active')->orderBy('name')->get();
+        return view('users.edit', compact('user', 'roles', 'institutions'));
     }
 
     /**
@@ -77,12 +81,14 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'roles' => ['required', 'array'],
             'status' => ['required', 'boolean'],
+            'institution_id' => ['required', 'exists:institutions,id'],
         ]);
 
         $data = [
             'name' => $request->name,
             'email' => $request->email,
             'status' => $request->status,
+            'institution_id' => $request->institution_id,
         ];
 
         if ($request->filled('password')) {
