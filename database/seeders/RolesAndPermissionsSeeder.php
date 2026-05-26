@@ -19,7 +19,7 @@ class RolesAndPermissionsSeeder extends Seeder
         // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Obtener todos los permisos posibles generados automáticamente por auditoría
+        // 1. Crear permisos dinámicos basados en la auditoría de modelos
         $matrix = ModelPermissionAuditor::getPermissionsMatrix();
         
         $allPermissions = [];
@@ -37,41 +37,69 @@ class RolesAndPermissionsSeeder extends Seeder
             }
         }
 
-        // Crear roles
+        // 2. Crear permisos explícitos solicitados para el módulo de Gacetas
+        $gacetaPermissions = [
+            'ver gacetas',
+            'crear gacetas',
+            'editar gacetas',
+            'publicar gacetas',
+            'eliminar gacetas'
+        ];
+
+        foreach ($gacetaPermissions as $permName) {
+            $permission = Permission::firstOrCreate(['name' => $permName]);
+            $allPermissions[] = $permission;
+            if ($permName === 'ver gacetas') {
+                $readPermissions[] = $permission;
+            }
+        }
+
+        // Obtener la colección de todos los nombres de permisos para asignación rápida
+        $allPermissionNames = collect($allPermissions)->pluck('name')->toArray();
+        $readPermissionNames = collect($readPermissions)->pluck('name')->toArray();
+
+        // 3. Crear roles (tanto los antiguos como los nuevos solicitados para evitar regresiones)
         $superAdminRole = Role::firstOrCreate(['name' => 'Super Admin']);
+        $superAdminNewRole = Role::firstOrCreate(['name' => 'Super Administrador']);
         $directorRole = Role::firstOrCreate(['name' => 'Director']);
         $coordinadorRole = Role::firstOrCreate(['name' => 'Coordinador']);
         $usuarioRole = Role::firstOrCreate(['name' => 'Usuario']);
+        $institucionRole = Role::firstOrCreate(['name' => 'Institucion']);
+        $institucionalRole = Role::firstOrCreate(['name' => 'Institucional']);
 
-        // Asignar permisos:
-        // Super Admin tiene todos los permisos por defecto en AuthServiceProvider o implicitamente, pero se los damos
-        // O mejor: El Super Admin no requiere permisos directos si lo bypasseamos. Pero el Director sí necesita gestión total:
-        $directorRole->syncPermissions($allPermissions);
+        // 4. Asignar permisos de forma segura e idempotente con syncPermissions()
+        // Super Administradores tienen acceso total
+        $superAdminRole->syncPermissions($allPermissionNames);
+        $superAdminNewRole->syncPermissions($allPermissionNames);
+        $directorRole->syncPermissions($allPermissionNames);
 
-        // Coordinador: digamos que puede leer y crear pero no eliminar. Lo ajustaremos genérico (todo menos delete)
-        $coordPermissions = array_filter($allPermissions, fn($p) => !str_starts_with($p->name, 'delete'));
+        // Coordinador: todo menos eliminación
+        $coordPermissions = array_filter($allPermissionNames, fn($name) => !str_starts_with($name, 'delete') && !str_starts_with($name, 'eliminar'));
         $coordinadorRole->syncPermissions($coordPermissions);
 
-        // Usuario: solo lectura
-        $usuarioRole->syncPermissions($readPermissions);
+        // Usuario e Institucionales: solo lectura/ver gacetas
+        $usuarioRole->syncPermissions($readPermissionNames);
+        $institucionRole->syncPermissions(['ver gacetas']);
+        $institucionalRole->syncPermissions(['ver gacetas']);
 
-        // Crear usuarios de prueba
-        $superAdmin = User::firstOrCreate(
+        // 5. Crear usuarios de prueba de forma completamente idempotente
+        $superAdminUser = User::firstOrCreate(
             ['email' => 'admin@example.com'],
             ['name' => 'Super Admin User', 'password' => Hash::make('password')]
         );
-        $superAdmin->assignRole($superAdminRole);
+        $superAdminUser->assignRole($superAdminRole);
 
-        $director = User::firstOrCreate(
+        $directorUser = User::firstOrCreate(
             ['email' => 'director@example.com'],
             ['name' => 'Director de Área', 'password' => Hash::make('password')]
         );
-        $director->assignRole($directorRole);
+        $directorUser->assignRole($directorRole);
 
-        $usuario = User::firstOrCreate(
+        $usuarioCommon = User::firstOrCreate(
             ['email' => 'usuario@example.com'],
             ['name' => 'Usuario Común', 'password' => Hash::make('password')]
         );
-        $usuario->assignRole($usuarioRole);
+        $usuarioCommon->assignRole($usuarioRole);
     }
 }
+

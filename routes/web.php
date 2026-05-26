@@ -6,6 +6,8 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\InstitutionController;
+use App\Http\Controllers\GacetaController;
+use App\Http\Controllers\MisSolicitudesController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -38,7 +40,20 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class , 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class , 'destroy'])->name('profile.destroy');
 
-    Route::middleware(['role:Super Admin'])->group(function () {
+    Route::middleware(['role:Digitalizador|Super Admin|Super Administrador'])->group(function () {
+        Route::get('gacetas/create', [GacetaController::class, 'create'])->name('gacetas.create');
+        Route::post('gacetas', [GacetaController::class, 'store'])->name('gacetas.store');
+        Route::get('gacetas/{gaceta}/upload-pdf', [GacetaController::class, 'uploadPdf'])->name('gacetas.upload_pdf');
+        Route::post('gacetas/{gaceta}/upload-pdf', [GacetaController::class, 'savePdf'])->name('gacetas.save_pdf');
+    });
+    Route::get('gacetas', [GacetaController::class, 'index'])->name('gacetas.index');
+    Route::get('gacetas/{gaceta}', [GacetaController::class, 'show'])->name('gacetas.show');
+
+    Route::middleware(['role:Institucion|Institucional|Super Admin|Super Administrador'])->group(function () {
+        Route::get('mis-solicitudes', [MisSolicitudesController::class, 'index'])->name('mis-solicitudes.index');
+    });
+
+    Route::middleware(['role:Super Admin|Super Administrador'])->group(function () {
             Route::patch('roles/{id}/restore', [RoleController::class , 'restore'])->name('roles.restore');
             Route::resource('roles', RoleController::class);
 

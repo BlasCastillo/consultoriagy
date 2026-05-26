@@ -102,7 +102,7 @@
                                                         <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l-3 8 8-3 9.414-9.414a2 2 0 000-2.828l-3.536-3.536a2 0 00-2.828 0L9 11z"></path></svg>
                                                     </a>
 
-                                                    @if($role->name !== 'Super Admin')
+                                                    @if(!in_array($role->name, ['Super Admin', 'Super Administrador']))
                                                         <form action="{{ route('roles.destroy', $role) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar este rol?');" class="inline">
                                                             @csrf
                                                             @method('DELETE')

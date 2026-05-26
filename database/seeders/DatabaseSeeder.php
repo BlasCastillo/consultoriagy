@@ -15,11 +15,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Crear el usuario de prueba por defecto de forma idempotente
+        if (!User::where('email', 'test@example.com')->exists()) {
+            User::factory()->create([
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+            ]);
+        }
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Llamar a los seeders en el orden correcto
+        $this->call([
+            RolesAndPermissionsSeeder::class,
+            UserSeeder::class,
+            GacetasTestSeeder::class,
         ]);
     }
 }

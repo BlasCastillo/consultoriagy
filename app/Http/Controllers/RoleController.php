@@ -99,8 +99,8 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
-        if ($role->name === 'Super Admin') {
-            return redirect()->route('roles.index')->with('error', 'El rol Super Admin no puede ser eliminado.');
+        if (in_array($role->name, ['Super Admin', 'Super Administrador'])) {
+            return redirect()->route('roles.index')->with('error', 'El rol de administración del sistema no puede ser eliminado.');
         }
 
         $role->delete();

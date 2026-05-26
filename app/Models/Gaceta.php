@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Gaceta extends Model
+{
+    protected $fillable = [
+        'numero',
+        'anio',
+        'tipo',
+        'anio_politico',
+        'mes_politico',
+        'fecha_emision',
+        'fecha_recepcion_fisica',
+        'fecha_publicacion',
+        'ruta_archivo',
+        'estado',
+        'corregida_de_id',
+    ];
+
+    protected $casts = [
+        'fecha_emision' => 'date',
+        'fecha_recepcion_fisica' => 'date',
+        'fecha_publicacion' => 'date',
+    ];
+
+    public function sumarios()
+    {
+        return $this->hasMany(SumarioGaceta::class);
+    }
+
+    public function corregidaDe()
+    {
+        return $this->belongsTo(Gaceta::class, 'corregida_de_id');
+    }
+
+    public function correcciones()
+    {
+        return $this->hasMany(Gaceta::class, 'corregida_de_id');
+    }
+
+    public function getDiasRetrasoAttribute()
+    {
+        if ($this->estado !== 'Publicada' && $this->fecha_recepcion_fisica) {
+            $fechaRecepcion = \Carbon\Carbon::parse($this->fecha_recepcion_fisica);
+            $hoy = \Carbon\Carbon::now();
+            
+            $diasHabiles = $fechaRecepcion->diffInDaysFiltered(function (\Carbon\Carbon $date) {
+                return !$date->isWeekend();
+            }, $hoy);
+
+            if ($diasHabiles > 5) {
+                return $diasHabiles;
+            }
+        }
+        return 0;
+    }
+}

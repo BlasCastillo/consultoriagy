@@ -20,7 +20,17 @@
                         <i class="fa-regular fa-chart-bar w-5 h-5 mr-1"></i>
                         {{ __('Panel') }}
                     </x-nav-link>
-                    @hasanyrole('Super Admin|Director')
+                    <x-nav-link :href="route('gacetas.index')" :active="request()->routeIs('gacetas.*')">
+                        <i class="fa-solid fa-book w-5 h-5 mr-1"></i>
+                        {{ __('Gacetas') }}
+                    </x-nav-link>
+                    @hasanyrole('Institucion|Institucional')
+                    <x-nav-link :href="route('mis-solicitudes.index')" :active="request()->routeIs('mis-solicitudes.*')">
+                        <i class="fa-solid fa-file-contract w-5 h-5 mr-1"></i>
+                        {{ __('Mis Solicitudes') }}
+                    </x-nav-link>
+                    @endrole
+                    @hasanyrole('Super Admin|Super Administrador|Director')
                     <x-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.*')">
                         <i class="fa-regular fa-address-card w-5 h-5 mr-1"></i>
                         {{ __('Roles y Permisos') }}
@@ -109,7 +119,17 @@
                 <i class="fa-regular fa-chart-bar w-5 h-5 mr-1"></i>
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            @hasanyrole('Super Admin|Director')
+            <x-responsive-nav-link :href="route('gacetas.index')" :active="request()->routeIs('gacetas.*')">
+                <i class="fa-solid fa-book w-5 h-5 mr-1"></i>
+                {{ __('Gacetas') }}
+            </x-responsive-nav-link>
+            @hasanyrole('Institucion|Institucional')
+            <x-responsive-nav-link :href="route('mis-solicitudes.index')" :active="request()->routeIs('mis-solicitudes.*')">
+                <i class="fa-solid fa-file-contract w-5 h-5 mr-1"></i>
+                {{ __('Mis Solicitudes') }}
+            </x-responsive-nav-link>
+            @endrole
+            @hasanyrole('Super Admin|Super Administrador|Director')
             <x-responsive-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.*')">
                 <i class="fa-regular fa-address-card w-5 h-5 mr-1"></i>
                 {{ __('Roles y Permisos') }}
