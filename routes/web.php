@@ -8,6 +8,8 @@ use App\Http\Controllers\BackupController;
 use App\Http\Controllers\InstitutionController;
 use App\Http\Controllers\GacetaController;
 use App\Http\Controllers\MisSolicitudesController;
+use App\Http\Controllers\GobernadorController;
+use App\Http\Controllers\TituloController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -51,6 +53,11 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware(['role:Institucion|Institucional|Super Admin|Super Administrador'])->group(function () {
         Route::get('mis-solicitudes', [MisSolicitudesController::class, 'index'])->name('mis-solicitudes.index');
+    });
+
+    Route::middleware(['role:Super Administrador|Super Admin'])->group(function () {
+        Route::resource('gobernadores', GobernadorController::class);
+        Route::resource('titulos', TituloController::class);
     });
 
     Route::middleware(['role:Super Admin|Super Administrador'])->group(function () {

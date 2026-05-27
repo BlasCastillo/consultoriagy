@@ -15,43 +15,130 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden space-x-4 sm:-my-px sm:ms-10 sm:flex sm:items-center">
+                    {{-- A) Para TODOS los usuarios --}}
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        <i class="fa-regular fa-chart-bar w-5 h-5 mr-1"></i>
+                        <i class="fa-solid fa-house w-5 h-5 mr-1"></i>
                         {{ __('Panel') }}
+                    </x-nav-link>
+
+                    {{-- B) Para Institucional o Institucion --}}
+                    @hasanyrole('Institucion|Institucional')
+                    <x-nav-link :href="route('mis-solicitudes.index')" :active="request()->routeIs('mis-solicitudes.*')">
+                        <i class="fa-solid fa-file-signature w-5 h-5 mr-1"></i>
+                        {{ __('Mis Solicitudes') }}
                     </x-nav-link>
                     <x-nav-link :href="route('gacetas.index')" :active="request()->routeIs('gacetas.*')">
                         <i class="fa-solid fa-book w-5 h-5 mr-1"></i>
                         {{ __('Gacetas') }}
                     </x-nav-link>
-                    @hasanyrole('Institucion|Institucional')
-                    <x-nav-link :href="route('mis-solicitudes.index')" :active="request()->routeIs('mis-solicitudes.*')">
-                        <i class="fa-solid fa-file-contract w-5 h-5 mr-1"></i>
-                        {{ __('Mis Solicitudes') }}
-                    </x-nav-link>
-                    @endrole
-                    @hasanyrole('Super Admin|Super Administrador|Director')
-                    <x-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.*')">
-                        <i class="fa-regular fa-address-card w-5 h-5 mr-1"></i>
-                        {{ __('Roles y Permisos') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('institutions.index')" :active="request()->routeIs('institutions.*')">
-                        <i class="fa-solid fa-building w-5 h-5 mr-1"></i>
-                        {{ __('Instituciones') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
-                        <i class="fa-regular fa-user w-5 h-5 mr-1"></i>
-                        {{ __('Usuarios') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('bitacora.index')" :active="request()->routeIs('bitacora.*')">
-                        <i class="fa-regular fa-clipboard w-5 h-5 mr-1"></i>
-                        {{ __('Bitácora') }}
-                    </x-nav-link>
+                    @endhasanyrole
 
-                    <x-nav-link :href="route('backups.index')" :active="request()->routeIs('backups.*')">
-                        <i class="fa-regular fa-floppy-disk w-5 h-5 mr-1"></i>
-                        {{ __('Respaldos') }}
-                    </x-nav-link>
+                    {{-- C) Para Administradores --}}
+                    @hasanyrole('Super Administrador|Super Admin|Administrador')
+                    
+                    {{-- Dropdown Procesos --}}
+                    <div class="hidden sm:flex sm:items-center sm:ms-2">
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-400 bg-slate-900 hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <i class="fa-solid fa-gears mr-2"></i>
+                                    <div>{{ __('Procesos') }}</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('gacetas.index')">
+                                    {{ __('Gacetas') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link href="#">
+                                    {{ __('Solicitudes') }}
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
+
+                    {{-- Dropdown Registros Maestros --}}
+                    <div class="hidden sm:flex sm:items-center sm:ms-2">
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-400 bg-slate-900 hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <i class="fa-solid fa-database mr-2"></i>
+                                    <div>{{ __('Registros Maestros') }}</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('institutions.index')">
+                                    {{ __('Instituciones') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('gobernadores.index')">
+                                    {{ __('Gobernadores') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('titulos.index')">
+                                    {{ __('Títulos') }}
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
+
+                    {{-- Dropdown Reportes --}}
+                    <div class="hidden sm:flex sm:items-center sm:ms-2">
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-400 bg-slate-900 hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <i class="fa-solid fa-chart-bar mr-2"></i>
+                                    <div>{{ __('Reportes') }}</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('bitacora.index')">
+                                    {{ __('Bitácora') }}
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
+
+                    {{-- Dropdown Configuración --}}
+                    <div class="hidden sm:flex sm:items-center sm:ms-2">
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-400 bg-slate-900 hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <i class="fa-solid fa-screwdriver-wrench mr-2"></i>
+                                    <div>{{ __('Configuración') }}</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('users.index')">
+                                    {{ __('Usuarios') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('roles.index')">
+                                    {{ __('Roles y Permisos') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('backups.index')">
+                                    {{ __('Respaldos') }}
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
                     @endhasanyrole
                 </div>
             </div>
@@ -116,43 +203,57 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                <i class="fa-regular fa-chart-bar w-5 h-5 mr-1"></i>
-                {{ __('Dashboard') }}
+                <i class="fa-solid fa-house w-5 h-5 mr-1"></i>
+                {{ __('Panel') }}
+            </x-responsive-nav-link>
+
+            @hasanyrole('Institucion|Institucional')
+            <x-responsive-nav-link :href="route('mis-solicitudes.index')" :active="request()->routeIs('mis-solicitudes.*')">
+                <i class="fa-solid fa-file-signature w-5 h-5 mr-1"></i>
+                {{ __('Mis Solicitudes') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('gacetas.index')" :active="request()->routeIs('gacetas.*')">
                 <i class="fa-solid fa-book w-5 h-5 mr-1"></i>
                 {{ __('Gacetas') }}
             </x-responsive-nav-link>
-            @hasanyrole('Institucion|Institucional')
-            <x-responsive-nav-link :href="route('mis-solicitudes.index')" :active="request()->routeIs('mis-solicitudes.*')">
-                <i class="fa-solid fa-file-contract w-5 h-5 mr-1"></i>
-                {{ __('Mis Solicitudes') }}
+            @endhasanyrole
+
+            @hasanyrole('Super Administrador|Super Admin|Administrador')
+            <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Procesos</div>
+            <x-responsive-nav-link :href="route('gacetas.index')" :active="request()->routeIs('gacetas.*')">
+                {{ __('Gacetas') }}
             </x-responsive-nav-link>
-            @endrole
-            @hasanyrole('Super Admin|Super Administrador|Director')
-            <x-responsive-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.*')">
-                <i class="fa-regular fa-address-card w-5 h-5 mr-1"></i>
-                {{ __('Roles y Permisos') }}
+            <x-responsive-nav-link href="#">
+                {{ __('Solicitudes') }}
             </x-responsive-nav-link>
+
+            <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Registros Maestros</div>
             <x-responsive-nav-link :href="route('institutions.index')" :active="request()->routeIs('institutions.*')">
-                <i class="fa-solid fa-building w-5 h-5 mr-1"></i>
                 {{ __('Instituciones') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
-                <i class="fa-regular fa-user w-5 h-5 mr-1"></i>
-                {{ __('Usuarios') }}
+            <x-responsive-nav-link :href="route('gobernadores.index')" :active="request()->routeIs('gobernadores.*')">
+                {{ __('Gobernadores') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('titulos.index')" :active="request()->routeIs('titulos.*')">
+                {{ __('Títulos') }}
+            </x-responsive-nav-link>
+
+            <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Reportes</div>
             <x-responsive-nav-link :href="route('bitacora.index')" :active="request()->routeIs('bitacora.*')">
-                <i class="fa-regular fa-clipboard w-5 h-5 mr-1"></i>
                 {{ __('Bitácora') }}
             </x-responsive-nav-link>
 
+            <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Configuración</div>
+            <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                {{ __('Usuarios') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.*')">
+                {{ __('Roles y Permisos') }}
+            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('backups.index')" :active="request()->routeIs('backups.*')">
-                <i class="fa-regular fa-floppy-disk w-5 h-5 mr-1"></i>
                 {{ __('Respaldos') }}
             </x-responsive-nav-link>
             @endhasanyrole
-
         </div>
 
         <!-- Responsive Settings Options -->

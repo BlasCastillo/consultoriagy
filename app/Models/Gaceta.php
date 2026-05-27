@@ -18,6 +18,7 @@ class Gaceta extends Model
         'ruta_archivo',
         'estado',
         'corregida_de_id',
+        'gobernador_id',
     ];
 
     protected $casts = [
@@ -39,6 +40,11 @@ class Gaceta extends Model
     public function correcciones()
     {
         return $this->hasMany(Gaceta::class, 'corregida_de_id');
+    }
+
+    public function gobernador()
+    {
+        return $this->belongsTo(Gobernador::class);
     }
 
     public function getDiasRetrasoAttribute()

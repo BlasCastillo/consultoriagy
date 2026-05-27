@@ -56,7 +56,8 @@ class GacetaController extends Controller
     {
         $institutions = Institution::all();
         $gacetas = Gaceta::orderBy('anio', 'desc')->orderBy('numero', 'desc')->get();
-        return view('gacetas.create', compact('institutions', 'gacetas'));
+        $gobernadores = \App\Models\Gobernador::with('titulo')->get();
+        return view('gacetas.create', compact('institutions', 'gacetas', 'gobernadores'));
     }
 
     public function store(Request $request)
@@ -66,6 +67,7 @@ class GacetaController extends Controller
             'tipo' => 'required|in:Ordinaria,Extraordinaria',
             'fecha_emision' => 'nullable|date',
             'fecha_recepcion_fisica' => 'nullable|date',
+            'gobernador_id' => 'required|exists:gobernadores,id',
         ]);
 
         try {
@@ -87,6 +89,7 @@ class GacetaController extends Controller
             $gaceta->fecha_recepcion_fisica = $request->fecha_recepcion_fisica;
             $gaceta->estado = 'Reservada';
             $gaceta->corregida_de_id = $request->corregida_de_id;
+            $gaceta->gobernador_id = $request->gobernador_id;
 
             $gaceta->save();
 
@@ -125,15 +128,61 @@ class GacetaController extends Controller
         ]);
 
         $gaceta = Gaceta::findOrFail($id);
+        $gaceta->load(['gobernador.titulo', 'sumarios.institucion']);
 
         if ($request->hasFile('ruta_archivo')) {
-            $path = $request->file('ruta_archivo')->store('gacetas', 'public');
-            $gaceta->ruta_archivo = $path;
+            // 1. Generar Sumario PDF temporal
+            $pdfSumarioPath = storage_path('app/public/temp_sumario_' . $gaceta->id . '.pdf');
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('gacetas.pdf_sumario', compact('gaceta'));
+            $pdf->save($pdfSumarioPath);
+
+            // 2. Obtener PDF físico subido
+            $uploadedPdfPath = $request->file('ruta_archivo')->getRealPath();
+
+            // 3. Fusionar PDFs con FPDI
+            $fpdi = new \setasign\Fpdi\Fpdi();
+
+            // Añadir páginas del sumario
+            $pageCountSummary = $fpdi->setSourceFile($pdfSumarioPath);
+            for ($i = 1; $i <= $pageCountSummary; $i++) {
+                $tplId = $fpdi->importPage($i);
+                $size = $fpdi->getTemplateSize($tplId);
+                $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
+                $fpdi->useTemplate($tplId);
+            }
+
+            // Añadir páginas del archivo subido
+            $pageCountUploaded = $fpdi->setSourceFile($uploadedPdfPath);
+            for ($i = 1; $i <= $pageCountUploaded; $i++) {
+                $tplId = $fpdi->importPage($i);
+                $size = $fpdi->getTemplateSize($tplId);
+                $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
+                $fpdi->useTemplate($tplId);
+            }
+
+            // 4. Guardar archivo final en public/gacetas_pdf
+            $outputDir = public_path('gacetas_pdf');
+            if (!file_exists($outputDir)) {
+                mkdir($outputDir, 0755, true);
+            }
+
+            $fileName = 'gaceta_' . $gaceta->anio . '_' . str_pad($gaceta->numero, 4, '0', STR_PAD_LEFT) . '.pdf';
+            $outputPath = $outputDir . '/' . $fileName;
+            
+            $fpdi->Output($outputPath, 'F');
+
+            // 5. Actualizar la base de datos
+            $gaceta->ruta_archivo = $fileName;
             $gaceta->estado = 'Publicada';
             $gaceta->fecha_publicacion = \Carbon\Carbon::now();
             $gaceta->save();
 
-            return redirect()->route('gacetas.index')->with('success', 'PDF de la Gaceta subido y estado cambiado a Publicada.');
+            // Eliminar temporal
+            if (file_exists($pdfSumarioPath)) {
+                unlink($pdfSumarioPath);
+            }
+
+            return redirect()->route('gacetas.index')->with('success', 'PDF de la Gaceta generado, fusionado y publicado con éxito.');
         }
 
         return back()->with('error', 'No se pudo subir el archivo.');

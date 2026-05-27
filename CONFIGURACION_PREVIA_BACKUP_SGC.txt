@@ -1,12 +1,22 @@
-GUÍA DE CONFIGURACIÓN PREVIA - MÓDULO DE RESPALDOS (SGC-APP v1.3)
+GUÍA DE CONFIGURACIÓN PREVIA - SGC-APP (v1.7)
 Entorno: Windows + PostgreSQL 17 + Laravel 11/12
 
 Este documento detalla las configuraciones a nivel de sistema y servidor necesarias para 
-que el sistema de copias de seguridad funcione correctamente, evitando errores de 
-autenticación y de rutas en el entorno Windows.
+el correcto funcionamiento del sistema (Módulo de Respaldos y Gacetas Oficiales), 
+evitando errores de autenticación y de rutas en el entorno Windows.
 
 --------------------------------------------------------------------------------
-1. ENLACE SIMBÓLICO PARA RUTAS (SOLUCIÓN A ESPACIOS EN "Program Files")
+1. DIRECTORIO DE ALMACENAMIENTO PARA GACETAS Y CHATBOT (NUEVO v1.7)
+--------------------------------------------------------------------------------
+Para evitar fallos de permisos y asegurar la ruta requerida por el sistema de 
+fusión de PDFs y su futura lectura por el Chatbot, se debe crear el directorio 
+de almacenamiento físico local.
+
+Acción: Abrir PowerShell y ejecutar:
+> mkdir -Force "C:\xampp\htdocs\sgc-app\storage\app\SGCJ"
+
+--------------------------------------------------------------------------------
+2. ENLACE SIMBÓLICO PARA RUTAS DE POSTGRESQL (SOLUCIÓN A ESPACIOS)
 --------------------------------------------------------------------------------
 Windows suele tener problemas con las rutas que contienen espacios al ser ejecutadas 
 desde PHP/shell_exec. Se debe crear un enlace simbólico (Junction) para simplificar 
@@ -19,7 +29,7 @@ A partir de ahora, la ruta del binario en el sistema será:
 C:\pgsql\bin\pg_dump.exe
 
 --------------------------------------------------------------------------------
-2. PERMISOS DE EJECUCIÓN (SISTEMA DE ARCHIVOS)
+3. PERMISOS DE EJECUCIÓN (SISTEMA DE ARCHIVOS)
 --------------------------------------------------------------------------------
 El usuario que ejecuta el servidor web (ej. el servicio de Apache en XAMPP) debe 
 tener permisos para leer y ejecutar los binarios de PostgreSQL.
@@ -31,7 +41,7 @@ Acción:
    tenga activada la casilla de "Lectura y ejecución".
 
 --------------------------------------------------------------------------------
-3. CONFIGURACIÓN DE PHP (php.ini)
+4. CONFIGURACIÓN DE PHP (php.ini)
 --------------------------------------------------------------------------------
 Se requiere que PHP pueda interactuar con PostgreSQL y gestionar variables de entorno.
 
@@ -43,7 +53,7 @@ Acción (Editar php.ini):
    disable_functions = ...
 
 --------------------------------------------------------------------------------
-4. VARIABLES DE ENTORNO DEL SISTEMA (PATH)
+5. VARIABLES DE ENTORNO DEL SISTEMA (PATH)
 --------------------------------------------------------------------------------
 Para que el sistema reconozca los comandos de PostgreSQL de forma global:
 
@@ -52,7 +62,7 @@ Acción:
 2. En la variable 'Path', agregar una nueva entrada: C:\pgsql\bin
 
 --------------------------------------------------------------------------------
-5. CONFIGURACIÓN DEL PROYECTO (Laravel)
+6. CONFIGURACIÓN DEL PROYECTO (Laravel)
 --------------------------------------------------------------------------------
 A. Archivo .env:
 Asegurarse de que las credenciales de la base de datos sean correctas.
@@ -71,7 +81,7 @@ ya gestionados por XAMPP en htdocs):
 - storage/app/SGC-APP (O el valor definido en APP_NAME para los archivos .zip)
 
 --------------------------------------------------------------------------------
-6. NOTAS TÉCNICAS DE IMPLEMENTACIÓN (Versión 1.3)
+7. NOTAS TÉCNICAS DE IMPLEMENTACIÓN
 --------------------------------------------------------------------------------
 - Autenticación: Se utiliza 'putenv("PGPASSWORD=...")' en el controlador para 
   evitar la solicitud interactiva de contraseña en la terminal.
@@ -82,5 +92,5 @@ ya gestionados por XAMPP en htdocs):
   referenciar siempre: C:\pgsql\bin\pg_dump.exe
 
 --------------------------------------------------------------------------------
-Generado el 29 de abril de 2026
-SGC-APP - Sistema de Gestión de Configuración
+Actualizado el 27 de mayo de 2026
+SGC-APP - Sistema de Gestión de Configuración (Gobernación del Estado Yaracuy)
