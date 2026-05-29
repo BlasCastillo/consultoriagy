@@ -10,6 +10,7 @@ use App\Http\Controllers\GacetaController;
 use App\Http\Controllers\MisSolicitudesController;
 use App\Http\Controllers\GobernadorController;
 use App\Http\Controllers\TituloController;
+use App\Http\Controllers\SolicitudController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -42,17 +43,40 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class , 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class , 'destroy'])->name('profile.destroy');
 
-    Route::middleware(['role:Digitalizador|Super Admin|Super Administrador'])->group(function () {
+    Route::get('/notificaciones/{id}/leer', [\App\Http\Controllers\NotificacionController::class, 'leer'])->name('notificaciones.leer');
+
+    // Gacetas - Administrativas (Jefatura)
+    Route::middleware(['role:Super Admin|Super Administrador|Jefe de Digitalización'])->group(function () {
         Route::get('gacetas/create', [GacetaController::class, 'create'])->name('gacetas.create');
         Route::post('gacetas', [GacetaController::class, 'store'])->name('gacetas.store');
+    });
+
+    // Gacetas - Jefe de Digitalización
+    Route::middleware(['role:Jefe de Digitalización|Super Admin|Super Administrador'])->group(function () {
+        Route::get('gacetas/{gaceta}/checklist', [GacetaController::class, 'evaluarChecklist'])->name('gacetas.checklist');
+        Route::post('gacetas/{gaceta}/checklist', [GacetaController::class, 'guardarChecklist'])->name('gacetas.checklist.save');
+        
+        Route::get('gacetas/{gaceta}/asignar', [GacetaController::class, 'asignarDigitalizador'])->name('gacetas.asignar');
+        Route::post('gacetas/{gaceta}/asignar', [GacetaController::class, 'guardarAsignacion'])->name('gacetas.asignar.save');
+        
+        Route::get('gacetas/{gaceta}/aprobar', [GacetaController::class, 'aprobarPublicacion'])->name('gacetas.aprobar');
+        Route::post('gacetas/{gaceta}/publicar', [GacetaController::class, 'publicar'])->name('gacetas.publicar');
+    });
+
+    // Gacetas - Digitalizador
+    Route::middleware(['role:Digitalizador|Super Admin|Super Administrador'])->group(function () {
+        Route::get('gacetas/panel-digitalizador', [GacetaController::class, 'panelDigitalizador'])->name('gacetas.digitalizador');
         Route::get('gacetas/{gaceta}/upload-pdf', [GacetaController::class, 'uploadPdf'])->name('gacetas.upload_pdf');
         Route::post('gacetas/{gaceta}/upload-pdf', [GacetaController::class, 'savePdf'])->name('gacetas.save_pdf');
     });
+
     Route::get('gacetas', [GacetaController::class, 'index'])->name('gacetas.index');
     Route::get('gacetas/{gaceta}', [GacetaController::class, 'show'])->name('gacetas.show');
 
     Route::middleware(['role:Institucion|Institucional|Super Admin|Super Administrador'])->group(function () {
         Route::get('mis-solicitudes', [MisSolicitudesController::class, 'index'])->name('mis-solicitudes.index');
+        Route::get('solicitudes/create', [SolicitudController::class, 'create'])->name('solicitudes.create');
+        Route::post('solicitudes', [SolicitudController::class, 'store'])->name('solicitudes.store');
     });
 
     Route::middleware(['role:Super Administrador|Super Admin'])->group(function () {

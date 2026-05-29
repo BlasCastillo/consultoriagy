@@ -10,7 +10,12 @@
             <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-medium text-slate-800">Seguimiento de Documentos</h3>
-                    <span class="text-sm text-gray-500">Institución: <strong>{{ auth()->user()->institution->name ?? 'N/A' }}</strong></span>
+                    <div class="flex items-center gap-4">
+                        <span class="text-sm text-gray-500">Institución: <strong>{{ auth()->user()->institution->name ?? 'N/A' }}</strong></span>
+                        <a href="{{ route('solicitudes.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-900 border border-transparent rounded-md font-bold text-xs text-white uppercase tracking-widest shadow-md hover:bg-blue-800 transition-colors">
+                            <i class="fa-solid fa-plus mr-1"></i> Nueva Solicitud
+                        </a>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -39,24 +44,28 @@
                                         {{ Str::limit($sumario->descripcion, 50) }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        Nro. {{ $sumario->gaceta->numero }} / {{ $sumario->gaceta->anio }}
+                                        @if($sumario->gaceta->numero > 0)
+                                            Nro. {{ str_pad($sumario->gaceta->numero, 4, '0', STR_PAD_LEFT) }} / {{ $sumario->gaceta->anio }}
+                                        @else
+                                            <span class="text-gray-400 italic">Por Asignar</span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         @if($sumario->gaceta->estado === 'Publicada')
                                             <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">
-                                                <i class="fa-solid fa-check-circle mr-1 mt-0.5"></i> Publicada (Disponible para Descarga)
+                                                <i class="fa-solid fa-check-circle mr-1 mt-0.5"></i> Publicada (Disponible)
                                             </span>
                                         @elseif($sumario->gaceta->dias_retraso > 0)
                                             <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 border border-red-200" title="Retraso de {{ $sumario->gaceta->dias_retraso }} días">
-                                                <i class="fa-solid fa-triangle-exclamation mr-1 mt-0.5"></i> Retrasada (En Despacho)
+                                                <i class="fa-solid fa-triangle-exclamation mr-1 mt-0.5"></i> Retrasada
                                             </span>
-                                        @elseif($sumario->gaceta->estado === 'Reservada')
+                                        @elseif(in_array($sumario->gaceta->estado, ['Reservada', 'En Firma Física', 'Recibida Física', 'En Escaneo', 'Por Aprobar']))
                                             <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">
-                                                <i class="fa-solid fa-lock mr-1 mt-0.5"></i> Número Reservado (Firma de Despacho)
+                                                <i class="fa-solid fa-spinner mr-1 mt-0.5"></i> En Proceso ({{ $sumario->gaceta->estado }})
                                             </span>
                                         @else
                                             <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-200">
-                                                <i class="fa-solid fa-spinner mr-1 mt-0.5"></i> En Revisión
+                                                <i class="fa-solid fa-clock mr-1 mt-0.5"></i> {{ $sumario->gaceta->estado }}
                                             </span>
                                         @endif
                                     </td>

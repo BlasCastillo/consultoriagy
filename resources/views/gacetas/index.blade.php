@@ -84,10 +84,10 @@
             <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-medium text-slate-800">Resultados</h3>
-                    @if(auth()->user()->hasAnyRole(['Digitalizador', 'Super Admin', 'Super Administrador']) || auth()->user()->roles->count() === 0)
+                    @if(auth()->user()->hasAnyRole(['Institucion', 'Institucional', 'Jefe de Digitalización', 'Super Admin', 'Super Administrador']) || auth()->user()->roles->count() === 0)
                         <a href="{{ route('gacetas.create') }}"
                             class="inline-flex items-center px-4 py-2 bg-blue-900 border border-transparent rounded-md font-bold text-xs text-white uppercase tracking-widest shadow-md hover:bg-blue-800 transition-colors">
-                            Registrar Gaceta
+                            Registrar Solicitud
                         </a>
                     @endif
                 </div>
@@ -171,10 +171,29 @@
                                             </a>
                                         @endif
 
+                                        @if(auth()->user()->hasAnyRole(['Jefe de Digitalización', 'Super Admin', 'Super Administrador']) || auth()->user()->roles->count() === 0)
+                                            @if($g->estado === 'Solicitada')
+                                                <a href="{{ route('gacetas.checklist', $g->id) }}"
+                                                    class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase rounded shadow-md hover:shadow-lg transition-colors">
+                                                    <i class="fa-solid fa-list-check mr-1"></i> Validar
+                                                </a>
+                                            @elseif($g->estado === 'Reservada')
+                                                <a href="{{ route('gacetas.asignar', $g->id) }}"
+                                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-bold uppercase rounded shadow-md hover:shadow-lg transition-colors">
+                                                    <i class="fa-solid fa-user-check mr-1"></i> Asignar
+                                                </a>
+                                            @elseif($g->estado === 'Por Aprobar')
+                                                <a href="{{ route('gacetas.aprobar', $g->id) }}"
+                                                    class="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-bold uppercase rounded shadow-md hover:shadow-lg transition-colors">
+                                                    <i class="fa-solid fa-check-double mr-1"></i> Revisar
+                                                </a>
+                                            @endif
+                                        @endif
+                                        
                                         @if(auth()->user()->hasAnyRole(['Digitalizador', 'Super Admin', 'Super Administrador']) || auth()->user()->roles->count() === 0)
-                                            @if($g->estado !== 'Publicada')
+                                            @if($g->estado === 'En Escaneo')
                                                 <a href="{{ route('gacetas.upload_pdf', $g->id) }}"
-                                                    class="inline-flex items-center px-3 py-1.5 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold uppercase rounded shadow-md hover:shadow-lg transition-colors">
+                                                    class="inline-flex items-center px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase rounded shadow-md hover:shadow-lg transition-colors">
                                                     <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Subir PDF
                                                 </a>
                                             @endif
