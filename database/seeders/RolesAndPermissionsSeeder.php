@@ -66,6 +66,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $usuarioRole = Role::firstOrCreate(['name' => 'Usuario']);
         $institucionRole = Role::firstOrCreate(['name' => 'Institucion']);
         $institucionalRole = Role::firstOrCreate(['name' => 'Institucional']);
+        
+        $jefeRole = Role::firstOrCreate(['name' => 'Jefe de Digitalización']);
+        $digitalizadorRole = Role::firstOrCreate(['name' => 'Digitalizador']);
 
         // 4. Asignar permisos de forma segura e idempotente con syncPermissions()
         // Super Administradores tienen acceso total
@@ -81,6 +84,20 @@ class RolesAndPermissionsSeeder extends Seeder
         $usuarioRole->syncPermissions($readPermissionNames);
         $institucionRole->syncPermissions(['ver gacetas']);
         $institucionalRole->syncPermissions(['ver gacetas']);
+
+        // Permisos para Jefe de Digitalización
+        $jefeRole->syncPermissions([
+            'ver gacetas', 'crear gacetas', 'editar gacetas', 'eliminar gacetas', 'publicar gacetas',
+            'create Gaceta', 'read Gaceta', 'update Gaceta', 'delete Gaceta',
+            'create SumarioGaceta', 'read SumarioGaceta', 'update SumarioGaceta', 'delete SumarioGaceta',
+            'read Institution', 'read Gobernador', 'read Titulo'
+        ]);
+
+        // Permisos para Digitalizador
+        $digitalizadorRole->syncPermissions([
+            'ver gacetas', 'editar gacetas',
+            'read Gaceta', 'update Gaceta'
+        ]);
 
         // 5. Crear usuarios de prueba de forma completamente idempotente
         $superAdminUser = User::firstOrCreate(
