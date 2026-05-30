@@ -23,5 +23,25 @@ class UserSeeder extends Seeder
         );
         
         $superadmin->assignRole('Super Administrador');
+
+        $director = User::firstOrCreate(
+            ['email' => 'director@example.com'],
+            [
+                'name' => 'Jefe de Digitalización',
+                'password' => Hash::make('password'),
+                'status' => true
+            ]
+        );
+        $director->syncRoles(['Jefe de Digitalización']);
+
+        $digitalizador = User::firstOrCreate(
+            ['email' => 'digitalizador@example.com'],
+            [
+                'name' => 'Digitalizador',
+                'password' => Hash::make('password'),
+                'status' => true
+            ]
+        );
+        $digitalizador->syncRoles(['Digitalizador']);
     }
 }

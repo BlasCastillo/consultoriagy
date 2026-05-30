@@ -33,8 +33,8 @@
                     </x-nav-link>
                     @endhasanyrole
 
-                    {{-- C) Para Administradores --}}
-                    @hasanyrole('Super Administrador|Super Admin|Administrador')
+                    {{-- C) Para Administradores y Procesadores --}}
+                    @hasanyrole('Super Administrador|Super Admin|Administrador|Jefe de Digitalización|Digitalizador')
 
                     {{-- Dropdown Procesos --}}
                     <div class="hidden sm:flex sm:items-center sm:ms-2">
@@ -58,12 +58,16 @@
                                 <x-dropdown-link :href="route('gacetas.index')">
                                     {{ __('Gacetas') }}
                                 </x-dropdown-link>
-                                <x-dropdown-link href="#">
+                                @hasanyrole('Super Administrador|Super Admin|Administrador')
+                                <x-dropdown-link :href="route('gacetas.solicitadas')">
                                     {{ __('Solicitudes') }}
                                 </x-dropdown-link>
+                                @endhasanyrole
                             </x-slot>
                         </x-dropdown>
                     </div>
+
+                    @hasanyrole('Super Administrador|Super Admin|Administrador')
 
                     {{-- Dropdown Registros Maestros --}}
                     <div class="hidden sm:flex sm:items-center sm:ms-2">
@@ -154,6 +158,7 @@
                             </x-slot>
                         </x-dropdown>
                     </div>
+                    @endhasanyrole
                     @endhasanyrole
                 </div>
             </div>
@@ -280,14 +285,18 @@
             </x-responsive-nav-link>
             @endhasanyrole
 
-            @hasanyrole('Super Administrador|Super Admin|Administrador')
+            @hasanyrole('Super Administrador|Super Admin|Administrador|Jefe de Digitalización|Digitalizador')
             <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Procesos</div>
             <x-responsive-nav-link :href="route('gacetas.index')" :active="request()->routeIs('gacetas.*')">
                 {{ __('Gacetas') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link href="#">
+            @hasanyrole('Super Administrador|Super Admin|Administrador')
+            <x-responsive-nav-link :href="route('gacetas.solicitadas')" :active="request()->routeIs('gacetas.solicitadas')">
                 {{ __('Solicitudes') }}
             </x-responsive-nav-link>
+            @endhasanyrole
+
+            @hasanyrole('Super Administrador|Super Admin|Administrador')
 
             <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Registros Maestros
             </div>
@@ -316,6 +325,7 @@
             <x-responsive-nav-link :href="route('backups.index')" :active="request()->routeIs('backups.*')">
                 {{ __('Respaldos') }}
             </x-responsive-nav-link>
+            @endhasanyrole
             @endhasanyrole
         </div>
 

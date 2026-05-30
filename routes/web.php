@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['role:Super Admin|Super Administrador|Jefe de Digitalización'])->group(function () {
         Route::get('gacetas/create', [GacetaController::class, 'create'])->name('gacetas.create');
         Route::post('gacetas', [GacetaController::class, 'store'])->name('gacetas.store');
+        Route::get('/gacetas-solicitadas', [GacetaController::class, 'solicitudesEntrantes'])->name('gacetas.solicitadas');
     });
 
     // Gacetas - Jefe de Digitalización
