@@ -8,11 +8,9 @@
 
     <title>{{ config('app.name', 'SGCJ') }}</title>
 
-    <!-- Fonts -->
     <link rel="icon" href="{{ asset('img/logo-gobernacion.svg') }}" type="image/svg+xml">
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/figtree.css') }}">
 
-    <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         /* Imagen de Fondo */
@@ -30,7 +28,6 @@
             padding: 2px;
             border-radius: 22px;
             transition: all 0.3s;
-            /* Aplicamos el Glassmorphism aquí para que vea hacia el fondo de pantalla */
             background-color: rgba(23, 23, 23, 0.3);
             backdrop-filter: blur(1.5px);
             -webkit-backdrop-filter: blur(20px);
@@ -43,10 +40,7 @@
             inset: 0;
             border-radius: 22px;
             padding: 2px;
-            /* Grosor del borde */
             background-image: linear-gradient(163deg, #d6d6d6ff 0%, #313131ff 100%);
-
-            /* Esta máscara recorta el centro, dejando solo el borde de color */
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
@@ -61,7 +55,6 @@
         .card2 {
             border-radius: 20px;
             transition: all 0.2s;
-            /* Lo dejamos totalmente transparente porque el blur ya lo hace el padre (.card) */
             background-color: transparent;
             height: 100%;
             width: 100%;
@@ -104,26 +97,9 @@
             font-size: 0.9em;
         }
 
-        /* Opcional: Si quieres asegurar compatibilidad con navegadores antiguos */
-        .input-field::-webkit-input-placeholder {
-            color: #ffffff;
-            opacity: 1;
-        }
-
-        .input-field::-moz-placeholder {
-            color: #ffffff;
-            opacity: 1;
-        }
-
-        .input-field:-ms-input-placeholder {
-            color: #ffffff;
-            opacity: 1;
-        }
-
         .input-field::placeholder {
             color: #ffffff;
             opacity: 1;
-            /* Firefox baja la opacidad por defecto, esto lo evita */
         }
 
         .button1 {
@@ -140,7 +116,6 @@
 
         .button1:hover {
             background-color: #0F172A;
-            /* Azul oscuro */
         }
 
         .button3 {
@@ -152,11 +127,7 @@
 </head>
 
 <body class="font-sans text-gray-900 antialiased">
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-        <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
-            {{ $slot }}
-        </div>
-    </div>
+    {{ $slot }}
 </body>
 
 </html>

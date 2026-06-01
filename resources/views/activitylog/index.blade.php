@@ -12,27 +12,27 @@
 
                     <p class="mb-6 text-slate-600">Registro de auditoría de los movimientos realizados en el sistema.</p>
 
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white border border-slate-300">
-                            <thead>
-                                <tr class="bg-slate-100 border-b border-slate-300">
-                                    <th class="py-3 px-4 text-left font-semibold text-slate-700">Fecha y Hora</th>
-                                    <th class="py-3 px-4 text-left font-semibold text-slate-700">Usuario</th>
-                                    <th class="py-3 px-4 text-left font-semibold text-slate-700">Acción</th>
-                                    <th class="py-3 px-4 text-left font-semibold text-slate-700">Modelo</th>
-                                    <th class="py-3 px-4 text-center font-semibold text-slate-700">Detalles</th>
+                    <div class="overflow-x-auto bg-white shadow-md sm:rounded-lg border border-slate-200">
+                        <table class="min-w-full">
+                            <thead class="bg-slate-800 text-white">
+                                <tr>
+                                    <th class="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Fecha y Hora</th>
+                                    <th class="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Usuario</th>
+                                    <th class="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Acción</th>
+                                    <th class="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Modelo</th>
+                                    <th class="py-3 px-4 text-center text-sm font-semibold uppercase tracking-wider">Detalles</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($activities as $activity)
-                                    <tr class="border-b border-slate-200 hover:bg-slate-50">
-                                        <td class="py-3 px-4 whitespace-nowrap text-sm text-slate-600">
+                                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                        <td class="py-3 px-4 text-sm text-slate-600 whitespace-nowrap">
                                             {{ $activity->created_at->format('d/m/Y H:i:s') }}
                                         </td>
-                                        <td class="py-3 px-4 font-medium text-slate-800">
+                                        <td class="py-3 px-4 text-sm text-slate-600 font-medium">
                                             {{ $activity->causer ? $activity->causer->name : 'Sistema / Automático' }}
                                         </td>
-                                        <td class="py-3 px-4">
+                                        <td class="py-3 px-4 text-sm text-slate-600">
                                             @php
                                                 $actionColor = 'bg-slate-200 text-slate-800';
                                                 switch($activity->event) {
@@ -46,15 +46,16 @@
                                                 {{ $activity->event ?? 'Acción' }}
                                             </span>
                                         </td>
-                                        <td class="py-3 px-4 text-sm text-slate-700">
+                                        <td class="py-3 px-4 text-sm text-slate-600">
                                             @if($activity->subject_type)
                                                 <span class="font-medium">{{ class_basename($activity->subject_type) }}</span> <span class="text-slate-500">#{{ $activity->subject_id }}</span>
                                             @else
                                                 <span class="text-slate-400 italic">Genérico</span>
                                             @endif
                                         </td>
-                                        <td class="py-3 px-4 text-center" x-data="{ open: false }">
-                                            <button @click="open = true" class="bg-[#1e293b] hover:bg-[#0f172a] text-white text-xs font-bold py-1.5 px-3 rounded shadow-sm transition">
+                                        <td class="py-3 px-4 text-sm text-slate-600 text-center" x-data="{ open: false }">
+                                            <button @click="open = true" class="px-4 py-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center gap-2 font-medium text-sm md:text-base bg-slate-500 hover:bg-slate-600 text-white">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                                 Ver Detalles
                                             </button>
                                             
@@ -90,7 +91,10 @@
                                                         </div>
                                                     </div>
                                                     <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end">
-                                                        <button @click="open = false" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded transition duration-150">Cerrar Detalle</button>
+                                                        <button @click="open = false" class="px-4 py-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center gap-2 font-medium text-sm md:text-base bg-slate-200 hover:bg-slate-300 text-slate-700">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                                                            Cerrar Detalle
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -113,4 +117,5 @@
             </div>
         </div>
     </div>
+
 </x-app-layout>

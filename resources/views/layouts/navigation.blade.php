@@ -1,9 +1,7 @@
 <nav x-data="{ open: false }" class="bg-slate-900 border-b border-slate-700">
-    <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
-                <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}"
                         class="flex items-center gap-1 text-white font-bold text-xl tracking-wider">
@@ -12,7 +10,6 @@
                     </a>
                 </div>
 
-                <!-- Navigation Links -->
                 <div class="hidden space-x-4 sm:-my-px sm:ms-10 sm:flex sm:items-center">
                     {{-- A) Para TODOS los usuarios --}}
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
@@ -163,10 +160,8 @@
                 </div>
             </div>
 
-            <!-- Notifications & Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
 
-                <!-- Authentication (Usuario) PRIMERO -->
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button
@@ -190,7 +185,6 @@
                             {{ __('Profile') }}
                         </x-dropdown-link>
 
-                        <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
 
@@ -203,7 +197,6 @@
                     </x-slot>
                 </x-dropdown>
 
-                <!-- Notifications Bell LUEGO A LA DERECHA (con margen izquierdo para separarse) -->
                 <div class="relative ml-5" x-data="{
                     unreadCount: {{ auth()->user()->unreadNotifications->count() ?? 0 }},
                     notifications: {{ auth()->user()->unreadNotifications->take(5)->toJson() ?? '[]' }},
@@ -212,36 +205,58 @@
                     if (typeof Echo !== 'undefined') {
                         Echo.private('App.Models.User.' + {{ auth()->id() }})
                             .notification((notification) => {
+                                // 1. Alpine actualiza el contador de la campana en automático
                                 unreadCount++;
-                                notifications.unshift(notification);
-                                if(notifications.length > 5) {
-                                    notifications.pop();
+                                
+                                // 2. Ocultar el mensaje de vacío si existe
+                                let emptyMsg = document.getElementById('empty-notifications');
+                                if (emptyMsg) emptyMsg.style.display = 'none';
+
+                                // 3. Inyectar el nuevo HTML en la lista
+                                let list = document.getElementById('notifications-list');
+                                if (list) {
+                                    let msg = notification.mensaje || 'Tienes una nueva notificación';
+                                    let id = notification.id || ''; 
+                                    // Preparamos la URL. Si no hay ID en el broadcast, mandamos un #
+                                    let url = id ? `/notificaciones/${id}/leer` : '#';
+
+                                    let html = `
+                                        <a href='${url}' class='block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-100 bg-slate-50 transition-colors'>
+                                            <div class='text-sm text-gray-800 font-semibold'>${msg}</div>
+                                            <div class='text-xs text-gray-400 mt-1'>Justo ahora</div>
+                                        </a>
+                                    `;
+                                    list.insertAdjacentHTML('afterbegin', html);
                                 }
                             });
                     }
                 ">
-                    <button @click="showDropdown = !showDropdown"
-                        class="text-gray-400 hover:text-white transition">
+                    <button @click="showDropdown = !showDropdown" class="text-gray-400 hover:text-white transition">
                         <div class="relative inline-block">
                             <i class="fa-solid fa-bell text-xl"></i>
                             <span x-show="unreadCount > 0" x-text="unreadCount"
-                                class="absolute -top-1 -right-2 inline-flex items-center justify-center px-1.5 py-0.5 text-[0.65rem] font-bold leading-none text-white bg-red-600 rounded-full"></span>
+                                class="absolute -top-1 -right-2 inline-flex items-center justify-center px-1.5 py-0.5 text-[0.65rem] font-bold leading-none text-white bg-red-600 rounded-full"
+                                style="display: none;"></span>
                         </div>
                     </button>
 
-                    <!-- Notifications Dropdown -->
                     <div x-show="showDropdown"
                         class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200"
                         style="display: none;">
                         <div class="px-4 py-2 border-b border-gray-100 font-semibold text-gray-700">Notificaciones</div>
-                        <div class="max-h-64 overflow-y-auto">
+
+                        <div id="notifications-list" class="max-h-64 overflow-y-auto">
                             @forelse(auth()->user()->unreadNotifications as $notificacion)
-                                <a href="{{ route('notificaciones.leer', $notificacion->id) }}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-100">
-                                    <div class="text-sm text-gray-800">{{ $notificacion->data['mensaje'] ?? 'Tienes una nueva notificación' }}</div>
-                                    <div class="text-xs text-gray-400 mt-1">{{ $notificacion->created_at->diffForHumans() }}</div>
+                                <a href="{{ route('notificaciones.leer', $notificacion->id) }}"
+                                    class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-100">
+                                    <div class="text-sm text-gray-800">
+                                        {{ $notificacion->data['mensaje'] ?? 'Tienes una nueva notificación' }}</div>
+                                    <div class="text-xs text-gray-400 mt-1">{{ $notificacion->created_at->diffForHumans() }}
+                                    </div>
                                 </a>
                             @empty
-                                <div class="px-4 py-3 text-sm text-gray-500 text-center">No tienes notificaciones nuevas.</div>
+                                <div id="empty-notifications" class="px-4 py-3 text-sm text-gray-500 text-center">No tienes
+                                    notificaciones nuevas.</div>
                             @endforelse
                         </div>
                     </div>
@@ -249,7 +264,6 @@
 
             </div>
 
-            <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open"
                     class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
@@ -265,7 +279,6 @@
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
@@ -291,7 +304,8 @@
                 {{ __('Gacetas') }}
             </x-responsive-nav-link>
             @hasanyrole('Super Administrador|Super Admin|Administrador')
-            <x-responsive-nav-link :href="route('gacetas.solicitadas')" :active="request()->routeIs('gacetas.solicitadas')">
+            <x-responsive-nav-link :href="route('gacetas.solicitadas')"
+                :active="request()->routeIs('gacetas.solicitadas')">
                 {{ __('Solicitudes') }}
             </x-responsive-nav-link>
             @endhasanyrole
@@ -329,7 +343,6 @@
             @endhasanyrole
         </div>
 
-        <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
                 <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
@@ -342,7 +355,6 @@
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
 
-                <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
 
