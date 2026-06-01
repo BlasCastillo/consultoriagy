@@ -73,6 +73,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('gacetas', [GacetaController::class, 'index'])->name('gacetas.index');
     Route::get('gacetas/{gaceta}', [GacetaController::class, 'show'])->name('gacetas.show');
+    Route::get('/gacetas/{id}/preview', [App\Http\Controllers\GacetaController::class, 'preview'])->name('gacetas.preview');
 
     Route::middleware(['role:Institucion|Institucional|Super Admin|Super Administrador'])->group(function () {
         Route::get('mis-solicitudes', [MisSolicitudesController::class, 'index'])->name('mis-solicitudes.index');

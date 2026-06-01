@@ -20,18 +20,18 @@
                     <h3 class="text-lg font-medium text-slate-800">Solicitudes Pendientes de Revisión</h3>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                <div class="overflow-x-auto bg-white shadow-md sm:rounded-lg border border-slate-200">
+                    <table class="min-w-full">
+                        <thead class="bg-slate-800 text-white">
                             <tr>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">
                                     Institución Solicitante</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">
                                     Fecha Solicitud</th>
                                 <th
-                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="py-3 px-4 text-right text-sm font-semibold uppercase tracking-wider">
                                     Acciones</th>
                             </tr>
                         </thead>
@@ -46,7 +46,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('gacetas.checklist', $gaceta->id) }}"
-                                            class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase rounded shadow-md hover:shadow-lg transition-colors">
+                                            class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center gap-2 font-medium text-sm md:text-base">
                                             <i class="fa-solid fa-list-check mr-1"></i> Evaluar Checklist
                                         </a>
                                     </td>

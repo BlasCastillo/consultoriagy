@@ -26,7 +26,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('gacetas.store') }}" enctype="multipart/form-data" id="gacetaForm">
+                <form method="POST" action="{{ route('gacetas.store') }}" enctype="multipart/form-data" id="gacetaForm" onsubmit="confirmarGuardado(event)">
                     @csrf
                     
                     <div class="border-b border-slate-200 pb-6 mb-6">
@@ -35,35 +35,35 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Año *</label>
-                                <input type="number" name="anio" value="{{ old('anio', date('Y')) }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
-                                <p class="text-xs text-gray-500 mt-1">El sistema asignará automáticamente el número siguiente al guardar.</p>
+                                <input type="number" name="anio" value="{{ old('anio', date('Y')) }}" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
+                                <p class="text-xs text-slate-500 mt-1">El sistema asignará automáticamente el número siguiente al guardar.</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Tipo *</label>
-                                <select name="tipo" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
+                                <select name="tipo" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
                                     <option value="Ordinaria" {{ old('tipo') == 'Ordinaria' ? 'selected' : '' }}>Ordinaria</option>
                                     <option value="Extraordinaria" {{ old('tipo') == 'Extraordinaria' ? 'selected' : '' }}>Extraordinaria</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Año Político</label>
-                                <input type="text" name="anio_politico" value="{{ old('anio_politico') }}" placeholder="Ej: AÑO CXIV" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
+                                <input type="text" name="anio_politico" value="{{ old('anio_politico') }}" placeholder="Ej: AÑO CXIV" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Mes Político</label>
-                                <input type="text" name="mes_politico" value="{{ old('mes_politico') }}" placeholder="Ej: MES IV" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
+                                <input type="text" name="mes_politico" value="{{ old('mes_politico') }}" placeholder="Ej: MES IV" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Fecha Emisión</label>
-                                <input type="date" name="fecha_emision" value="{{ old('fecha_emision') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
+                                <input type="date" name="fecha_emision" value="{{ old('fecha_emision') }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-700">Fecha Recepción Física (Checklist)</label>
-                                <input type="date" name="fecha_recepcion_fisica" value="{{ old('fecha_recepcion_fisica') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
+                                <label class="block text-sm font-medium text-slate-700">Fecha Recepción Física</label>
+                                <input type="date" name="fecha_recepcion_fisica" value="{{ old('fecha_recepcion_fisica') }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
                             </div>
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-slate-700">Corregida de (Art. 5) - Opcional</label>
-                                <select name="corregida_de_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
+                                <select name="corregida_de_id" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
                                     <option value="">Ninguna</option>
                                     @foreach($gacetas as $g)
                                         <option value="{{ $g->id }}" {{ old('corregida_de_id') == $g->id ? 'selected' : '' }}>
@@ -74,7 +74,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Gobernador Firmante *</label>
-                                <select name="gobernador_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
+                                <select name="gobernador_id" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
                                     @foreach($gobernadores as $gober)
                                         <option value="{{ $gober->id }}" {{ (old('gobernador_id') == $gober->id || $gober->estado) ? 'selected' : '' }}>
                                             {{ $gober->titulo->abreviatura ?? '' }} {{ $gober->nombres }} {{ $gober->apellidos }}
@@ -95,12 +95,12 @@
                         </div>
 
                         <div id="sumariosContainer" class="space-y-4">
-                            <div class="sumario-row bg-gray-50 p-4 rounded-md border border-gray-200 flex items-start gap-4 transition-all">
+                            <div class="sumario-row bg-slate-50 p-4 rounded-md border border-slate-200 flex items-start gap-4 transition-all">
                                 
                                 <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <label class="block text-xs font-medium text-slate-700">Institución *</label>
-                                        <select name="sumarios[0][institucion_id]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm">
+                                        <select name="sumarios[0][institucion_id]" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm">
                                             <option value="">Seleccione...</option>
                                             @foreach($institutions as $inst)
                                                 <option value="{{ $inst->id }}">{{ $inst->name }}</option>
@@ -109,7 +109,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-slate-700">Tipo Acto *</label>
-                                        <select name="sumarios[0][tipo_acto]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm">
+                                        <select name="sumarios[0][tipo_acto]" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm">
                                             <option value="Decreto">Decreto</option>
                                             <option value="Ley">Ley</option>
                                             <option value="Resolución">Resolución</option>
@@ -120,16 +120,16 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-slate-700">Nro Acto *</label>
-                                        <input type="text" name="sumarios[0][numero_acto]" required placeholder="Ej: E-123" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm">
+                                        <input type="text" name="sumarios[0][numero_acto]" required placeholder="Ej: E-123" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm">
                                     </div>
                                     <div class="md:col-span-3">
                                         <label class="block text-xs font-medium text-slate-700">Descripción *</label>
-                                        <textarea name="sumarios[0][descripcion]" rows="2" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm"></textarea>
+                                        <textarea name="sumarios[0][descripcion]" rows="2" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm"></textarea>
                                     </div>
                                 </div>
 
                                 <div class="flex-none pt-6"> 
-                                    <button type="button" class="remove-row p-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center gap-2 font-medium text-sm md:text-base bg-red-600 hover:bg-red-700 text-white" title="Eliminar fila">
+                                    <button type="button" class="remove-row p-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center font-medium bg-red-600 hover:bg-red-700 text-white" title="Eliminar fila">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
                                 </div>
@@ -138,7 +138,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-8 flex justify-end">
+                    <div class="mt-8 pt-4 border-t border-slate-200 flex justify-end">
                         <button type="submit" class="px-4 py-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center gap-2 font-medium text-sm md:text-base bg-slate-800 hover:bg-slate-900 text-white">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
                             Guardar y Reservar Número
@@ -150,17 +150,38 @@
     </div>
 
     <script>
+        // Función para interceptar el Guardado Principal
+        function confirmarGuardado(event) {
+            event.preventDefault(); // Detenemos el envío automático
+            const form = event.target;
+            
+            Swal.fire({
+                title: '¿Guardar y Reservar Gaceta?',
+                text: 'Se registrará en el sistema y se le asignará el próximo número disponible.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1e293b', // slate-800
+                cancelButtonColor: '#64748b',  // slate-500
+                confirmButtonText: 'Sí, guardar',
+                cancelButtonText: 'Revisar datos'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             const container = document.getElementById('sumariosContainer');
             const addBtn = document.getElementById('addSumarioBtn');
             let rowCount = 1;
 
             const getRowHtml = (index) => `
-                <div class="sumario-row bg-gray-50 p-4 rounded-md border border-gray-200 mt-4 flex items-start gap-4 transition-all">
+                <div class="sumario-row bg-slate-50 p-4 rounded-md border border-slate-200 mt-4 flex items-start gap-4 transition-all">
                     <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-slate-700">Institución *</label>
-                            <select name="sumarios[${index}][institucion_id]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm">
+                            <select name="sumarios[${index}][institucion_id]" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm">
                                 <option value="">Seleccione...</option>
                                 @foreach($institutions as $inst)
                                     <option value="{{ $inst->id }}">{{ str_replace("'", "\\'", $inst->name) }}</option>
@@ -169,7 +190,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-700">Tipo Acto *</label>
-                            <select name="sumarios[${index}][tipo_acto]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm">
+                            <select name="sumarios[${index}][tipo_acto]" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm">
                                 <option value="Decreto">Decreto</option>
                                 <option value="Ley">Ley</option>
                                 <option value="Resolución">Resolución</option>
@@ -180,16 +201,16 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-700">Nro Acto *</label>
-                            <input type="text" name="sumarios[${index}][numero_acto]" required placeholder="Ej: E-123" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm">
+                            <input type="text" name="sumarios[${index}][numero_acto]" required placeholder="Ej: E-123" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm">
                         </div>
                         <div class="md:col-span-3">
                             <label class="block text-xs font-medium text-slate-700">Descripción *</label>
-                            <textarea name="sumarios[${index}][descripcion]" rows="2" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm"></textarea>
+                            <textarea name="sumarios[${index}][descripcion]" rows="2" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm"></textarea>
                         </div>
                     </div>
                     
                     <div class="flex-none pt-6"> 
-                        <button type="button" class="remove-row p-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center gap-2 font-medium text-sm md:text-base bg-red-600 hover:bg-red-700 text-white" title="Eliminar fila">
+                        <button type="button" class="remove-row p-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center font-medium bg-red-600 hover:bg-red-700 text-white" title="Eliminar fila">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </div>
@@ -202,16 +223,39 @@
             });
 
             container.addEventListener('click', function (e) {
-                if (e.target.closest('.remove-row')) {
+                const removeBtn = e.target.closest('.remove-row');
+                
+                if (removeBtn) {
                     const rows = container.querySelectorAll('.sumario-row');
+                    const rowToRemove = removeBtn.closest('.sumario-row');
+
                     if (rows.length > 1) {
-                        e.target.closest('.sumario-row').remove();
+                        // Confirmación de SweetAlert para eliminar la fila
+                        Swal.fire({
+                            title: '¿Eliminar este acto?',
+                            text: "Se removerá esta fila del sumario.",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#dc2626', // red-600
+                            cancelButtonColor: '#64748b',  // slate-500
+                            confirmButtonText: 'Sí, eliminar',
+                            cancelButtonText: 'Cancelar'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                rowToRemove.remove();
+                            }
+                        });
                     } else {
-                        alert('Debe haber al menos un acto administrativo en el sumario.');
+                        // Alerta de Error si intenta borrar la única fila que queda
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'No permitido',
+                            text: 'Debe registrar al menos un acto administrativo en el sumario.',
+                            confirmButtonColor: '#1e293b' // slate-800
+                        });
                     }
                 }
             });
         });
     </script>
-
 </x-app-layout>

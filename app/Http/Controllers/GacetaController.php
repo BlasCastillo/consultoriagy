@@ -270,82 +270,93 @@ class GacetaController extends Controller
         return view('gacetas.aprobar', compact('gaceta'));
     }
 
-    public function publicar(Request $request, string $id)
-    {
-        $gaceta = Gaceta::findOrFail($id);
-        $gaceta->load(['gobernador.titulo', 'sumarios.institucion']);
+    // 1. Método nuevo para previsualizar (sin guardar el archivo final)
+public function preview(string $id)
+{
+    $gaceta = Gaceta::findOrFail($id);
+    // Usamos nuestra lógica compartida para generar el PDF fusionado temporal
+    $tempPath = $this->mergePdfs($gaceta, false); // false = no guardar permanentemente
 
-        if ($request->accion === 'rechazar') {
-            $gaceta->estado = 'En Escaneo';
-            $gaceta->save();
+    return response()->file($tempPath, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'inline; filename="previsualizacion_gaceta_'.$gaceta->numero.'.pdf"'
+    ]);
+}
 
-            activity()
-                ->useLog('BPM_Gacetas')
-                ->performedOn($gaceta)
-                ->causedBy(auth()->user())
-                ->log('PDF rechazado por Jefatura. Devuelta a Escaneo.');
+// 2. Extraemos la lógica de Fusión en un método privado
+private function mergePdfs(Gaceta $gaceta, $isFinal = false)
+{
+    $gaceta->load(['gobernador.titulo', 'sumarios.institucion']);
 
-            return redirect()->route('gacetas.index')->with('warning', 'La gaceta fue rechazada y devuelta al digitalizador.');
-        }
+    $pdfSumarioPath = storage_path('app/SGCJ/temp_sumario_' . $gaceta->id . '.pdf');
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('gacetas.pdf_sumario', compact('gaceta'));
+    $pdf->save($pdfSumarioPath);
 
-        // Fusión de PDF
-        $pdfSumarioPath = storage_path('app/SGCJ/temp_sumario_' . $gaceta->id . '.pdf');
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('gacetas.pdf_sumario', compact('gaceta'));
-        $pdf->save($pdfSumarioPath);
+    $uploadedPdfPath = storage_path('app/SGCJ/' . $gaceta->ruta_archivo);
 
-        $uploadedPdfPath = storage_path('app/SGCJ/' . $gaceta->ruta_archivo);
-
-        if (!file_exists($uploadedPdfPath)) {
-            return back()->with('error', 'El archivo físico temporal no se encuentra.');
-        }
-
-        $fpdi = new \setasign\Fpdi\Fpdi();
-
-        // Añadir sumario
-        $pageCountSummary = $fpdi->setSourceFile($pdfSumarioPath);
-        for ($i = 1; $i <= $pageCountSummary; $i++) {
-            $tplId = $fpdi->importPage($i);
-            $size = $fpdi->getTemplateSize($tplId);
-            $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
-            $fpdi->useTemplate($tplId);
-        }
-
-        // Añadir físico
-        $pageCountUploaded = $fpdi->setSourceFile($uploadedPdfPath);
-        for ($i = 1; $i <= $pageCountUploaded; $i++) {
-            $tplId = $fpdi->importPage($i);
-            $size = $fpdi->getTemplateSize($tplId);
-            $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
-            $fpdi->useTemplate($tplId);
-        }
-
-        $outputDir = public_path('gacetas_pdf');
-        if (!file_exists($outputDir)) {
-            mkdir($outputDir, 0755, true);
-        }
-
-        $fileName = 'gaceta_' . $gaceta->anio . '_' . str_pad($gaceta->numero, 4, '0', STR_PAD_LEFT) . '.pdf';
-        $outputPath = $outputDir . '/' . $fileName;
-        
-        $fpdi->Output($outputPath, 'F');
-
-        // Clean up temps
-        if (file_exists($pdfSumarioPath)) unlink($pdfSumarioPath);
-        if (file_exists($uploadedPdfPath)) unlink($uploadedPdfPath);
-
-        $gaceta->ruta_archivo = $fileName;
-        $gaceta->estado = 'Publicada';
-        $gaceta->fecha_publicacion = \Carbon\Carbon::now();
-        $gaceta->save();
-
-        activity()
-            ->useLog('BPM_Gacetas')
-            ->performedOn($gaceta)
-            ->causedBy(auth()->user())
-            ->log('Gaceta Aprobada y Publicada con éxito');
-
-        return redirect()->route('gacetas.index')->with('success', 'Gaceta aprobada y publicada con éxito.');
+    if (!file_exists($uploadedPdfPath)) {
+        throw new \Exception('El archivo físico no se encuentra.');
     }
+
+    $fpdi = new \setasign\Fpdi\Fpdi();
+
+    // Añadir sumario
+    $pageCountSummary = $fpdi->setSourceFile($pdfSumarioPath);
+    for ($i = 1; $i <= $pageCountSummary; $i++) {
+        $tplId = $fpdi->importPage($i);
+        $size = $fpdi->getTemplateSize($tplId);
+        $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
+        $fpdi->useTemplate($tplId);
+    }
+
+    // Añadir físico
+    $pageCountUploaded = $fpdi->setSourceFile($uploadedPdfPath);
+    for ($i = 1; $i <= $pageCountUploaded; $i++) {
+        $tplId = $fpdi->importPage($i);
+        $size = $fpdi->getTemplateSize($tplId);
+        $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
+        $fpdi->useTemplate($tplId);
+    }
+
+    $tempOutputPath = storage_path('app/SGCJ/preview_' . $gaceta->id . '.pdf');
+    $fpdi->Output($tempOutputPath, 'F');
+
+    // Limpiamos el sumario temporal, pero el preview lo dejamos para que el navegador lo lea
+    if (file_exists($pdfSumarioPath)) unlink($pdfSumarioPath);
+
+    return $tempOutputPath;
+}
+
+// 3. Tu método publicar ahora queda mucho más limpio
+public function publicar(Request $request, string $id)
+{
+    $gaceta = Gaceta::findOrFail($id);
+
+    if ($request->accion === 'rechazar') {
+        $gaceta->update(['estado' => 'En Escaneo']);
+        return redirect()->route('gacetas.index')->with('warning', 'La gaceta fue rechazada.');
+    }
+
+    // Generamos el archivo final usando la misma lógica
+    $tempPath = $this->mergePdfs($gaceta, true);
+
+    // Guardamos en public
+    $outputDir = public_path('gacetas_pdf');
+    if (!file_exists($outputDir)) mkdir($outputDir, 0755, true);
+
+    $fileName = 'gaceta_' . $gaceta->anio . '_' . str_pad($gaceta->numero, 4, '0', STR_PAD_LEFT) . '.pdf';
+    rename($tempPath, $outputDir . '/' . $fileName); // Movemos el temp a público
+
+    $gaceta->update([
+        'ruta_archivo' => $fileName,
+        'estado' => 'Publicada',
+        'fecha_publicacion' => now()
+    ]);
+
+    return redirect()->route('gacetas.index')->with('success', 'Gaceta publicada con éxito.');
+}
+
+    
 
     public function panelDigitalizador()
     {

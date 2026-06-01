@@ -7,79 +7,107 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+
+            {{-- SweetAlert2 Toasts --}}
+            @if(session('success'))
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        Swal.fire({
+                            toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true,
+                            icon: 'success', title: "{!! addslashes(session('success')) !!}"
+                        });
+                    });
+                </script>
+            @endif
+            @if(session('error'))
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        Swal.fire({
+                            toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true,
+                            icon: 'error', title: "{!! addslashes(session('error')) !!}"
+                        });
+                    });
+                </script>
+            @endif
+
             <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium text-slate-800">Seguimiento de Documentos</h3>
-                    <div class="flex items-center gap-4">
-                        <span class="text-sm text-gray-500">Institución: <strong>{{ auth()->user()->institution->name ?? 'N/A' }}</strong></span>
-                        <a href="{{ route('solicitudes.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-900 border border-transparent rounded-md font-bold text-xs text-white uppercase tracking-widest shadow-md hover:bg-blue-800 transition-colors">
-                            <i class="fa-solid fa-plus mr-1"></i> Nueva Solicitud
-                        </a>
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <div class="flex flex-col">
+                        <h3 class="text-lg font-bold text-slate-800">Seguimiento de Documentos</h3>
+                        <span class="text-sm text-slate-500 mt-1">Institución: <strong class="text-slate-800">{{ auth()->user()->institution->name ?? 'N/A' }}</strong></span>
                     </div>
+                    <a href="{{ route('solicitudes.create') }}" class="px-4 py-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center gap-2 font-medium text-sm md:text-base bg-emerald-600 hover:bg-emerald-700 text-white">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Nueva Solicitud
+                    </a>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                <div class="overflow-x-auto bg-white shadow-md sm:rounded-lg border border-slate-200">
+                    <table class="min-w-full">
+                        <thead class="bg-slate-800 text-white">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Envío</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo y Número de Acto</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gaceta Asignada</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado de Gaceta</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Fecha Envío</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Tipo y N° de Acto</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Descripción</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Gaceta Asignada</th>
+                                <th class="py-3 px-4 text-center text-sm font-semibold uppercase tracking-wider">Estado de Gaceta</th>
+                                <th class="py-3 px-4 text-center text-sm font-semibold uppercase tracking-wider" width="120">Acción</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody>
                             @forelse($sumarios as $sumario)
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                    <td class="py-3 px-4 align-middle text-sm font-medium text-slate-600">
                                         {{ $sumario->created_at->format('d/m/Y') }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    <td class="py-3 px-4 align-middle text-sm font-medium text-slate-800">
                                         {{ $sumario->tipo_acto }} <br>
-                                        <span class="text-gray-500">{{ $sumario->numero_acto }}</span>
+                                        <span class="text-slate-500 font-normal">{{ $sumario->numero_acto }}</span>
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title="{{ $sumario->descripcion }}">
+                                    <td class="py-3 px-4 align-middle text-sm text-slate-600 max-w-xs truncate" title="{{ $sumario->descripcion }}">
                                         {{ Str::limit($sumario->descripcion, 50) }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="py-3 px-4 align-middle text-sm text-slate-600">
                                         @if($sumario->gaceta->numero > 0)
-                                            Nro. {{ str_pad($sumario->gaceta->numero, 4, '0', STR_PAD_LEFT) }} / {{ $sumario->gaceta->anio }}
+                                            <span class="font-bold text-slate-800">Nro. {{ str_pad($sumario->gaceta->numero, 4, '0', STR_PAD_LEFT) }} / {{ $sumario->gaceta->anio }}</span>
                                         @else
-                                            <span class="text-gray-400 italic">Por Asignar</span>
+                                            <span class="text-slate-400 italic">Por Asignar</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <td class="py-3 px-4 align-middle text-center text-sm">
                                         @if($sumario->gaceta->estado === 'Publicada')
-                                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">
-                                                <i class="fa-solid fa-check-circle mr-1 mt-0.5"></i> Publicada (Disponible)
+                                            <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                Publicada (Disponible)
                                             </span>
                                         @elseif($sumario->gaceta->dias_retraso > 0)
-                                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 border border-red-200" title="Retraso de {{ $sumario->gaceta->dias_retraso }} días">
-                                                <i class="fa-solid fa-triangle-exclamation mr-1 mt-0.5"></i> Retrasada
+                                            <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200" title="Retraso de {{ $sumario->gaceta->dias_retraso }} días">
+                                                Retrasada
                                             </span>
                                         @elseif(in_array($sumario->gaceta->estado, ['Reservada', 'En Firma Física', 'Recibida Física', 'En Escaneo', 'Por Aprobar']))
-                                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">
-                                                <i class="fa-solid fa-spinner mr-1 mt-0.5"></i> En Proceso ({{ $sumario->gaceta->estado }})
+                                            <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                                                En Proceso ({{ $sumario->gaceta->estado }})
                                             </span>
                                         @else
-                                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-200">
-                                                <i class="fa-solid fa-clock mr-1 mt-0.5"></i> {{ $sumario->gaceta->estado }}
+                                            <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                                                {{ $sumario->gaceta->estado }}
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        @if($sumario->gaceta->estado === 'Publicada' && $sumario->gaceta->ruta_archivo)
-                                            <a href="{{ asset('storage/' . $sumario->gaceta->ruta_archivo) }}" target="_blank" class="text-indigo-600 hover:text-indigo-900">Descargar PDF</a>
-                                        @else
-                                            <span class="text-gray-400">Pendiente</span>
-                                        @endif
+                                    <td class="py-3 px-4 align-middle text-center">
+                                        <div class="flex justify-center items-center">
+                                            @if($sumario->gaceta->estado === 'Publicada' && $sumario->gaceta->ruta_archivo)
+                                                <a href="{{ asset('gacetas_pdf/' . $sumario->gaceta->ruta_archivo) }}" target="_blank" download class="bg-slate-800 hover:bg-slate-900 text-white p-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center" title="Descargar PDF">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                                </a>
+                                            @else
+                                                <span class="text-slate-400 text-xs font-medium italic">Pendiente</span>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No tienes actos administrativos registrados en gacetas.</td>
+                                    <td colspan="6" class="py-6 text-center text-sm text-slate-500">No tienes actos administrativos registrados.</td>
                                 </tr>
                             @endforelse
                         </tbody>

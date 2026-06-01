@@ -55,13 +55,13 @@
 
                 <div class="flex justify-between items-center font-sans font-bold text-sm uppercase">
                     <div class="w-1/3 text-left">
-                        <span style="border-bottom: 2px solid black; padding-bottom: 1px;">
+                        <span style=" padding-bottom: 1px;">
                             {{ $gaceta->anio_politico ?? 'AÑO CXIV' }} – {{ $gaceta->mes_politico ?? 'MES IV' }}
                         </span>
                     </div>
-                    <div class="w-1/3 text-center text-[0.95rem]">
+                    <div class="w-1/2 text-center text-[0.95rem]">
                         SAN FELIPE,
-                        {{ $gaceta->fecha_emision ? mb_strtoupper($gaceta->fecha_emision->translatedFormat('d \d\e F \d\e Y')) : '___ DE ____________ DE 202_' }}
+                        {{ $gaceta->fecha_emision ? mb_strtoupper($gaceta->fecha_emision->translatedFormat('d \d\e F \d\e Y')) : '__ DE ____________ DE 202_' }}
                     </div>
                     <div class="w-1/3 text-right text-lg tracking-wide">
                         NÚMERO {{ $gaceta->numero }}
@@ -102,9 +102,9 @@
                 <div style="border-top: 4px solid black; width: 100%; margin-top: 24px; margin-bottom: 8px;"></div>
 
                 <div id="firma-gobernador" class="text-center font-sans font-bold text-[0.95rem] leading-tight pb-2">
-                    <p>{{ mb_strtoupper($gaceta->gobernador->titulo->abreviatura ?? 'LCDO.') }}
-                        {{ mb_strtoupper($gaceta->gobernador->nombres ?? 'JULIO CÉSAR') }}
-                        {{ mb_strtoupper($gaceta->gobernador->apellidos ?? 'LEÓN HEREDIA') }}</p>
+                    <p>{{ mb_strtoupper($gaceta->gobernador->titulo->abreviatura ?? '???') }}
+                        {{ mb_strtoupper($gaceta->gobernador->nombres ?? '???') }}
+                        {{ mb_strtoupper($gaceta->gobernador->apellidos ?? '???') }}</p>
                     <p>GOBERNADOR DEL ESTADO YARACUY</p>
                 </div>
 
