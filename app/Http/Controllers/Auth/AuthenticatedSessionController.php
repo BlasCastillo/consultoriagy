@@ -28,6 +28,14 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        if ($request->user()->hasAnyRole(['Institucion', 'Institucional'])) {
+            return redirect()->intended('/mis-solicitudes');
+        }
+
+        if ($request->user()->hasExactRoles('Digitalizador')) {
+            return redirect()->intended('/gacetas/panel-digitalizador');
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

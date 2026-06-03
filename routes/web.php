@@ -23,6 +23,10 @@ use App\Models\User;
 use App\Models\Role;
 
 Route::get('/dashboard', function () {
+    if (auth()->user()->hasAnyRole(['Institucion', 'Institucional'])) {
+        return redirect('/mis-solicitudes');
+    }
+
     $totalUsers = User::count();
     $totalRoles = Role::count();
     $totalInstitutions = \App\Models\Institution::count();
