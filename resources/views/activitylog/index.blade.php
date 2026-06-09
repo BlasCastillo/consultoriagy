@@ -12,6 +12,46 @@
 
                     <p class="mb-6 text-slate-600">Registro de auditoría de los movimientos realizados en el sistema.</p>
 
+                    <!-- Panel de Filtros -->
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-6">
+                        <form method="GET" action="{{ route('bitacora.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Fecha Inicio</label>
+                                <input type="date" name="fecha_inicio" value="{{ request('fecha_inicio') }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Fecha Fin</label>
+                                <input type="date" name="fecha_fin" value="{{ request('fecha_fin') }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Usuario</label>
+                                <select name="usuario_id" class="w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-sm">
+                                    <option value="">Todos</option>
+                                    @foreach($usuarios ?? [] as $u)
+                                        <option value="{{ $u->id }}" {{ request('usuario_id') == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Módulo / Modelo</label>
+                                <input type="text" name="modulo" value="{{ request('modulo') }}" placeholder="Ej: Gaceta, Ficha" class="w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Evento</label>
+                                <select name="evento" class="w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-sm">
+                                    <option value="">Todos</option>
+                                    <option value="created" {{ request('evento') == 'created' ? 'selected' : '' }}>Creado</option>
+                                    <option value="updated" {{ request('evento') == 'updated' ? 'selected' : '' }}>Actualizado</option>
+                                    <option value="deleted" {{ request('evento') == 'deleted' ? 'selected' : '' }}>Eliminado</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-5 flex justify-end gap-2 mt-2">
+                                <a href="{{ route('bitacora.index') }}" class="px-4 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50">Limpiar</a>
+                                <button type="submit" class="px-4 py-2 bg-slate-800 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-slate-700">Filtrar</button>
+                            </div>
+                        </form>
+                    </div>
+
                     <div class="overflow-x-auto bg-white shadow-md sm:rounded-lg border border-slate-200">
                         <table class="min-w-full">
                             <thead class="bg-slate-800 text-white">

@@ -18,20 +18,20 @@
                             {{ __('Panel') }}
                         </x-nav-link>
                     @else
-                        {{-- Ocultamos el Dashboard a las Instituciones --}}
-                        @unlessrole('Institucion|Institucional')
-                            <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                                {{ __('Dashboard') }}
-                            </x-nav-link>
-                        @endunlessrole
-                    @endhasrole
-
-                    {{-- 2. Mis Solicitudes (Aparece una sola vez y solo para Instituciones) --}}
-                    @hasanyrole('Institucion|Institucional')
-                        <x-nav-link :href="url('/mis-solicitudes')" :active="request()->is('mis-solicitudes')">
-                            <i class="fa-solid fa-file-signature mr-2"></i> {{ __('Mis Solicitudes') }}
+                    {{-- Ocultamos el Dashboard a las Instituciones --}}
+                    @unlessrole('Institucion')
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                            {{ __('Dashboard') }}
                         </x-nav-link>
-                    @endhasanyrole
+                    @endunlessrole
+                @endhasrole
+
+                {{-- 2. Mis Solicitudes (Aparece una sola vez y solo para Instituciones) --}}
+                @hasrole('Institucion')
+                    <x-nav-link :href="url('/mis-solicitudes')" :active="request()->is('mis-solicitudes')">
+                        <i class="fa-solid fa-file-signature mr-2"></i> {{ __('Mis Solicitudes') }}
+                    </x-nav-link>
+                @endhasrole
 
                     {{-- 3. Gacetas (Depende del permiso) --}}
                     @can('ver gacetas')
@@ -40,8 +40,41 @@
                         </x-nav-link>
                     @endcan
 
+                    {{-- 4. Planificación (POA) --}}
+                    @canany(['read Poa', 'ver poa'])
+                    <div class="hidden sm:flex sm:items-center sm:ms-2">
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-400 bg-slate-900 hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <i class="fa-solid fa-chart-pie mr-2"></i>
+                                    <div>{{ __('Planificación (POA)') }}</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('poa.dashboard')">
+                                    {{ __('Dashboard POA') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('poa.index')">
+                                    {{ __('Gestionar POAs') }}
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
+                    @endcanany
+
+                    @hasanyrole('Abogado|Digitalizador')
+                        <x-nav-link :href="route('fichas.create')" :active="request()->routeIs('fichas.create')">
+                            <i class="fa-solid fa-clipboard-check mr-2"></i> {{ __('Registrar Actividad') }}
+                        </x-nav-link>
+                    @endhasanyrole
+
                     {{-- C) Para Administradores y Procesadores --}}
-                    @hasanyrole('Super Administrador|Super Admin|Administrador|Jefe de Digitalización|Digitalizador')
+                    @hasanyrole('Super Admin|Jefe de Digitalización|Digitalizador')
 
                     {{-- Dropdown Procesos --}}
                     <div class="hidden sm:flex sm:items-center sm:ms-2">
@@ -62,16 +95,16 @@
                                 </button>
                             </x-slot>
                             <x-slot name="content">
-                                @hasanyrole('Super Administrador|Super Admin|Administrador')
+                                @hasrole('Super Admin')
                                 <x-dropdown-link :href="route('gacetas.solicitadas')">
                                     {{ __('Solicitudes') }}
                                 </x-dropdown-link>
-                                @endhasanyrole
+                                @endhasrole
                             </x-slot>
                         </x-dropdown>
                     </div>
 
-                    @hasanyrole('Super Administrador|Super Admin|Administrador')
+                    @hasrole('Super Admin')
 
                     {{-- Dropdown Registros Maestros --}}
                     <div class="hidden sm:flex sm:items-center sm:ms-2">
@@ -296,7 +329,7 @@
                 </x-responsive-nav-link>
             @else
                 {{-- Ocultamos el Dashboard a las Instituciones --}}
-                @unlessrole('Institucion|Institucional')
+                @unlessrole('Institucion')
                     <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         <i class="fa-solid fa-house w-5 h-5 mr-1"></i>
                         {{ __('Dashboard') }}
@@ -305,12 +338,12 @@
             @endhasrole
 
             {{-- 2. Mis Solicitudes (Aparece una sola vez y solo para Instituciones) --}}
-            @hasanyrole('Institucion|Institucional')
+            @hasrole('Institucion')
                 <x-responsive-nav-link :href="url('/mis-solicitudes')" :active="request()->is('mis-solicitudes')">
                     <i class="fa-solid fa-file-signature w-5 h-5 mr-1"></i>
                     {{ __('Mis Solicitudes') }}
                 </x-responsive-nav-link>
-            @endhasanyrole
+            @endhasrole
 
             {{-- 3. Gacetas (Depende del permiso) --}}
             @can('ver gacetas')
@@ -320,16 +353,36 @@
                 </x-responsive-nav-link>
             @endcan
 
-            @hasanyrole('Super Administrador|Super Admin|Administrador|Jefe de Digitalización|Digitalizador')
+            {{-- 4. Planificación (POA) --}}
+            @canany(['read Poa', 'ver poa'])
+                <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Planificación (POA)</div>
+                <x-responsive-nav-link :href="route('poa.dashboard')" :active="request()->routeIs('poa.dashboard')">
+                    <i class="fa-solid fa-chart-pie w-5 h-5 mr-1"></i>
+                    {{ __('Dashboard POA') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('poa.index')" :active="request()->routeIs('poa.index')">
+                    <i class="fa-solid fa-list-check w-5 h-5 mr-1"></i>
+                    {{ __('Gestionar POAs') }}
+                </x-responsive-nav-link>
+            @endcanany
+
+            @hasanyrole('Abogado|Digitalizador')
+                <x-responsive-nav-link :href="route('fichas.create')" :active="request()->routeIs('fichas.create')">
+                    <i class="fa-solid fa-clipboard-check w-5 h-5 mr-1"></i>
+                    {{ __('Registrar Actividad') }}
+                </x-responsive-nav-link>
+            @endhasanyrole
+
+            @hasanyrole('Super Admin|Jefe de Digitalización|Digitalizador')
             <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Procesos</div>
-            @hasanyrole('Super Administrador|Super Admin|Administrador')
+            @hasrole('Super Admin')
             <x-responsive-nav-link :href="route('gacetas.solicitadas')"
                 :active="request()->routeIs('gacetas.solicitadas')">
                 {{ __('Solicitudes') }}
             </x-responsive-nav-link>
-            @endhasanyrole
+            @endhasrole
 
-            @hasanyrole('Super Administrador|Super Admin|Administrador')
+            @hasrole('Super Admin')
 
             <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Registros Maestros
             </div>

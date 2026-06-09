@@ -43,5 +43,65 @@ class UserSeeder extends Seeder
             ]
         );
         $digitalizador->syncRoles(['Digitalizador']);
+
+        $consultor = User::firstOrCreate(
+            ['email' => 'consultor@example.com'],
+            [
+                'name' => 'Consultor Juridico',
+                'password' => Hash::make('password'),
+                'status' => true
+            ]
+        );
+        $consultor->syncRoles(['Consultor Juridico']);
+
+        $coordGral = User::firstOrCreate(
+            ['email' => 'coordinador_gral@example.com'],
+            [
+                'name' => 'Coordinador General',
+                'password' => Hash::make('password'),
+                'status' => true
+            ]
+        );
+        $coordGral->syncRoles(['Coordinador General']);
+
+        $jefePub = User::firstOrCreate(
+            ['email' => 'jefe_publicaciones@example.com'],
+            [
+                'name' => 'Jefe de Publicaciones',
+                'password' => Hash::make('password'),
+                'status' => true
+            ]
+        );
+        $jefePub->syncRoles(['Jefe de Publicaciones']);
+
+        $jefeLegis = User::firstOrCreate(
+            ['email' => 'jefe_legislacion@example.com'],
+            [
+                'name' => 'Jefe de Legislacion',
+                'password' => Hash::make('password'),
+                'status' => true
+            ]
+        );
+        $jefeLegis->syncRoles(['Jefe de Legislacion y Asuntos Juridicos']);
+
+        $abogadoPlan = User::firstOrCreate(
+            ['email' => 'planificador@example.com'],
+            [
+                'name' => 'Abogado Planificador',
+                'password' => Hash::make('password'),
+                'status' => true
+            ]
+        );
+        $abogadoPlan->syncRoles(['Abogado Planificador']);
+
+        $abogado = User::firstOrCreate(
+            ['email' => 'abogado@example.com'],
+            [
+                'name' => 'Abogado',
+                'password' => Hash::make('password'),
+                'status' => true
+            ]
+        );
+        $abogado->syncRoles(['Abogado']);
     }
 }

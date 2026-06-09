@@ -74,8 +74,43 @@
                 </div>
             </div>
 
+            <!-- Tarjeta POA General -->
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 mb-6">
+                <h3 class="text-lg font-medium text-slate-800 mb-4 border-b pb-2">Avance Plan Operativo Anual (POA General {{ date('Y') }})</h3>
+                
+                @if(isset($poasAnuales) && $poasAnuales->count() > 0)
+                    @php
+                        $totalMeta = 0;
+                        $totalEjecutada = 0;
+                        foreach($poasAnuales as $poa) {
+                            foreach($poa->actividades as $act) {
+                                foreach($act->metasTrimestrales as $meta) {
+                                    $totalMeta += $meta->meta_actual;
+                                    $totalEjecutada += $meta->ejecutada;
+                                }
+                            }
+                        }
+                        $porcentaje = $totalMeta > 0 ? min(100, round(($totalEjecutada / $totalMeta) * 100)) : 0;
+                    @endphp
+                    
+                    <div class="mb-2 flex justify-between text-sm mt-4">
+                        <span class="text-slate-600 font-medium">Progreso Anual</span>
+                        <span class="text-slate-800 font-bold">{{ $porcentaje }}%</span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-4 mb-2">
+                        <div class="bg-blue-600 h-4 rounded-full" style="width: {{ $porcentaje }}%"></div>
+                    </div>
+                    <div class="text-xs text-slate-500 flex justify-between">
+                        <span>Actividades Ejecutadas: {{ $totalEjecutada }}</span>
+                        <span>Meta Programada: {{ $totalMeta }}</span>
+                    </div>
+                @else
+                    <p class="text-slate-500 text-sm py-4 italic text-center">No hay Plan Operativo activo para el año en curso.</p>
+                @endif
+            </div>
+
             <!-- Gráficos -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 relative">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 relative mb-6">
 
                 <!-- Gráfico de Usuarios -->
                 <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">

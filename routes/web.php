@@ -23,7 +23,7 @@ use App\Models\User;
 use App\Models\Role;
 
 Route::get('/dashboard', function () {
-    if (auth()->user()->hasAnyRole(['Institucion', 'Institucional'])) {
+    if (auth()->user()->hasRole('Institucion')) {
         return redirect('/mis-solicitudes');
     }
 
@@ -40,7 +40,13 @@ Route::get('/dashboard', function () {
         }
         );
 
-        return view('dashboard', compact('totalUsers', 'totalRoles', 'rolesDistribution', 'totalInstitutions'));    })->middleware(['auth', 'verified'])->name('dashboard');
+        // POA General (Colección de todos los POAs del año)
+        $poasAnuales = \App\Models\Poa::with(['actividades.metasTrimestrales'])
+            ->where('anio', \Carbon\Carbon::now()->year)
+            ->get();
+
+        return view('dashboard', compact('totalUsers', 'totalRoles', 'rolesDistribution', 'totalInstitutions', 'poasAnuales'));
+    })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class , 'edit'])->name('profile.edit');
@@ -50,14 +56,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/notificaciones/{id}/leer', [\App\Http\Controllers\NotificacionController::class, 'leer'])->name('notificaciones.leer');
 
     // Gacetas - Administrativas (Jefatura)
-    Route::middleware(['role:Super Admin|Super Administrador|Jefe de Digitalización'])->group(function () {
+    Route::middleware(['role:Super Admin|Jefe de Digitalización'])->group(function () {
         Route::get('gacetas/create', [GacetaController::class, 'create'])->name('gacetas.create');
         Route::post('gacetas', [GacetaController::class, 'store'])->name('gacetas.store');
         Route::get('/gacetas-solicitadas', [GacetaController::class, 'solicitudesEntrantes'])->name('gacetas.solicitadas');
     });
 
     // Gacetas - Jefe de Digitalización
-    Route::middleware(['role:Jefe de Digitalización|Super Admin|Super Administrador'])->group(function () {
+    Route::middleware(['role:Jefe de Digitalización|Super Admin'])->group(function () {
         Route::get('gacetas/{gaceta}/checklist', [GacetaController::class, 'evaluarChecklist'])->name('gacetas.checklist');
         Route::post('gacetas/{gaceta}/checklist', [GacetaController::class, 'guardarChecklist'])->name('gacetas.checklist.save');
         
@@ -69,7 +75,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Gacetas - Digitalizador
-    Route::middleware(['role:Digitalizador|Super Admin|Super Administrador'])->group(function () {
+    Route::middleware(['role:Digitalizador|Super Admin'])->group(function () {
         Route::get('gacetas/panel-digitalizador', [GacetaController::class, 'panelDigitalizador'])->name('gacetas.digitalizador');
         Route::get('gacetas/{gaceta}/upload-pdf', [GacetaController::class, 'uploadPdf'])->name('gacetas.upload_pdf');
         Route::post('gacetas/{gaceta}/upload-pdf', [GacetaController::class, 'savePdf'])->name('gacetas.save_pdf');
@@ -79,18 +85,46 @@ Route::middleware('auth')->group(function () {
     Route::get('gacetas/{gaceta}', [GacetaController::class, 'show'])->name('gacetas.show');
     Route::get('/gacetas/{id}/preview', [App\Http\Controllers\GacetaController::class, 'preview'])->name('gacetas.preview');
 
-    Route::middleware(['role:Institucion|Institucional|Super Admin|Super Administrador'])->group(function () {
+    Route::middleware(['role:Institucion|Super Admin'])->group(function () {
         Route::get('mis-solicitudes', [MisSolicitudesController::class, 'index'])->name('mis-solicitudes.index');
         Route::get('solicitudes/create', [SolicitudController::class, 'create'])->name('solicitudes.create');
         Route::post('solicitudes', [SolicitudController::class, 'store'])->name('solicitudes.store');
     });
 
-    Route::middleware(['role:Super Administrador|Super Admin'])->group(function () {
+    Route::middleware(['role:Super Admin'])->group(function () {
         Route::resource('gobernadores', GobernadorController::class);
         Route::resource('titulos', TituloController::class);
     });
 
-    Route::middleware(['role:Super Admin|Super Administrador'])->group(function () {
+    // Módulo POA
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/poa/dashboard', [\App\Http\Controllers\PoaController::class, 'dashboard'])->name('poa.dashboard');
+        Route::get('/poa/fichas/create', [\App\Http\Controllers\FichaActividadController::class, 'create'])->name('fichas.create');
+        Route::post('/poa/fichas', [\App\Http\Controllers\FichaActividadController::class, 'store'])->name('fichas.store');
+        Route::get('/poa/fichas/{id}/pdf', [\App\Http\Controllers\FichaActividadController::class, 'exportPdf'])->name('fichas.pdf');
+    });
+
+    Route::middleware(['permission:read Poa|ver poa'])->group(function () {
+        Route::get('/poa/admin/index', [\App\Http\Controllers\PoaController::class, 'index'])->name('poa.index');
+        Route::get('/poa/admin/create', [\App\Http\Controllers\PoaController::class, 'create'])->name('poa.create');
+        Route::post('/poa/admin/store', [\App\Http\Controllers\PoaController::class, 'store'])->name('poa.store');
+        Route::get('/poa/admin/{id}', [\App\Http\Controllers\PoaController::class, 'show'])->name('poa.show');
+
+        Route::get('/poa/admin/{poa_id}/actividades/create', [\App\Http\Controllers\ActividadPoaController::class, 'create'])->name('actividades.create');
+        Route::post('/poa/admin/{poa_id}/actividades', [\App\Http\Controllers\ActividadPoaController::class, 'store'])->name('actividades.store');
+        
+        Route::get('/poa/admin/actividades/{actividad_id}/replanificar', [\App\Http\Controllers\ActividadPoaController::class, 'replanificar'])->name('actividades.replanificar');
+        Route::post('/poa/admin/actividades/{actividad_id}/replanificar', [\App\Http\Controllers\ActividadPoaController::class, 'storeReplanificacion'])->name('actividades.storeReplanificacion');
+        
+        Route::get('/poa/admin/actividades/{actividad_id}/evidencias', [\App\Http\Controllers\EvidenciaController::class, 'manage'])->name('actividades.evidencias');
+        Route::post('/poa/admin/metas/{meta_trimestral_id}/evidencias', [\App\Http\Controllers\EvidenciaController::class, 'store'])->name('evidencias.store');
+        Route::delete('/poa/admin/evidencias/{evidencia_id}', [\App\Http\Controllers\EvidenciaController::class, 'destroy'])->name('evidencias.destroy');
+        
+        Route::get('/poa/admin/{poa}/matriz-pdf', [\App\Http\Controllers\PoaController::class, 'exportMatrixPdf'])->name('poa.matriz_pdf');
+    });
+
+
+    Route::middleware(['role:Super Admin'])->group(function () {
             Route::patch('roles/{id}/restore', [RoleController::class , 'restore'])->name('roles.restore');
             Route::resource('roles', RoleController::class);
 

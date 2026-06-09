@@ -54,6 +54,24 @@ class RolesAndPermissionsSeeder extends Seeder
             }
         }
 
+        // 2.1 Crear permisos explícitos solicitados para el módulo POA
+        $poaPermissions = [
+            'ver poa',
+            'crear poa',
+            'editar poa',
+            'aprobar poa',
+            'eliminar poa',
+            'registrar actividad poa'
+        ];
+
+        foreach ($poaPermissions as $permName) {
+            $permission = Permission::firstOrCreate(['name' => $permName]);
+            $allPermissions[] = $permission;
+            if ($permName === 'ver poa') {
+                $readPermissions[] = $permission;
+            }
+        }
+
         // Obtener la colección de todos los nombres de permisos para asignación rápida
         $allPermissionNames = collect($allPermissions)->pluck('name')->toArray();
         $readPermissionNames = collect($readPermissions)->pluck('name')->toArray();
@@ -69,6 +87,14 @@ class RolesAndPermissionsSeeder extends Seeder
         
         $jefeRole = Role::firstOrCreate(['name' => 'Jefe de Digitalización']);
         $digitalizadorRole = Role::firstOrCreate(['name' => 'Digitalizador']);
+
+        // Roles POA
+        $consultorJuridicoRole = Role::firstOrCreate(['name' => 'Consultor Juridico']);
+        $coordinadorGeneralRole = Role::firstOrCreate(['name' => 'Coordinador General']);
+        $jefePublicacionesRole = Role::firstOrCreate(['name' => 'Jefe de Publicaciones']);
+        $jefeLegislacionRole = Role::firstOrCreate(['name' => 'Jefe de Legislacion y Asuntos Juridicos']);
+        $abogadoPlanificadorRole = Role::firstOrCreate(['name' => 'Abogado Planificador']);
+        $abogadoRole = Role::firstOrCreate(['name' => 'Abogado']);
 
         // 4. Asignar permisos de forma segura e idempotente con syncPermissions()
         // Super Administradores tienen acceso total
@@ -96,8 +122,17 @@ class RolesAndPermissionsSeeder extends Seeder
         // Permisos para Digitalizador
         $digitalizadorRole->syncPermissions([
             'ver gacetas', 'editar gacetas',
-            'read Gaceta', 'update Gaceta'
+            'read Gaceta', 'update Gaceta',
+            'registrar actividad poa', 'ver poa'
         ]);
+
+        // Asignaciones POA
+        $consultorJuridicoRole->syncPermissions(['ver poa', 'aprobar poa', 'ver gacetas']);
+        $coordinadorGeneralRole->syncPermissions(['ver poa', 'ver gacetas']);
+        $jefePublicacionesRole->syncPermissions(['ver poa', 'registrar actividad poa']);
+        $jefeLegislacionRole->syncPermissions(['ver poa', 'registrar actividad poa']);
+        $abogadoPlanificadorRole->syncPermissions(['ver poa', 'crear poa', 'editar poa', 'eliminar poa']);
+        $abogadoRole->syncPermissions(['ver poa', 'registrar actividad poa']);
 
         // 5. Crear usuarios de prueba de forma completamente idempotente
         $superAdminUser = User::firstOrCreate(
