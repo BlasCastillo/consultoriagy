@@ -39,7 +39,7 @@
                             @forelse($gacetas as $gaceta)
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {{ $gaceta->sumarios->pluck('institucion.name')->filter()->unique()->implode(', ') ?: 'No especificada' }}
+                                        {{ $gaceta->solicitudes->pluck('institucion.nombre')->filter()->unique()->implode(', ') ?: 'No especificada' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $gaceta->created_at->format('d/m/Y H:i A') }}

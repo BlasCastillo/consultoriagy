@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Institucion;
+use App\Models\Jefatura;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -15,7 +17,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::with(['roles', 'institution']);
+        $query = User::with(['roles', 'institucion', 'jefatura']);
 
         if ($request->has('trashed')) {
             $query->onlyTrashed();
@@ -31,8 +33,9 @@ class UserController extends Controller
     public function create()
     {
         $roles = Role::where('status', true)->get();
-        $institutions = \App\Models\Institution::where('status', 'active')->orderBy('name')->get();
-        return view('users.create', compact('roles', 'institutions'));
+        $instituciones = Institucion::orderBy('nombre')->get();
+        $jefaturas = Jefatura::orderBy('nombre')->get();
+        return view('users.create', compact('roles', 'instituciones', 'jefaturas'));
     }
 
     /**
@@ -45,7 +48,8 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'roles' => ['required', 'array'],
-            'institution_id' => ['required', 'exists:institutions,id'],
+            'institucion_id' => ['nullable', 'exists:instituciones,id'],
+            'jefatura_id' => ['nullable', 'exists:jefaturas,id'],
         ]);
 
         $user = User::create([
@@ -53,7 +57,8 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'status' => true,
-            'institution_id' => $request->institution_id,
+            'institucion_id' => $request->institucion_id,
+            'jefatura_id' => $request->jefatura_id,
         ]);
 
         $user->syncRoles($request->roles);
@@ -67,8 +72,9 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roles = Role::where('status', true)->get();
-        $institutions = \App\Models\Institution::where('status', 'active')->orderBy('name')->get();
-        return view('users.edit', compact('user', 'roles', 'institutions'));
+        $instituciones = Institucion::orderBy('nombre')->get();
+        $jefaturas = Jefatura::orderBy('nombre')->get();
+        return view('users.edit', compact('user', 'roles', 'instituciones', 'jefaturas'));
     }
 
     /**
@@ -81,15 +87,24 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'roles' => ['required', 'array'],
             'status' => ['required', 'boolean'],
-            'institution_id' => ['required', 'exists:institutions,id'],
+            'institucion_id' => ['nullable', 'exists:instituciones,id'],
+            'jefatura_id' => ['nullable', 'exists:jefaturas,id'],
         ]);
 
         $data = [
             'name' => $request->name,
             'email' => $request->email,
             'status' => $request->status,
-            'institution_id' => $request->institution_id,
+            'institucion_id' => $request->institucion_id,
+            'jefatura_id' => $request->jefatura_id,
         ];
+
+        // Regla de Negocio: Mutua exclusión forzada
+        if (!empty($data['institucion_id'])) {
+            $data['jefatura_id'] = null;
+        } elseif (!empty($data['jefatura_id'])) {
+            $data['institucion_id'] = null;
+        }
 
         if ($request->filled('password')) {
             $request->validate([

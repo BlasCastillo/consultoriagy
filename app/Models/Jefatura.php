@@ -2,20 +2,51 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Jefatura extends Model
 {
-    use HasFactory;
+    use SoftDeletes, LogsActivity;
 
     protected $fillable = [
         'nombre',
-        'descripcion',
+        'nivel',
+        'parent_id',
     ];
 
-    public function poas()
+    public function getActivitylogOptions(): LogOptions
     {
-        return $this->hasMany(Poa::class);
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn(string $eventName) => "Esta jefatura ha sido {$eventName}");
+    }
+
+    // La unidad superior a la que rinde cuentas
+    public function unidadSuperior() {
+        return $this->belongsTo(Jefatura::class, 'parent_id');
+    }
+
+    // Las unidades o cargos subordinados
+    public function unidadesSubordinadas() {
+        return $this->hasMany(Jefatura::class, 'parent_id');
+    }
+
+    // Usuarios asignados a este cargo/unidad
+    public function usuarios() {
+        return $this->hasMany(User::class, 'jefatura_id');
+    }
+
+    // Recursividad para árbol completo (PDF)
+    public function childrenRecursive()
+    {
+        return $this->hasMany(Jefatura::class, 'parent_id')
+                    ->orderBy('nivel', 'asc')
+                    ->orderBy('nombre', 'asc')
+                    ->with('childrenRecursive');
     }
 }

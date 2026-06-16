@@ -27,7 +27,8 @@ class User extends Authenticatable
         'email',
         'password',
         'status',
-        'institution_id',
+        'institucion_id',
+        'jefatura_id',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -70,18 +71,24 @@ class User extends Authenticatable
         ];
     }
 
-    public function institution()
+    public function institucion()
     {
-        return $this->belongsTo(Institution::class);
+        return $this->belongsTo(Institucion::class);
     }
 
-    public function isEnteAdscrito()
+    public function jefatura()
     {
-        return $this->institution && $this->institution->type === 'ente_adscrito';
+        return $this->belongsTo(Jefatura::class);
     }
 
-    public function isConsultoria()
+    protected static function boot()
     {
-        return $this->institution && $this->institution->type === 'consultoria';
+        parent::boot();
+
+        static::saving(function ($user) {
+            if ($user->institucion_id && $user->jefatura_id) {
+                throw new \Exception('Un usuario no puede pertenecer a una Institución y a una Jefatura al mismo tiempo.');
+            }
+        });
     }
 }

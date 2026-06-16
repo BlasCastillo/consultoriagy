@@ -74,27 +74,26 @@
                     <h3 class="text-lg tracking-[0.2em] mb-4">SUMARIO</h3>
 
                     @php
-                        $agrupadoPorInstitucion = $gaceta->sumarios->groupBy(function ($item) {
-                            return $item->institucion->name ?? 'GOBERNACIÓN DEL ESTADO';
+                        $agrupadoPorInstitucion = $gaceta->solicitudes->groupBy(function ($item) {
+                            return $item->institucion->nombre ?? 'GOBERNACIÓN DEL ESTADO';
                         });
                     @endphp
 
                     <div class="space-y-10 text-left px-2">
-                        @forelse($agrupadoPorInstitucion as $institucion => $sumariosInst)
+                        @forelse($agrupadoPorInstitucion as $institucion => $solicitudesInst)
                             <div>
                                 <h4 class="text-center text-md uppercase font-bold mb-6 tracking-wide">{{ $institucion }}
                                 </h4>
                                 <div class="space-y-5 font-sans text-[0.85rem] leading-relaxed text-justify">
-                                    @foreach($sumariosInst as $sumario)
+                                    @foreach($solicitudesInst as $solicitud)
                                         <p>
-                                            <strong>{{ mb_strtoupper($sumario->tipo_acto) }} N°
-                                                {{ $sumario->numero_acto }}:</strong> {{ $sumario->descripcion }}
+                                            {{ mb_strtoupper($solicitud->titulo_acto) }}
                                         </p>
                                     @endforeach
                                 </div>
                             </div>
                         @empty
-                            <p class="text-center italic text-gray-500">No hay actos registrados en el sumario.</p>
+                            <p class="text-center italic text-gray-500">No hay solicitudes registradas en el sumario.</p>
                         @endforelse
                     </div>
                 </div>

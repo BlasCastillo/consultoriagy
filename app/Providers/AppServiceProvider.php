@@ -7,6 +7,7 @@ use App\Models\FichaActividad;
 use App\Models\Gaceta;
 use App\Observers\FichaActividadObserver;
 use App\Observers\GacetaObserver;
+use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,5 +26,12 @@ class AppServiceProvider extends ServiceProvider
     {
         FichaActividad::observe(FichaActividadObserver::class);
         Gaceta::observe(GacetaObserver::class);
+
+        Gate::before(function ($user, $ability) {
+            if ($user->hasAnyRole(['Súper Administrador', 'Super Admin'])) {
+                return true;
+            }
+            return null;
+        });
     }
 }

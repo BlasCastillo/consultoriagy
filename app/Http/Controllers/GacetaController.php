@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Gaceta;
 use App\Models\SumarioGaceta;
-use App\Models\Institution;
+use App\Models\Institucion;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Notifications\NuevaSolicitudNotification;
@@ -33,35 +33,34 @@ class GacetaController extends Controller
             $query->where('estado', 'Publicada');
         }
 
-        if ($request->filled('institucion_id') || $request->filled('tipo_acto') || $request->filled('keyword')) {
-            $query->whereHas('sumarios', function ($q) use ($request) {
+        if ($request->filled('institucion_id') || $request->filled('titulo_acto') || $request->filled('keyword')) {
+            $query->whereHas('solicitudes', function ($q) use ($request) {
                 if ($request->filled('institucion_id')) {
                     $q->where('institucion_id', $request->institucion_id);
                 }
-                if ($request->filled('tipo_acto')) {
-                    $q->where('tipo_acto', $request->tipo_acto);
+                if ($request->filled('titulo_acto')) {
+                    $q->where('titulo_acto', $request->titulo_acto);
                 }
                 if ($request->filled('keyword')) {
                     $q->where(function($sub) use ($request) {
-                        $sub->where('descripcion', 'like', '%' . $request->keyword . '%')
-                            ->orWhere('numero_acto', 'like', '%' . $request->keyword . '%');
+                        $sub->where('titulo_acto', 'like', '%' . $request->keyword . '%');
                     });
                 }
             });
         }
 
-        $gacetas = $query->with('sumarios.institucion')->orderBy('created_at', 'desc')->paginate(15);
-        $institutions = Institution::all();
+        $gacetas = $query->with('solicitudes.institucion')->orderBy('created_at', 'desc')->paginate(15);
+        $instituciones = Institucion::all();
 
-        return view('gacetas.index', compact('gacetas', 'institutions'));
+        return view('gacetas.index', compact('gacetas', 'instituciones'));
     }
 
     public function create()
     {
-        $institutions = Institution::all();
+        $instituciones = Institucion::all();
         $gacetas = Gaceta::orderBy('anio', 'desc')->orderBy('numero', 'desc')->get();
         $gobernadores = \App\Models\Gobernador::with('titulo')->get();
-        return view('gacetas.create', compact('institutions', 'gacetas', 'gobernadores'));
+        return view('gacetas.create', compact('instituciones', 'gacetas', 'gobernadores'));
     }
 
     public function store(Request $request)
@@ -89,16 +88,9 @@ class GacetaController extends Controller
 
             $gaceta->save();
 
-            if ($request->has('sumarios') && is_array($request->sumarios)) {
-                foreach ($request->sumarios as $sumario) {
-                    if (!empty($sumario['institucion_id']) && !empty($sumario['tipo_acto'])) {
-                        $gaceta->sumarios()->create([
-                            'institucion_id' => $sumario['institucion_id'],
-                            'tipo_acto' => $sumario['tipo_acto'],
-                            'numero_acto' => $sumario['numero_acto'],
-                            'descripcion' => $sumario['descripcion'],
-                        ]);
-                    }
+            if ($request->has('solicitudes') && is_array($request->solicitudes)) {
+                foreach ($request->solicitudes as $solicitud_id) {
+                    \App\Models\Solicitud::where('id', $solicitud_id)->update(['gaceta_id' => $gaceta->id, 'estado' => 'Aprobada']);
                 }
             }
 
@@ -286,7 +278,7 @@ public function preview(string $id)
 // 2. Extraemos la lógica de Fusión en un método privado
 private function mergePdfs(Gaceta $gaceta, $isFinal = false)
 {
-    $gaceta->load(['gobernador.titulo', 'sumarios.institucion']);
+    $gaceta->load(['gobernador.titulo', 'solicitudes.institucion']);
 
     $pdfSumarioPath = storage_path('app/SGCJ/temp_sumario_' . $gaceta->id . '.pdf');
     $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('gacetas.pdf_sumario', compact('gaceta'));
@@ -370,7 +362,7 @@ public function publicar(Request $request, string $id)
 
     public function show(string $id)
     {
-        $gaceta = Gaceta::with(['sumarios.institucion', 'corregidaDe', 'correcciones'])->findOrFail($id);
+        $gaceta = Gaceta::with(['solicitudes.institucion', 'corregidaDe', 'correcciones'])->findOrFail($id);
         return view('gacetas.show', compact('gaceta'));
     }
 
@@ -380,7 +372,7 @@ public function publicar(Request $request, string $id)
 
     public function solicitudesEntrantes()
     {
-        $gacetas = Gaceta::with('sumarios.institucion')
+        $gacetas = Gaceta::with('solicitudes.institucion')
                          ->where('estado', 'Solicitada')
                          ->orderBy('created_at', 'desc')
                          ->get();

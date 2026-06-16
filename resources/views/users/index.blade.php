@@ -72,16 +72,14 @@
                                         <td class="py-3 px-4 text-sm text-slate-800 font-semibold">{{ $user->name }}</td>
                                         <td class="py-3 px-4 text-sm text-slate-600">{{ $user->email }}</td>
                                         <td class="py-3 px-4 text-sm text-slate-600">
-                                            @if($user->institution)
-                                                @if($user->institution->type === 'consultoria')
-                                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded border border-blue-200" title="{{ $user->institution->name }}">
-                                                        Consultoría Jurídica
-                                                    </span>
-                                                @else
-                                                    <span class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2 py-1 rounded border border-emerald-200" title="{{ $user->institution->name }}">
-                                                        Ente Adscrito
-                                                    </span>
-                                                @endif
+                                            @if($user->institucion)
+                                                <span class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2 py-1 rounded border border-emerald-200" title="{{ $user->institucion->nombre }}">
+                                                    Ente Adscrito
+                                                </span>
+                                            @elseif($user->jefatura)
+                                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded border border-blue-200" title="{{ $user->jefatura->nombre }}">
+                                                    Consultoría Jurídica
+                                                </span>
                                             @else
                                                 <span class="text-slate-400 italic text-xs">N/A</span>
                                             @endif

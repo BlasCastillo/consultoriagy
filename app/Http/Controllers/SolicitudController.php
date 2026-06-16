@@ -2,74 +2,64 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Solicitud;
 use Illuminate\Http\Request;
-use App\Models\Gaceta;
-use App\Models\SumarioGaceta;
-use App\Models\User;
-use App\Notifications\NuevaSolicitudNotification;
-use Spatie\Activitylog\Facades\Activity;
+use Illuminate\Support\Facades\Storage;
 
 class SolicitudController extends Controller
 {
-    public function create()
+    public function index()
     {
-        $institution = auth()->user()->institution;
+        $user = auth()->user();
         
-        if (!$institution) {
-            return redirect()->route('mis-solicitudes.index')->with('error', 'No tienes una institución asignada para realizar solicitudes.');
+        // Logica estricta de visibilidad
+        if ($user->institucion_id) {
+            // Es externo
+            $solicitudes = Solicitud::where('institucion_id', $user->institucion_id)->with('institucion')->latest()->get();
+        } elseif ($user->jefatura_id) {
+            // Es interno (Consultoria u otros)
+            $solicitudes = Solicitud::with('institucion')->latest()->get();
+        } else {
+            // Super Admin u otro
+            $solicitudes = Solicitud::with('institucion')->latest()->get();
         }
 
-        return view('solicitudes.create', compact('institution'));
+        return view('solicitudes.index', compact('solicitudes'));
+    }
+
+    public function create()
+    {
+        return view('solicitudes.create');
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'sumarios' => 'required|array|min:1',
-            'sumarios.*.tipo_acto' => 'required|string',
-            'sumarios.*.numero_acto' => 'required|string',
-            'sumarios.*.descripcion' => 'required|string',
+            'titulo_acto' => 'required|string|max:255',
+            'archivo_word' => 'required|mimes:doc,docx|max:10240', // 10MB max
         ]);
 
-        $institutionId = auth()->user()->institution_id;
+        $path = $request->file('archivo_word')->store('solicitudes/words', 'public');
 
-        // Crear la Gaceta con los campos administrativos en null
-        $gaceta = Gaceta::create([
-            'estado' => 'Solicitada',
-            'numero' => null,
-            'anio' => null,
-            'tipo' => null,
-            'gobernador_id' => null,
-            'anio_politico' => null,
-            'mes_politico' => null,
-            'checklist' => null,
-            'jefe_id' => null,
-            'digitalizador_id' => null,
+        Solicitud::create([
+            'titulo_acto' => $request->titulo_acto,
+            'archivo_word_path' => $path,
+            'institucion_id' => auth()->user()->institucion_id,
+            'estado' => 'Pendiente',
         ]);
 
-        // Registrar actividad manual para dejar rastro de quién creó
-        activity()
-            ->useLog('BPM_Gacetas')
-            ->performedOn($gaceta)
-            ->causedBy(auth()->user())
-            ->log('Solicitud Institucional Creada');
+        return redirect()->route('solicitudes.index')->with('success', 'Solicitud creada exitosamente.');
+    }
 
-        // Guardar sumarios
-        foreach ($request->sumarios as $sumarioData) {
-            $gaceta->sumarios()->create([
-                'institucion_id' => $institutionId,
-                'tipo_acto' => $sumarioData['tipo_acto'],
-                'numero_acto' => $sumarioData['numero_acto'],
-                'descripcion' => $sumarioData['descripcion']
-            ]);
+    public function show($id)
+    {
+        $solicitud = Solicitud::with('institucion')->findOrFail($id);
+        
+        // Validacion de seguridad
+        if (auth()->user()->institucion_id && auth()->user()->institucion_id !== $solicitud->institucion_id) {
+            abort(403, 'No tienes permiso para ver esta solicitud.');
         }
 
-        // Notificar a Jefes de Digitalización
-        $jefes = User::role(['Jefe de Digitalización', 'Super Admin', 'Super Administrador'])->get();
-        foreach ($jefes as $jefe) {
-            $jefe->notify(new NuevaSolicitudNotification($gaceta));
-        }
-
-        return redirect()->route('mis-solicitudes.index')->with('success', 'Solicitud registrada correctamente. Espere su evaluación por la Jefatura.');
+        return view('solicitudes.show', compact('solicitud'));
     }
 }

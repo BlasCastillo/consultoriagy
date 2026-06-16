@@ -36,9 +36,9 @@ class Gaceta extends Model
         'checklist' => 'array',
     ];
 
-    public function sumarios()
+    public function solicitudes()
     {
-        return $this->hasMany(SumarioGaceta::class);
+        return $this->hasMany(Solicitud::class)->orderBy('orden_sumario');
     }
 
     public function corregidaDe()

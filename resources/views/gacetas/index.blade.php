@@ -60,8 +60,8 @@
                             <select name="institucion_id"
                                 class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
                                 <option value="">Todas</option>
-                                @foreach($institutions as $inst)
-                                    <option value="{{ $inst->id }}" {{ request('institucion_id') == $inst->id ? 'selected' : '' }}>{{ $inst->name }}</option>
+                                @foreach($instituciones as $inst)
+                                    <option value="{{ $inst->id }}" {{ request('institucion_id') == $inst->id ? 'selected' : '' }}>{{ $inst->nombre }}</option>
                                 @endforeach
                             </select>
                         </div>

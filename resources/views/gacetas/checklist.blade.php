@@ -13,7 +13,7 @@
                     <p class="mb-4 text-sm text-gray-600">Por favor, verifique que la solicitud cumpla con todos los requisitos necesarios para reservar el número de Gaceta.</p>
                     
                     <div class="bg-gray-50 p-4 rounded-md mb-6 text-sm border border-gray-200">
-                        <p><strong>Institución Solicitante:</strong> {{ $gaceta->sumarios->first()->institucion->nombre ?? 'N/A' }}</p>
+                        <p><strong>Institución Solicitante:</strong> {{ $gaceta->solicitudes->first()->institucion->nombre ?? 'N/A' }}</p>
                         <p><strong>Tipo:</strong> {{ $gaceta->tipo }}</p>
                         <p><strong>Fecha Solicitud:</strong> {{ $gaceta->created_at->format('d/m/Y') }}</p>
                     </div>

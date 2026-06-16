@@ -1,5 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
+        <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
         <h2 class="font-semibold text-xl text-slate-800 leading-tight">
             {{ __('Editar Usuario') }}: {{ $user->name }}
         </h2>
@@ -58,18 +59,48 @@
 
                         <hr class="my-6 border-slate-200">
 
-                        <h3 class="text-lg font-bold text-slate-800 mb-4">Institución a la que pertenece</h3>
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">Entidad a la que pertenece</h3>
+                        
                         <div class="mb-6">
-                            <label for="institution_id" class="block font-medium text-sm text-slate-700 mb-2">Selecciona la institución <span class="text-red-500">*</span></label>
-                            <select id="institution_id" name="institution_id" required class="block w-full border-slate-300 focus:border-slate-800 focus:ring-slate-800 rounded-md shadow-sm">
-                                <option value="" disabled>-- Seleccione una Institución --</option>
-                                @foreach($institutions as $institution)
-                                    <option value="{{ $institution->id }}" {{ old('institution_id', $user->institution_id) == $institution->id ? 'selected' : '' }}>
-                                        {{ $institution->name }} ({{ $institution->type == 'consultoria' ? 'Consultoría' : 'Ente Adscrito' }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('institution_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            <label class="block font-medium text-sm text-slate-700 mb-2">Tipo de Perfil</label>
+                            <div class="flex items-center gap-6">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="profile_type" value="interno" class="form-radio text-slate-800 focus:ring-slate-800" {{ old('profile_type', $user->jefatura_id ? 'interno' : '') == 'interno' ? 'checked' : '' }}>
+                                    <span class="ml-2">Personal Interno (Consultoría Jurídica)</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="profile_type" value="externo" class="form-radio text-slate-800 focus:ring-slate-800" {{ old('profile_type', $user->institucion_id ? 'externo' : '') == 'externo' ? 'checked' : '' }}>
+                                    <span class="ml-2">Representante Institucional (Ente Externo)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <!-- Select de Institución -->
+                            <div id="div_institucion" style="display: none;">
+                                <label for="institucion_id" class="block font-medium text-sm text-slate-700 mb-2">Institución (Entes Adscritos)</label>
+                                <select name="institucion_id" id="institucion_id" class="w-full border-slate-300 rounded-md shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
+                                    <option value="">-- Ninguna --</option>
+                                    @foreach($instituciones as $institucion)
+                                        <option value="{{ $institucion->id }}" {{ old('institucion_id', $user->institucion_id) == $institucion->id ? 'selected' : '' }}>
+                                            {{ $institucion->nombre }} {{ $institucion->siglas ? '('.$institucion->siglas.')' : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Select de Jefatura -->
+                            <div id="div_jefatura" style="display: none;">
+                                <label for="jefatura_id" class="block font-medium text-sm text-slate-700 mb-2">Jefatura (Estructura Interna)</label>
+                                <select name="jefatura_id" id="jefatura_id" class="w-full border-slate-300 rounded-md shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm">
+                                    <option value="">-- Ninguna --</option>
+                                    @foreach($jefaturas as $jefatura)
+                                        <option value="{{ $jefatura->id }}" {{ old('jefatura_id', $user->jefatura_id) == $jefatura->id ? 'selected' : '' }}>
+                                            {{ $jefatura->nombre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
 
                         <hr class="my-6 border-slate-200">
@@ -110,4 +141,42 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let tsInstitucion = new TomSelect("#institucion_id", { create: false, placeholder: "Escriba para buscar..." });
+            let tsJefatura = new TomSelect("#jefatura_id", { create: false, placeholder: "Escriba para buscar..." });
+
+            const radios = document.querySelectorAll('input[name="profile_type"]');
+            const divInstitucion = document.getElementById('div_institucion');
+            const divJefatura = document.getElementById('div_jefatura');
+            const selectInstitucion = document.getElementById('institucion_id');
+            const selectJefatura = document.getElementById('jefatura_id');
+
+            function toggleUbicacion() {
+                let selected = document.querySelector('input[name="profile_type"]:checked');
+                if (!selected) return;
+
+                if (selected.value === 'interno') {
+                    divJefatura.style.display = 'block';
+                    selectJefatura.required = true;
+
+                    divInstitucion.style.display = 'none';
+                    selectInstitucion.required = false;
+                    tsInstitucion.clear();
+                } else if (selected.value === 'externo') {
+                    divInstitucion.style.display = 'block';
+                    selectInstitucion.required = true;
+
+                    divJefatura.style.display = 'none';
+                    selectJefatura.required = false;
+                    tsJefatura.clear();
+                }
+            }
+
+            radios.forEach(radio => radio.addEventListener('change', toggleUbicacion));
+            
+            toggleUbicacion();
+        });
+    </script>
 </x-app-layout>

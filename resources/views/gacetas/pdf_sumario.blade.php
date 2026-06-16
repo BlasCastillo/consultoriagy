@@ -74,21 +74,21 @@
         <div class="sumario-title uppercase">SUMARIO</div>
 
         @php
-            $agrupadoPorInstitucion = $gaceta->sumarios->groupBy(function ($item) {
-                return $item->institucion->name ?? 'GOBERNACIÓN DEL ESTADO';
+            $agrupadoPorInstitucion = $gaceta->solicitudes->groupBy(function ($item) {
+                return $item->institucion->nombre ?? 'GOBERNACIÓN DEL ESTADO';
             });
         @endphp
 
         <div>
-            @forelse($agrupadoPorInstitucion as $institucion => $sumariosInst)
+            @forelse($agrupadoPorInstitucion as $institucion => $solicitudesInst)
                 <div class="institucion-title uppercase">{{ $institucion }}</div>
-                @foreach($sumariosInst as $sumario)
+                @foreach($solicitudesInst as $solicitud)
                     <div class="acto-item">
-                        <strong>{{ mb_strtoupper($sumario->tipo_acto) }} N° {{ $sumario->numero_acto }}:</strong> {{ $sumario->descripcion }}
+                        {{ mb_strtoupper($solicitud->titulo_acto) }}
                     </div>
                 @endforeach
             @empty
-                <p style="text-align: center; color: gray; font-style: italic;">No hay actos registrados en el sumario.</p>
+                <p style="text-align: center; color: gray; font-style: italic;">No hay solicitudes registradas en el sumario.</p>
             @endforelse
         </div>
     </div>

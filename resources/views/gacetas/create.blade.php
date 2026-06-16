@@ -102,8 +102,8 @@
                                         <label class="block text-xs font-medium text-slate-700">Institución *</label>
                                         <select name="sumarios[0][institucion_id]" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm">
                                             <option value="">Seleccione...</option>
-                                            @foreach($institutions as $inst)
-                                                <option value="{{ $inst->id }}">{{ $inst->name }}</option>
+                                            @foreach($instituciones as $inst)
+                                                <option value="{{ $inst->id }}">{{ $inst->nombre }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -183,8 +183,8 @@
                             <label class="block text-xs font-medium text-slate-700">Institución *</label>
                             <select name="sumarios[${index}][institucion_id]" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 text-sm">
                                 <option value="">Seleccione...</option>
-                                @foreach($institutions as $inst)
-                                    <option value="{{ $inst->id }}">{{ str_replace("'", "\\'", $inst->name) }}</option>
+                                @foreach($instituciones as $inst)
+                                    <option value="{{ $inst->id }}">{{ str_replace("'", "\\'", $inst->nombre) }}</option>
                                 @endforeach
                             </select>
                         </div>

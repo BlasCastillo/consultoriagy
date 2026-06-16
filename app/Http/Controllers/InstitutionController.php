@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Institution;
+use App\Models\Institucion;
 use Illuminate\Http\Request;
 
 class InstitutionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Institution::query();
+        $query = Institucion::with('tipoInstitucion');
         if ($request->has('trashed')) {
             $query->onlyTrashed();
         }
@@ -19,39 +19,37 @@ class InstitutionController extends Controller
 
     public function create()
     {
-        return view('institutions.create');
+        $tipoInstituciones = \App\Models\TipoInstitucion::all();
+        return view('institutions.create', compact('tipoInstituciones'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'rif' => ['nullable', 'string', 'max:50'],
-            'type' => ['required', 'in:consultoria,ente_adscrito'],
-            'address' => ['nullable', 'string'],
-            'phone' => ['nullable', 'string', 'max:50'],
-            'status' => ['required', 'in:active,inactive'],
+            'nombre' => ['required', 'string', 'max:255'],
+            'siglas' => ['nullable', 'string', 'max:50'],
+            'tipo_institucion_id' => ['nullable', 'exists:tipo_instituciones,id'],
+            'estatus' => ['boolean'],
         ]);
 
-        Institution::create($request->all());
+        Institucion::create($request->all());
 
         return redirect()->route('institutions.index')->with('success', 'Institución creada exitosamente.');
     }
 
-    public function edit(Institution $institution)
+    public function edit(Institucion $institution)
     {
-        return view('institutions.edit', compact('institution'));
+        $tipoInstituciones = \App\Models\TipoInstitucion::all();
+        return view('institutions.edit', compact('institution', 'tipoInstituciones'));
     }
 
-    public function update(Request $request, Institution $institution)
+    public function update(Request $request, Institucion $institution)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'rif' => ['nullable', 'string', 'max:50'],
-            'type' => ['required', 'in:consultoria,ente_adscrito'],
-            'address' => ['nullable', 'string'],
-            'phone' => ['nullable', 'string', 'max:50'],
-            'status' => ['required', 'in:active,inactive'],
+            'nombre' => ['required', 'string', 'max:255'],
+            'siglas' => ['nullable', 'string', 'max:50'],
+            'tipo_institucion_id' => ['nullable', 'exists:tipo_instituciones,id'],
+            'estatus' => ['boolean'],
         ]);
 
         $institution->update($request->all());
@@ -59,7 +57,7 @@ class InstitutionController extends Controller
         return redirect()->route('institutions.index')->with('success', 'Institución actualizada exitosamente.');
     }
 
-    public function destroy(Institution $institution)
+    public function destroy(Institucion $institution)
     {
         $institution->delete();
         return redirect()->route('institutions.index')->with('success', 'Institución eliminada exitosamente.');
@@ -67,9 +65,8 @@ class InstitutionController extends Controller
 
     public function restore($id)
     {
-        $institution = Institution::withTrashed()->findOrFail($id);
+        $institution = Institucion::withTrashed()->findOrFail($id);
         $institution->restore();
-        $institution->update(['status' => 'active']);
         return redirect()->route('institutions.index')->with('success', 'Institución restaurada exitosamente.');
     }
 }
