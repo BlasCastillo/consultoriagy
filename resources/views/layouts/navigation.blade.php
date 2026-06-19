@@ -26,26 +26,9 @@
                     @endunlessrole
                 @endhasrole
 
-                {{-- 2. Mis Solicitudes (Aparece una sola vez y solo para Instituciones) --}}
-                @hasrole('Institucion')
-                    <x-nav-link :href="url('/mis-solicitudes')" :active="request()->is('mis-solicitudes')">
-                        <i class="fa-solid fa-file-signature mr-2"></i> {{ __('Mis Solicitudes') }}
-                    </x-nav-link>
-                @endhasrole
 
-                {{-- Módulo de Solicitudes (Fase 4) --}}
-                @canany(['read Solicitud', 'create Solicitud', 'ver solicitud', 'crear solicitud'])
-                    <x-nav-link :href="route('solicitudes.index')" :active="request()->routeIs(['solicitudes.index', 'solicitudes.create', 'solicitudes.edit', 'solicitudes.show'])">
-                        <i class="fa-solid fa-file-lines mr-2"></i> {{ __('Solicitudes') }}
-                    </x-nav-link>
-                @endcanany
 
-                    {{-- 3. Gacetas (Depende del permiso) --}}
-                    @can('ver gacetas')
-                        <x-nav-link :href="route('gacetas.index')" :active="request()->routeIs(['gacetas.index', 'gacetas.create', 'gacetas.edit', 'gacetas.show'])">
-                            <i class="fa-solid fa-book mr-2"></i> {{ __('Gacetas') }}
-                        </x-nav-link>
-                    @endcan
+
 
                     {{-- 4. Planificación (POA) --}}
                     @can('ver poa')
@@ -82,7 +65,7 @@
 
                     {{-- C) Para Administradores y Procesadores --}}
                     
-                    @can('ver procesos')
+                    @canany(['ver solicitud', 'gestionar gacetas'])
 
                     {{-- Dropdown Procesos --}}
                     <div class="hidden sm:flex sm:items-center sm:ms-2">
@@ -103,15 +86,29 @@
                                 </button>
                             </x-slot>
                             <x-slot name="content">
-                                @hasrole('Super Admin')
-                                <x-dropdown-link :href="route('gacetas.solicitadas')">
-                                    {{ __('Solicitudes') }}
+                                @canany(['read Solicitud', 'create Solicitud', 'ver solicitud', 'crear solicitud'])
+                                <x-dropdown-link :href="route('solicitudes.index')">
+                                    {{ __('Gestión de Solicitudes') }}
                                 </x-dropdown-link>
-                                @endhasrole
+                                @endcanany
+                                @can('ver gacetas')
+                                <x-dropdown-link :href="route('gacetas.publicadas')">
+                                    {{ __('Histórico de Gacetas') }}
+                                </x-dropdown-link>
+                                @endcan
+                                @hasanyrole('Súper Administrador|Coordinación de Publicaciones Oficiales')
+                                    <x-dropdown-link :href="route('gacetas.index')">
+                                        {{ __('Mesa de Control (Gacetas)') }}
+                                    </x-dropdown-link>
+                                    <x-dropdown-link :href="route('gacetas.create')">
+                                        {{ __('Ensamblar Nueva Gaceta') }}
+                                    </x-dropdown-link>
+                                @endhasanyrole
+
                             </x-slot>
                         </x-dropdown>
                     </div>
-                    @endcan
+                    @endcanany
 
                     @can('gestionar instituciones')
 
@@ -355,29 +352,9 @@
                 @endunlessrole
             @endhasrole
 
-            {{-- 2. Mis Solicitudes (Aparece una sola vez y solo para Instituciones) --}}
-            @hasrole('Institucion')
-                <x-responsive-nav-link :href="url('/mis-solicitudes')" :active="request()->is('mis-solicitudes')">
-                    <i class="fa-solid fa-file-signature w-5 h-5 mr-1"></i>
-                    {{ __('Mis Solicitudes') }}
-                </x-responsive-nav-link>
-            @endhasrole
 
-            {{-- Módulo de Solicitudes (Fase 4) --}}
-            @canany(['read Solicitud', 'create Solicitud', 'ver solicitud', 'crear solicitud'])
-                <x-responsive-nav-link :href="route('solicitudes.index')" :active="request()->routeIs(['solicitudes.index', 'solicitudes.create', 'solicitudes.edit', 'solicitudes.show'])">
-                    <i class="fa-solid fa-file-lines w-5 h-5 mr-1"></i>
-                    {{ __('Solicitudes') }}
-                </x-responsive-nav-link>
-            @endcanany
 
-            {{-- 3. Gacetas (Depende del permiso) --}}
-            @can('ver gacetas')
-                <x-responsive-nav-link :href="route('gacetas.index')" :active="request()->routeIs(['gacetas.index', 'gacetas.create', 'gacetas.edit', 'gacetas.show'])">
-                    <i class="fa-solid fa-book w-5 h-5 mr-1"></i>
-                    {{ __('Gacetas') }}
-                </x-responsive-nav-link>
-            @endcan
+
 
             {{-- 4. Planificación (POA) --}}
             @can('ver poa')
@@ -399,15 +376,35 @@
                 </x-responsive-nav-link>
             @endhasanyrole
 
-            @can('ver procesos')
+            @canany(['ver solicitud', 'gestionar gacetas'])
             <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Procesos</div>
-            @hasrole('Super Admin')
-            <x-responsive-nav-link :href="route('gacetas.solicitadas')"
-                :active="request()->routeIs('gacetas.solicitadas')">
-                {{ __('Solicitudes') }}
+            
+            @canany(['read Solicitud', 'create Solicitud', 'ver solicitud', 'crear solicitud'])
+            <x-responsive-nav-link :href="route('solicitudes.index')" :active="request()->routeIs(['solicitudes.index', 'solicitudes.create', 'solicitudes.edit', 'solicitudes.show'])">
+                <i class="fa-solid fa-file-lines w-5 h-5 mr-1"></i>
+                {{ __('Gestión de Solicitudes') }}
             </x-responsive-nav-link>
-            @endhasrole
+            @endcanany
+
+            @can('ver gacetas')
+            <x-responsive-nav-link :href="route('gacetas.publicadas')" :active="request()->routeIs(['gacetas.publicadas'])">
+                <i class="fa-solid fa-book w-5 h-5 mr-1"></i>
+                {{ __('Histórico de Gacetas') }}
+            </x-responsive-nav-link>
             @endcan
+            @hasanyrole('Súper Administrador|Coordinación de Publicaciones Oficiales')
+            <x-responsive-nav-link :href="route('gacetas.index')" :active="request()->routeIs(['gacetas.index'])">
+                <i class="fa-solid fa-table-columns w-5 h-5 mr-1"></i>
+                {{ __('Mesa de Control (Gacetas)') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('gacetas.create')" :active="request()->routeIs(['gacetas.create'])">
+                <i class="fa-solid fa-layer-group w-5 h-5 mr-1"></i>
+                {{ __('Ensamblar Nueva Gaceta') }}
+            </x-responsive-nav-link>
+            @endhasanyrole
+
+
+            @endcanany
 
             @can('gestionar instituciones')
 

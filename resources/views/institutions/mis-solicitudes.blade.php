@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-slate-800 leading-tight">
-            {{ __('Mis Solicitudes y Actos Administrativos') }}
+            {{ __('Mis Apartados y Actos Administrativos') }}
         </h2>
     </x-slot>
 
@@ -34,11 +34,11 @@
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                     <div class="flex flex-col">
                         <h3 class="text-lg font-bold text-slate-800">Seguimiento de Documentos</h3>
-                        <span class="text-sm text-slate-500 mt-1">Institución: <strong class="text-slate-800">{{ auth()->user()->institution->name ?? 'N/A' }}</strong></span>
+                        <span class="text-sm text-slate-500 mt-1">Institución: <strong class="text-slate-800">{{ auth()->user()->institucion->nombre ?? 'Sin Institución Asignada' }}</strong></span>
                     </div>
                     <a href="{{ route('solicitudes.create') }}" class="px-4 py-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center gap-2 font-medium text-sm md:text-base bg-emerald-600 hover:bg-emerald-700 text-white">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        Nueva Solicitud
+                        + Nuevo Apartado
                     </a>
                 </div>
 
@@ -55,53 +55,46 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($sumarios as $sumario)
+                            @forelse($solicitudes as $solicitud)
                                 <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                                     <td class="py-3 px-4 align-middle text-sm font-medium text-slate-600">
-                                        {{ $sumario->created_at->format('d/m/Y') }}
+                                        {{ $solicitud->created_at->format('d/m/Y') }}
                                     </td>
                                     <td class="py-3 px-4 align-middle text-sm font-medium text-slate-800">
-                                        {{ $sumario->tipo_acto }} <br>
-                                        <span class="text-slate-500 font-normal">{{ $sumario->numero_acto }}</span>
+                                        <ul class="list-disc pl-4">
+                                        @foreach($solicitud->actos as $acto)
+                                            <li>{{ $acto->tipo_acto }} <span class="text-slate-500 font-normal">N° {{ $acto->numero }}</span></li>
+                                        @endforeach
+                                        </ul>
                                     </td>
-                                    <td class="py-3 px-4 align-middle text-sm text-slate-600 max-w-xs truncate" title="{{ $sumario->descripcion }}">
-                                        {{ Str::limit($sumario->descripcion, 50) }}
+                                    <td class="py-3 px-4 align-middle text-sm text-slate-600 max-w-xs truncate" title="{{ $solicitud->titulo_acto }}">
+                                        {{ Str::limit($solicitud->titulo_acto, 50) }}
                                     </td>
                                     <td class="py-3 px-4 align-middle text-sm text-slate-600">
-                                        @if($sumario->gaceta->numero > 0)
-                                            <span class="font-bold text-slate-800">Nro. {{ str_pad($sumario->gaceta->numero, 4, '0', STR_PAD_LEFT) }} / {{ $sumario->gaceta->anio }}</span>
+                                        @if($solicitud->gaceta_id && $solicitud->gaceta && $solicitud->gaceta->numero > 0)
+                                            <span class="font-bold text-slate-800">Nro. {{ str_pad($solicitud->gaceta->numero, 4, '0', STR_PAD_LEFT) }} / {{ $solicitud->gaceta->anio }}</span>
                                         @else
                                             <span class="text-slate-400 italic">Por Asignar</span>
                                         @endif
                                     </td>
                                     <td class="py-3 px-4 align-middle text-center text-sm">
-                                        @if($sumario->gaceta->estado === 'Publicada')
+                                        @if($solicitud->estado == 'Aprobada')
                                             <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                                Publicada (Disponible)
+                                                Aprobada
                                             </span>
-                                        @elseif($sumario->gaceta->dias_retraso > 0)
-                                            <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200" title="Retraso de {{ $sumario->gaceta->dias_retraso }} días">
-                                                Retrasada
-                                            </span>
-                                        @elseif(in_array($sumario->gaceta->estado, ['Reservada', 'En Firma Física', 'Recibida Física', 'En Escaneo', 'Por Aprobar']))
-                                            <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                                                En Proceso ({{ $sumario->gaceta->estado }})
+                                        @elseif($solicitud->estado == 'Rechazada')
+                                            <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200">
+                                                Rechazada
                                             </span>
                                         @else
-                                            <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-200">
-                                                {{ $sumario->gaceta->estado }}
+                                            <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                                Pendiente
                                             </span>
                                         @endif
                                     </td>
                                     <td class="py-3 px-4 align-middle text-center">
-                                        <div class="flex justify-center items-center">
-                                            @if($sumario->gaceta->estado === 'Publicada' && $sumario->gaceta->ruta_archivo)
-                                                <a href="{{ asset('gacetas_pdf/' . $sumario->gaceta->ruta_archivo) }}" target="_blank" download class="bg-slate-800 hover:bg-slate-900 text-white p-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center" title="Descargar PDF">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                                </a>
-                                            @else
-                                                <span class="text-slate-400 text-xs font-medium italic">Pendiente</span>
-                                            @endif
+                                        <div class="flex justify-center items-center gap-2">
+                                            <a href="{{ route('solicitudes.show', $solicitud->id) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 px-3 rounded text-xs shadow-sm transition">Ver Detalles</a>
                                         </div>
                                     </td>
                                 </tr>
@@ -112,9 +105,6 @@
                             @endforelse
                         </tbody>
                     </table>
-                </div>
-                <div class="mt-4">
-                    {{ $sumarios->links() }}
                 </div>
             </div>
         </div>

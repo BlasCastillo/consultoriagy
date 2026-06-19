@@ -3,42 +3,31 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
-use App\Models\Gaceta;
+use App\Models\Solicitud;
 
-class NuevaSolicitudNotification extends Notification implements ShouldBroadcast
+class NuevaSolicitudNotification extends Notification
 {
     use Queueable;
 
-    public $gaceta;
+    public $solicitud;
 
-    public function __construct(Gaceta $gaceta)
+    public function __construct(Solicitud $solicitud)
     {
-        $this->gaceta = $gaceta;
+        $this->solicitud = $solicitud;
     }
 
     public function via(object $notifiable): array
     {
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
     public function toArray(object $notifiable): array
     {
         return [
-            'gaceta_id' => $this->gaceta->id,
-            'mensaje' => 'Nueva solicitud de Gaceta pendiente por evaluar.',
-            'url' => route('gacetas.checklist', $this->gaceta->id)
+            'solicitud_id' => $this->solicitud->id,
+            'mensaje' => "Nueva solicitud '{$this->solicitud->titulo_acto}' de {$this->solicitud->institucion->nombre}",
+            'url' => route('solicitudes.show', $this->solicitud->id)
         ];
-    }
-
-    public function toBroadcast(object $notifiable): BroadcastMessage
-    {
-        return new BroadcastMessage([
-            'gaceta_id' => $this->gaceta->id,
-            'mensaje' => 'Nueva solicitud de Gaceta pendiente por evaluar.',
-            'url' => route('gacetas.checklist', $this->gaceta->id)
-        ]);
     }
 }

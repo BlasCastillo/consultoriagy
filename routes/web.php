@@ -21,7 +21,7 @@ use App\Models\User;
 use App\Models\Role;
 
 Route::get('/dashboard', function () {
-    if (auth()->user()->hasRole('Institucion')) {
+    if (auth()->user()->hasRole('Representante Institucional')) {
         return redirect('/mis-solicitudes');
     }
 
@@ -44,6 +44,8 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/gacetas-publicadas', [\App\Http\Controllers\GacetaController::class, 'publicadas'])->name('gacetas.publicadas');
+
     Route::get('/profile', [ProfileController::class , 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class , 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class , 'destroy'])->name('profile.destroy');
@@ -54,14 +56,15 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['permission:crear gaceta'])->group(function () {
         Route::get('gacetas/create', [GacetaController::class, 'create'])->name('gacetas.create');
         Route::post('gacetas', [GacetaController::class, 'store'])->name('gacetas.store');
+        Route::patch('gacetas/{gaceta}/reasignar', [GacetaController::class, 'reasignar'])->name('gacetas.reasignar');
     });
-    
-    Route::middleware(['permission:ver procesos'])->group(function () {
-        Route::get('/gacetas-solicitadas', [GacetaController::class, 'solicitudesEntrantes'])->name('gacetas.solicitadas');
-    });
+
 
     // Gacetas - Jefe de Digitalización
     Route::middleware(['permission:evaluar solicitud'])->group(function () {
+        Route::patch('solicitudes/{solicitud}/aprobar', [\App\Http\Controllers\SolicitudController::class, 'aprobar'])->name('solicitudes.aprobar');
+        Route::patch('solicitudes/{solicitud}/rechazar', [\App\Http\Controllers\SolicitudController::class, 'rechazar'])->name('solicitudes.rechazar');
+        
         Route::get('gacetas/{gaceta}/checklist', [GacetaController::class, 'evaluarChecklist'])->name('gacetas.checklist');
         Route::post('gacetas/{gaceta}/checklist', [GacetaController::class, 'guardarChecklist'])->name('gacetas.checklist.save');
         
@@ -69,7 +72,12 @@ Route::middleware('auth')->group(function () {
         Route::post('gacetas/{gaceta}/asignar', [GacetaController::class, 'guardarAsignacion'])->name('gacetas.asignar.save');
         
         Route::get('gacetas/{gaceta}/aprobar', [GacetaController::class, 'aprobarPublicacion'])->name('gacetas.aprobar');
-        Route::post('gacetas/{gaceta}/publicar', [GacetaController::class, 'publicar'])->name('gacetas.publicar');
+
+        // Nuevas rutas de revisión para el Coordinador (Jefatura)
+        Route::get('gacetas/{gaceta}/revision', [GacetaController::class, 'revisarPdfFinal'])->name('gacetas.revision');
+        Route::post('gacetas/{gaceta}/publicar-oficial', [GacetaController::class, 'publicarGaceta'])->name('gacetas.publicar_oficial');
+        Route::post('gacetas/{gaceta}/rechazar-escaneo', [GacetaController::class, 'rechazarEscaneo'])->name('gacetas.rechazar_escaneo');
+        Route::post('gacetas/{gaceta}/subsanar', [GacetaController::class, 'subsanarGaceta'])->name('gacetas.subsanar');
     });
 
     // Gacetas - Digitalizador
@@ -77,10 +85,12 @@ Route::middleware('auth')->group(function () {
         Route::get('gacetas/panel-digitalizador', [GacetaController::class, 'panelDigitalizador'])->name('gacetas.digitalizador');
         Route::get('gacetas/{gaceta}/upload-pdf', [GacetaController::class, 'uploadPdf'])->name('gacetas.upload_pdf');
         Route::post('gacetas/{gaceta}/upload-pdf', [GacetaController::class, 'savePdf'])->name('gacetas.save_pdf');
+        Route::post('gacetas/{gaceta}/enviar-revision', [GacetaController::class, 'enviarARevision'])->name('gacetas.enviar_revision');
+        Route::patch('gacetas/{gaceta}/devolver', [GacetaController::class, 'devolver'])->name('gacetas.devolver');
     });
 
     Route::middleware(['permission:ver gaceta'])->group(function () {
-        Route::get('gacetas', [GacetaController::class, 'index'])->name('gacetas.index');
+        Route::get('gacetas', [GacetaController::class, 'index'])->middleware('role:Súper Administrador|Coordinación de Publicaciones Oficiales')->name('gacetas.index');
         Route::get('gacetas/{gaceta}', [GacetaController::class, 'show'])->name('gacetas.show');
         Route::get('/gacetas/{id}/preview', [App\Http\Controllers\GacetaController::class, 'preview'])->name('gacetas.preview');
     });
@@ -89,8 +99,17 @@ Route::middleware('auth')->group(function () {
         Route::get('mis-solicitudes', [MisSolicitudesController::class, 'index'])->name('mis-solicitudes.index');
     });
 
-    Route::middleware(['permission:ver solicitud|crear solicitud'])->group(function () {
-        Route::resource('solicitudes', SolicitudController::class)->only(['index', 'create', 'store', 'show']);
+    Route::group(['middleware' => ['permission:crear solicitud']], function () {
+        Route::get('solicitudes/create', [SolicitudController::class, 'create'])->name('solicitudes.create');
+        Route::post('solicitudes', [SolicitudController::class, 'store'])->name('solicitudes.store');
+        Route::get('solicitudes/{solicitud}/edit', [SolicitudController::class, 'edit'])->name('solicitudes.edit');
+        Route::put('solicitudes/{solicitud}', [SolicitudController::class, 'update'])->name('solicitudes.update');
+    });
+
+    // Rutas accesibles para el Ente Externo e Interno
+    Route::group(['middleware' => ['permission:ver solicitud']], function () {
+        Route::get('solicitudes', [SolicitudController::class, 'index'])->name('solicitudes.index');
+        Route::get('solicitudes/{solicitud}', [SolicitudController::class, 'show'])->name('solicitudes.show');
     });
 
     Route::middleware(['permission:gestionar instituciones'])->group(function () {

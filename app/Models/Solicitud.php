@@ -16,10 +16,20 @@ class Solicitud extends Model
     protected $fillable = [
         'institucion_id',
         'titulo_acto',
-        'archivo_word_path',
+        'archivo_pdf_path',
         'estado',
         'gaceta_id',
         'orden_sumario',
+        'checklist',
+        'ano_politico',
+        'mes_politico',
+        'fecha_recepcion_fisica',
+        'motivo_rechazo',
+    ];
+
+    protected $casts = [
+        'checklist' => 'array',
+        'fecha_recepcion_fisica' => 'datetime',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -39,5 +49,27 @@ class Solicitud extends Model
     public function gaceta()
     {
         return $this->belongsTo(Gaceta::class);
+    }
+
+    public function actos()
+    {
+        return $this->hasMany(ActoAdministrativo::class);
+    }
+
+    public function getTiempoTranscurridoAttribute()
+    {
+        // Si hay fecha física se usa esa, sino el created_at del sistema
+        $inicio = $this->fecha_recepcion_fisica ?? $this->created_at;
+
+        // Si ya se procesó, el reloj se detiene en su updated_at. Si no, sigue corriendo hasta hoy.
+        $fin = in_array($this->estado, ['Aprobada', 'Rechazada', 'Publicada']) ? $this->updated_at : now();
+
+        if (!$inicio) return 'N/A';
+
+        // Calcula la diferencia absoluta legible (Ej: "2 días 4 horas")
+        return $inicio->diffForHumans($fin, [
+            'parts' => 2,
+            'syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE,
+        ]);
     }
 }

@@ -16,10 +16,10 @@ class MisSolicitudesController extends Controller
             return redirect()->route('dashboard')->with('error', 'No tienes una institución asignada.');
         }
 
-        $solicitudes = Solicitud::where('institucion_id', $institucionId)
-            ->with('gaceta')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $solicitudes = \App\Models\Solicitud::with('actos')
+            ->where('institucion_id', $institucionId)
+            ->latest()
+            ->get();
 
         return view('institutions.mis-solicitudes', compact('solicitudes'));
     }
