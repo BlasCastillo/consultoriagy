@@ -91,8 +91,6 @@ class SolicitudController extends Controller
         $solicitud->update([
             'estado' => 'Aprobada',
             'checklist' => $request->checklist ?? [],
-            'ano_politico' => $request->ano_politico,
-            'mes_politico' => $request->mes_politico,
             'fecha_recepcion_fisica' => $request->fecha_recepcion_fisica,
         ]);
         return redirect()->route('solicitudes.index')->with('success', 'Solicitud aprobada y validada correctamente. Lista para ensamblaje en Gaceta.');

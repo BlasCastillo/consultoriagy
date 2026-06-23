@@ -15,7 +15,7 @@ class Gaceta extends Model
         'numero',
         'anio',
         'tipo',
-        'anio_politico',
+        'ano_politico',
         'mes_politico',
         'fecha_emision',
         'fecha_recepcion_fisica',

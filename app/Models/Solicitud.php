@@ -21,8 +21,6 @@ class Solicitud extends Model
         'gaceta_id',
         'orden_sumario',
         'checklist',
-        'ano_politico',
-        'mes_politico',
         'fecha_recepcion_fisica',
         'motivo_rechazo',
     ];

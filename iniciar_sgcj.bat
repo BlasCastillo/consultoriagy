@@ -34,24 +34,38 @@ if not exist public\storage (
     call php artisan storage:link
 )
 
-:: 5. Levantando los servidores en paralelo
+:: 5. Levantando los servidores ESCALONADAMENTE
 echo.
 echo ===================================================
 echo   Levantando motores... Abriendo terminales
 echo ===================================================
 echo.
 
-:: Abre una terminal nueva para el Servidor PHP
+:: 5.1 Abre una terminal nueva para el Servidor PHP
+echo [Iniciando Servidor PHP...]
 start "SGCJ - Servidor PHP" cmd /k "php artisan serve"
 
-:: Abre una terminal nueva para compilar el Frontend (Vite)
+:: PAUSA VITAL 1: Espera 3 segundos para que 'serve' asiente la cache sin estorbar
+timeout /t 3 /nobreak > NUL
+
+:: 5.2 Abre una terminal nueva para compilar el Frontend (Vite)
+echo [Iniciando Vite Frontend...]
 start "SGCJ - Vite (Frontend)" cmd /k "npm run dev"
 
-:: Abre una terminal nueva para WebSockets (Notificaciones Reverb)
+:: PAUSA VITAL 2: Breve respiro para la CPU
+timeout /t 2 /nobreak > NUL
+
+:: 5.3 Abre una terminal nueva para WebSockets (Notificaciones Reverb)
+echo [Iniciando Reverb WebSockets...]
 start "SGCJ - Reverb (WebSockets)" cmd /k "php artisan reverb:start --debug"
 
-:: Abre una terminal nueva para Procesamiento en Segundo Plano (Colas)
+:: PAUSA VITAL 3: Evita colision con las colas
+timeout /t 2 /nobreak > NUL
+
+:: 5.4 Abre una terminal nueva para Procesamiento en Segundo Plano (Colas)
+echo [Iniciando Procesador de Colas...]
 start "SGCJ - Queue Worker" cmd /k "php artisan queue:work"
 
-echo Listo! Puedes minimizar esta ventana.
+echo.
+echo Listo! Todos los microservicios estan en linea sin colisiones.
 pause

@@ -29,6 +29,17 @@
                                         <option value="Extraordinaria">Extraordinaria</option>
                                     </select>
                                 </div>
+
+                                <div class="mb-4 grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Año Político <span class="text-red-500">*</span></label>
+                                        <input type="text" name="ano_politico" required placeholder="Ej: 168°" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Mes Político <span class="text-red-500">*</span></label>
+                                        <input type="text" name="mes_politico" required placeholder="Ej: 120°" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    </div>
+                                </div>
                                 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Fecha de Publicación <span class="text-red-500">*</span></label>

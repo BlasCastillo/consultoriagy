@@ -104,15 +104,7 @@
                             @csrf
                             @method('PATCH')
                             
-                            <div class="mb-6 bg-blue-50 p-4 rounded-md border border-blue-100 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Año Político <span class="text-red-500">*</span></label>
-                                    <input type="text" name="ano_politico" required placeholder="Ej: 168°" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-900 focus:ring-blue-900 sm:text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Mes Político <span class="text-red-500">*</span></label>
-                                    <input type="text" name="mes_politico" required placeholder="Ej: 120°" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-900 focus:ring-blue-900 sm:text-sm">
-                                </div>
+                            <div class="mb-6 bg-blue-50 p-4 rounded-md border border-blue-100">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Fecha Recepción Física <span class="text-red-500">*</span></label>
                                     <input type="date" name="fecha_recepcion_fisica" required value="{{ date('Y-m-d') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-900 focus:ring-blue-900 sm:text-sm">
