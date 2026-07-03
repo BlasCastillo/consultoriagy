@@ -43,17 +43,40 @@ Route::get('/dashboard', function () {
     return view('dashboard', compact('totalUsers', 'totalRoles', 'rolesDistribution', 'totalInstitutions', 'poasAnuales'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('/gacetas-publicadas', [\App\Http\Controllers\GacetaController::class, 'publicadas'])->name('gacetas.publicadas');
+
+Route::middleware(['auth', 'role:Súper Administrador|Super Admin|Jefe de Archivo'])->group(function () {
+    Route::get('/archivo', [\App\Http\Controllers\ArchivoController::class, 'index'])->name('archivo.index');
+    Route::get('/archivo/historico', [\App\Http\Controllers\ArchivoController::class, 'crearRetroactiva'])->name('archivo.retroactiva.create');
+    Route::post('/archivo/historico', [\App\Http\Controllers\ArchivoController::class, 'guardarRetroactiva'])->name('archivo.retroactiva.store');
+    Route::post('/archivo/ubicacion/{gaceta}', [\App\Http\Controllers\ArchivoController::class, 'actualizarUbicacion'])->name('archivo.ubicacion');
+    Route::post('/archivo/prestar/{gaceta}', [\App\Http\Controllers\ArchivoController::class, 'prestar'])->name('archivo.prestar');
+    Route::patch('/archivo/devolver/{prestamo}', [\App\Http\Controllers\ArchivoController::class, 'devolver'])->name('archivo.devolver');
+    Route::get('/archivo/prestamos/{prestamo}/pdf', [\App\Http\Controllers\ArchivoController::class, 'imprimirActa'])->name('archivo.prestamo.pdf');
+});
+
 Route::middleware('auth')->group(function () {
-    Route::get('/gacetas-publicadas', [\App\Http\Controllers\GacetaController::class, 'publicadas'])->name('gacetas.publicadas');
 
     Route::get('/profile', [ProfileController::class , 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class , 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class , 'destroy'])->name('profile.destroy');
 
+    Route::get('/debug-permisos', function() {
+        $user = auth()->user();
+        return response()->json([
+            'usuario_actual' => $user->name,
+            'roles_asignados' => $user->getRoleNames(),
+            'permisos_directos' => $user->getPermissionNames(),
+            'permisos_heredados_por_rol' => $user->getPermissionsViaRoles()->pluck('name'),
+            'laravel_cree_que_puede_ver_gaceta' => $user->hasPermissionTo('ver gaceta'),
+            'laravel_cree_que_puede_crear_gaceta' => $user->hasPermissionTo('crear gaceta')
+        ], 200, [], JSON_PRETTY_PRINT);
+    });
+
     Route::get('/notificaciones/{id}/leer', [\App\Http\Controllers\NotificacionController::class, 'leer'])->name('notificaciones.leer');
 
     // Gacetas - Administrativas (Jefatura)
-    Route::middleware(['permission:crear gaceta'])->group(function () {
+    Route::middleware(['permission:create Gaceta'])->group(function () {
         Route::get('gacetas/create', [GacetaController::class, 'create'])->name('gacetas.create');
         Route::post('gacetas', [GacetaController::class, 'store'])->name('gacetas.store');
         Route::patch('gacetas/{gaceta}/reasignar', [GacetaController::class, 'reasignar'])->name('gacetas.reasignar');
@@ -61,7 +84,7 @@ Route::middleware('auth')->group(function () {
 
 
     // Gacetas - Jefe de Digitalización
-    Route::middleware(['permission:evaluar solicitud'])->group(function () {
+    Route::middleware(['permission:update Gaceta'])->group(function () {
         Route::patch('solicitudes/{solicitud}/aprobar', [\App\Http\Controllers\SolicitudController::class, 'aprobar'])->name('solicitudes.aprobar');
         Route::patch('solicitudes/{solicitud}/rechazar', [\App\Http\Controllers\SolicitudController::class, 'rechazar'])->name('solicitudes.rechazar');
         
@@ -78,10 +101,11 @@ Route::middleware('auth')->group(function () {
         Route::post('gacetas/{gaceta}/publicar-oficial', [GacetaController::class, 'publicarGaceta'])->name('gacetas.publicar_oficial');
         Route::post('gacetas/{gaceta}/rechazar-escaneo', [GacetaController::class, 'rechazarEscaneo'])->name('gacetas.rechazar_escaneo');
         Route::post('gacetas/{gaceta}/subsanar', [GacetaController::class, 'subsanarGaceta'])->name('gacetas.subsanar');
+        Route::get('gacetas/{gaceta}/edit', [GacetaController::class, 'edit'])->name('gacetas.edit');
     });
 
     // Gacetas - Digitalizador
-    Route::middleware(['permission:crear gaceta'])->group(function () {
+    Route::middleware(['permission:create Gaceta'])->group(function () {
         Route::get('gacetas/panel-digitalizador', [GacetaController::class, 'panelDigitalizador'])->name('gacetas.digitalizador');
         Route::get('gacetas/{gaceta}/upload-pdf', [GacetaController::class, 'uploadPdf'])->name('gacetas.upload_pdf');
         Route::post('gacetas/{gaceta}/upload-pdf', [GacetaController::class, 'savePdf'])->name('gacetas.save_pdf');
@@ -89,17 +113,17 @@ Route::middleware('auth')->group(function () {
         Route::patch('gacetas/{gaceta}/devolver', [GacetaController::class, 'devolver'])->name('gacetas.devolver');
     });
 
-    Route::middleware(['permission:ver gaceta'])->group(function () {
-        Route::get('gacetas', [GacetaController::class, 'index'])->middleware('role:Súper Administrador|Coordinación de Publicaciones Oficiales')->name('gacetas.index');
+    Route::middleware(['permission:read Gaceta'])->group(function () {
+        Route::get('gacetas', [GacetaController::class, 'index'])->name('gacetas.index');
         Route::get('gacetas/{gaceta}', [GacetaController::class, 'show'])->name('gacetas.show');
         Route::get('/gacetas/{id}/preview', [App\Http\Controllers\GacetaController::class, 'preview'])->name('gacetas.preview');
     });
 
-    Route::middleware(['permission:ver solicitud'])->group(function () {
+    Route::middleware(['permission:read Solicitud'])->group(function () {
         Route::get('mis-solicitudes', [MisSolicitudesController::class, 'index'])->name('mis-solicitudes.index');
     });
 
-    Route::group(['middleware' => ['permission:crear solicitud']], function () {
+    Route::group(['middleware' => ['permission:create Solicitud']], function () {
         Route::get('solicitudes/create', [SolicitudController::class, 'create'])->name('solicitudes.create');
         Route::post('solicitudes', [SolicitudController::class, 'store'])->name('solicitudes.store');
         Route::get('solicitudes/{solicitud}/edit', [SolicitudController::class, 'edit'])->name('solicitudes.edit');
@@ -107,12 +131,12 @@ Route::middleware('auth')->group(function () {
     });
 
     // Rutas accesibles para el Ente Externo e Interno
-    Route::group(['middleware' => ['permission:ver solicitud']], function () {
+    Route::group(['middleware' => ['permission:read Solicitud']], function () {
         Route::get('solicitudes', [SolicitudController::class, 'index'])->name('solicitudes.index');
         Route::get('solicitudes/{solicitud}', [SolicitudController::class, 'show'])->name('solicitudes.show');
     });
 
-    Route::middleware(['permission:gestionar instituciones'])->group(function () {
+    Route::middleware(['permission:read Institucion'])->group(function () {
         Route::resource('gobernadores', GobernadorController::class);
         Route::resource('titulos', TituloController::class);
     });
@@ -123,7 +147,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/poa/fichas', [\App\Http\Controllers\FichaActividadController::class, 'store'])->name('fichas.store');
     Route::get('/poa/fichas/{id}/pdf', [\App\Http\Controllers\FichaActividadController::class, 'exportPdf'])->name('fichas.pdf');
 
-    Route::middleware(['permission:ver poa|gestionar poa'])->group(function () {
+    Route::middleware(['permission:read Poa|update Poa'])->group(function () {
         Route::get('/poa/admin/index', [\App\Http\Controllers\PoaController::class, 'index'])->name('poa.index');
         Route::get('/poa/admin/create', [\App\Http\Controllers\PoaController::class, 'create'])->name('poa.create');
         Route::post('/poa/admin/store', [\App\Http\Controllers\PoaController::class, 'store'])->name('poa.store');
@@ -142,7 +166,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/poa/admin/{poa}/matriz-pdf', [\App\Http\Controllers\PoaController::class, 'exportMatrixPdf'])->name('poa.matriz_pdf');
     });
 
-    Route::middleware(['permission:gestionar usuarios'])->group(function () {
+    Route::middleware(['permission:read User|read Role'])->group(function () {
         Route::patch('roles/{id}/restore', [RoleController::class , 'restore'])->name('roles.restore');
         Route::resource('roles', RoleController::class);
 
@@ -150,7 +174,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('users', UserController::class);
     });
 
-    Route::middleware(['permission:gestionar instituciones'])->group(function () {
+    Route::middleware(['permission:read Institucion'])->group(function () {
         Route::patch('institutions/{id}/restore', [InstitutionController::class , 'restore'])->name('institutions.restore');
         Route::resource('institutions', InstitutionController::class);
         Route::resource('tipo-instituciones', TipoInstitucionController::class);
@@ -159,11 +183,11 @@ Route::middleware('auth')->group(function () {
         Route::resource('jefaturas', App\Http\Controllers\JefaturaController::class);
     });
 
-    Route::middleware(['permission:ver reportes'])->group(function () {
+    Route::middleware(['role:Súper Administrador'])->group(function () {
         Route::get('/bitacora', [ActivityLogController::class , 'index'])->name('bitacora.index');
     });
 
-    Route::middleware(['permission:gestionar configuracion'])->group(function () {
+    Route::middleware(['role:Súper Administrador'])->group(function () {
         Route::get('/backups', [BackupController::class , 'index'])->name('backups.index');
         Route::post('/backups', [BackupController::class , 'create'])->name('backups.create');
         Route::get('/backups/{fileName}', [BackupController::class , 'download'])->name('backups.download');

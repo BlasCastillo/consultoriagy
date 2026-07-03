@@ -31,7 +31,7 @@
 
 
                     {{-- 4. Planificación (POA) --}}
-                    @can('ver poa')
+                    @hasanyrole('Súper Administrador|Super Admin|Jefe de Archivo')
                     <div class="hidden sm:flex sm:items-center sm:ms-2">
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
@@ -55,7 +55,7 @@
                             </x-slot>
                         </x-dropdown>
                     </div>
-                    @endcan
+                    @endhasanyrole
 
                     @hasanyrole('Abogado|Digitalizador')
                         <x-nav-link :href="route('fichas.create')" :active="request()->routeIs('fichas.create')">
@@ -65,7 +65,7 @@
 
                     {{-- C) Para Administradores y Procesadores --}}
                     
-                    @canany(['ver solicitud', 'gestionar gacetas'])
+                    @hasanyrole('Súper Administrador|Super Admin|Coordinación de Publicaciones Oficiales|Jefe de Archivo')
 
                     {{-- Dropdown Procesos --}}
                     <div class="hidden sm:flex sm:items-center sm:ms-2">
@@ -104,11 +104,16 @@
                                         {{ __('Ensamblar Nueva Gaceta') }}
                                     </x-dropdown-link>
                                 @endhasanyrole
+                                @hasanyrole('Súper Administrador|Super Admin|Jefe de Archivo')
+                                    <x-dropdown-link :href="route('archivo.index')">
+                                        {{ __('Módulo de Archivo') }}
+                                    </x-dropdown-link>
+                                @endhasanyrole
 
                             </x-slot>
                         </x-dropdown>
                     </div>
-                    @endcanany
+                    @endhasanyrole
 
                     @can('gestionar instituciones')
 
@@ -216,6 +221,7 @@
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:ms-6">
+                @auth
 
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
@@ -316,7 +322,11 @@
                         </div>
                     </div>
                 </div>
-
+                @else
+                <a href="{{ route('login') }}" class="text-sm font-bold text-gray-700 hover:text-blue-600 bg-gray-100 px-4 py-2 rounded-md shadow-sm">
+                    Iniciar Sesión (Funcionarios)
+                </a>
+                @endauth
             </div>
 
             <div class="-me-2 flex items-center sm:hidden">
@@ -357,7 +367,7 @@
 
 
             {{-- 4. Planificación (POA) --}}
-            @can('ver poa')
+            @hasanyrole('Súper Administrador|Super Admin|Jefe de Archivo')
                 <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Planificación (POA)</div>
                 <x-responsive-nav-link :href="route('poa.dashboard')" :active="request()->routeIs('poa.dashboard')">
                     <i class="fa-solid fa-chart-pie w-5 h-5 mr-1"></i>
@@ -367,7 +377,7 @@
                     <i class="fa-solid fa-list-check w-5 h-5 mr-1"></i>
                     {{ __('Gestionar POAs') }}
                 </x-responsive-nav-link>
-            @endcan
+            @endhasanyrole
 
             @hasanyrole('Abogado|Digitalizador')
                 <x-responsive-nav-link :href="route('fichas.create')" :active="request()->routeIs('fichas.create')">
@@ -376,7 +386,7 @@
                 </x-responsive-nav-link>
             @endhasanyrole
 
-            @canany(['ver solicitud', 'gestionar gacetas'])
+            @hasanyrole('Súper Administrador|Super Admin|Coordinación de Publicaciones Oficiales|Jefe de Archivo')
             <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Procesos</div>
             
             @canany(['read Solicitud', 'create Solicitud', 'ver solicitud', 'crear solicitud'])
@@ -402,9 +412,16 @@
                 {{ __('Ensamblar Nueva Gaceta') }}
             </x-responsive-nav-link>
             @endhasanyrole
+            
+            @hasanyrole('Súper Administrador|Super Admin|Jefe de Archivo')
+            <x-responsive-nav-link :href="route('archivo.index')" :active="request()->routeIs(['archivo.index'])">
+                <i class="fa-solid fa-folder w-5 h-5 mr-1"></i>
+                {{ __('Módulo de Archivo') }}
+            </x-responsive-nav-link>
+            @endhasanyrole
 
 
-            @endcanany
+            @endhasanyrole
 
             @can('gestionar instituciones')
 
@@ -450,6 +467,7 @@
             @endcan
         </div>
 
+        @auth
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
                 <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
@@ -473,5 +491,15 @@
                 </form>
             </div>
         </div>
+        @else
+        <div class="pt-4 pb-1 border-t border-gray-200">
+            <div class="mt-3 space-y-1">
+                <x-responsive-nav-link :href="route('login')">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    {{ __('Iniciar Sesión (Funcionarios)') }}
+                </x-responsive-nav-link>
+            </div>
+        </div>
+        @endauth
     </div>
 </nav>

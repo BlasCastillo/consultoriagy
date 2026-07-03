@@ -11,6 +11,16 @@ class Gaceta extends Model
 {
     use HasFactory, LogsActivity;
 
+    const ESTADO_EN_PROCESO = 'En Proceso';
+    const ESTADO_EN_DIGITALIZACION = 'En Digitalización';
+    const ESTADO_DEVUELTA_DIGITALIZADOR = 'Devuelta a Digitalizador';
+    const ESTADO_REVISION_FINAL = 'En Revisión Final';
+    const ESTADO_PUBLICADA = 'Publicada';
+    const ESTADO_RESERVADA = 'Reservada';
+    const ESTADO_EN_ESCANEO = 'En Escaneo';
+    const ESTADO_DEVUELTA = 'Devuelta';
+    const ESTADO_POR_APROBAR = 'Por Aprobar';
+
     protected $fillable = [
         'numero',
         'anio',
@@ -29,6 +39,9 @@ class Gaceta extends Model
         'checklist',
         'jefe_id',
         'digitalizador_id',
+        'ubicacion_topografica',
+        'ejemplares_fisicos',
+        'es_retroactiva',
     ];
 
     protected $casts = [
@@ -36,7 +49,13 @@ class Gaceta extends Model
         'fecha_recepcion_fisica' => 'date',
         'fecha_publicacion' => 'date',
         'checklist' => 'array',
+        'es_retroactiva' => 'boolean',
     ];
+
+    public function prestamos()
+    {
+        return $this->hasMany(PrestamoArchivo::class);
+    }
 
     public function solicitudes()
     {

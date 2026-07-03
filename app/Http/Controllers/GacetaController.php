@@ -26,7 +26,7 @@ class GacetaController extends Controller
     {
         $institutions = \App\Models\Institucion::all();
         // Cargamos relaciones para evitar N+1
-        $query = \App\Models\Gaceta::with(['solicitudes.institucion', 'solicitudes.actos'])->where('estado', 'Publicada');
+        $query = \App\Models\Gaceta::with(['solicitudes.institucion', 'solicitudes.actos'])->where('estado', Gaceta::ESTADO_PUBLICADA);
 
         if ($request->filled('numero')) { $query->where('numero', 'LIKE', "%{$request->numero}%"); }
         if ($request->filled('anio')) { $query->whereYear('fecha_publicacion', $request->anio); }
@@ -93,14 +93,14 @@ class GacetaController extends Controller
             $gaceta->fecha_publicacion = $request->fecha_publicacion;
             $gaceta->gobernador_id = $request->gobernador_id;
             $gaceta->digitalizador_id = $request->digitalizador_id;
-            $gaceta->estado = 'En Proceso';
+            $gaceta->estado = Gaceta::ESTADO_EN_PROCESO;
             $gaceta->anio = date('Y', strtotime($request->fecha_publicacion));
             $gaceta->save();
 
             \App\Models\Solicitud::whereIn('id', $request->apartados)
                 ->update([
                     'gaceta_id' => $gaceta->id,
-                    'estado' => 'En Digitalización'
+                    'estado' => Gaceta::ESTADO_EN_DIGITALIZACION
                 ]);
 
             DB::commit();
@@ -151,7 +151,7 @@ class GacetaController extends Controller
                 ->max('numero');
 
             $gaceta->numero = $ultimoNumero ? $ultimoNumero + 1 : 1;
-            $gaceta->estado = 'Reservada';
+            $gaceta->estado = Gaceta::ESTADO_RESERVADA;
             $gaceta->jefe_id = auth()->id();
             $gaceta->save();
 
@@ -193,7 +193,7 @@ class GacetaController extends Controller
         if ($request->has('fecha_recepcion_fisica')) {
             $gaceta->fecha_recepcion_fisica = $request->fecha_recepcion_fisica;
         }
-        $gaceta->estado = 'En Escaneo';
+        $gaceta->estado = Gaceta::ESTADO_EN_ESCANEO;
         $gaceta->save();
 
         activity()
@@ -213,7 +213,7 @@ class GacetaController extends Controller
         $request->validate(['digitalizador_id' => 'required|exists:users,id']);
         $gaceta->update([
             'digitalizador_id' => $request->digitalizador_id,
-            'estado' => 'En Proceso'
+            'estado' => Gaceta::ESTADO_EN_PROCESO
         ]);
         return back()->with('success', 'Gaceta reasignada correctamente.');
     }
@@ -222,7 +222,7 @@ class GacetaController extends Controller
     {
         $request->validate(['motivo_devolucion' => 'required|string|min:5']);
         $gaceta->update([
-            'estado' => 'Devuelta',
+            'estado' => Gaceta::ESTADO_DEVUELTA,
             'motivo_devolucion' => $request->motivo_devolucion
         ]);
         return redirect()->route('gacetas.digitalizador')->with('error', 'Gaceta devuelta a Jefatura.');
@@ -252,7 +252,7 @@ class GacetaController extends Controller
             $request->file('ruta_archivo')->move($outputDir, $fileName);
 
             $gaceta->ruta_archivo = $fileName;
-            $gaceta->estado = 'Por Aprobar';
+            $gaceta->estado = Gaceta::ESTADO_POR_APROBAR;
             $gaceta->save();
 
             activity()
@@ -352,7 +352,7 @@ public function enviarARevision(Request $request, string $id)
     // Actualizar la Gaceta a estado de revisión
     $gaceta->update([
         'archivo_pdf_completo' => $path,
-        'estado' => 'En Revisión Final'
+        'estado' => Gaceta::ESTADO_REVISION_FINAL
     ]);
 
     return redirect()->route('gacetas.digitalizador')->with('success', '¡Gaceta enviada a Jefatura para revisión final!');
@@ -379,7 +379,7 @@ public function publicarGaceta(Request $request, string $id)
 
     $gaceta->update([
         'archivo_pdf_completo' => $newPath,
-        'estado' => 'Publicada'
+        'estado' => Gaceta::ESTADO_PUBLICADA
     ]);
 
     // CASCADA DE ESTADOS ATÓMICA
@@ -411,7 +411,7 @@ public function rechazarEscaneo(Request $request, string $id)
 
     $gaceta->update([
         'archivo_pdf_completo' => null,
-        'estado' => 'Devuelta a Digitalizador',
+        'estado' => Gaceta::ESTADO_DEVUELTA_DIGITALIZADOR,
         'motivo_devolucion' => $request->motivo_rechazo_escaneo
     ]);
 
@@ -420,14 +420,44 @@ public function rechazarEscaneo(Request $request, string $id)
 
 public function subsanarGaceta(Request $request, string $id)
 {
+    $request->validate([
+        'numero' => 'required|string|max:255',
+        'tipo' => 'required|in:Ordinaria,Extraordinaria',
+        'ano_politico' => 'required|string',
+        'mes_politico' => 'required|string',
+        'fecha_publicacion' => 'required|date',
+        'gobernador_id' => 'required|exists:gobernadores,id',
+        'digitalizador_id' => 'required|exists:users,id',
+        'apartados' => 'required|array|min:1',
+    ]);
+
     $gaceta = Gaceta::findOrFail($id);
     
     $gaceta->update([
-        'estado' => 'En Proceso',
+        'numero' => $request->numero,
+        'tipo' => $request->tipo,
+        'ano_politico' => $request->ano_politico,
+        'mes_politico' => $request->mes_politico,
+        'fecha_publicacion' => $request->fecha_publicacion,
+        'gobernador_id' => $request->gobernador_id,
+        'digitalizador_id' => $request->digitalizador_id ?? $gaceta->digitalizador_id,
+        'estado' => Gaceta::ESTADO_EN_PROCESO,
         'motivo_devolucion' => null
     ]);
 
-    return redirect()->route('gacetas.index')->with('success', 'Gaceta regresada a "En Proceso" para ser subsanada.');
+    // Desvincular apartados que fueron desmarcados
+    \App\Models\Solicitud::where('gaceta_id', $gaceta->id)->update([
+        'gaceta_id' => null,
+        'estado' => 'Aprobada'
+    ]);
+
+    // Vincular los nuevos apartados marcados
+    \App\Models\Solicitud::whereIn('id', $request->apartados)->update([
+        'gaceta_id' => $gaceta->id,
+        'estado' => Gaceta::ESTADO_EN_DIGITALIZACION // O el estado que corresponda al apartado una vez ensamblado
+    ]);
+
+    return redirect()->route('gacetas.index')->with('success', 'Gaceta subsanada y enviada a Digitalización.');
 }
 
     
@@ -436,7 +466,7 @@ public function subsanarGaceta(Request $request, string $id)
     {
         $gacetas = \App\Models\Gaceta::with('solicitudes')
             ->where('digitalizador_id', auth()->id())
-            ->where('estado', 'En Proceso')
+            ->whereIn('estado', [Gaceta::ESTADO_EN_PROCESO, Gaceta::ESTADO_EN_DIGITALIZACION, Gaceta::ESTADO_DEVUELTA_DIGITALIZADOR])
             ->latest()
             ->get();
             
@@ -449,7 +479,23 @@ public function subsanarGaceta(Request $request, string $id)
         return view('gacetas.show', compact('gaceta'));
     }
 
-    public function edit(string $id) { }
+    public function edit(string $id) 
+    { 
+        $gaceta = Gaceta::with('solicitudes')->findOrFail($id);
+        $gobernadores = \App\Models\Gobernador::with('titulo')->get();
+        $digitalizadores = \App\Models\User::role('Digitalizador')->get();
+        
+        $apartadosAprobados = \App\Models\Solicitud::with('institucion')
+            ->where(function($query) use ($id) {
+                $query->where('estado', 'Aprobada')->whereNull('gaceta_id')
+                      ->orWhere('gaceta_id', $id);
+            })
+            ->get();
+            
+        $apartadosAsignadosIds = $gaceta->solicitudes->pluck('id')->toArray();
+
+        return view('gacetas.edit', compact('gaceta', 'gobernadores', 'digitalizadores', 'apartadosAprobados', 'apartadosAsignadosIds'));
+    }
     public function update(Request $request, string $id) { }
     public function destroy(string $id) { }
 

@@ -94,7 +94,7 @@
                 </div>
             </div>
 
-            @can('evaluar solicitud')
+            @can('update Solicitud')
                 @if($solicitud->estado == 'Pendiente')
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-blue-200">
                     <div class="p-6">

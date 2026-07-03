@@ -80,6 +80,16 @@
                 </div>
             </div>
 
+            @auth
+                @if(auth()->user()->hasAnyRole(['Jefe de Digitalización', 'Super Admin', 'Súper Administrador']) || auth()->user()->roles->count() === 0)
+                    <div class="flex justify-end mb-4">
+                        <a href="{{ route('solicitudes.create') }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 focus:bg-emerald-700 active:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                            Registrar Solicitud
+                        </a>
+                    </div>
+                @endif
+            @endauth
+
             {{-- Tabla de Resultados Públicos --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 overflow-x-auto">

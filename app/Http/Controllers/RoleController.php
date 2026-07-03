@@ -53,6 +53,7 @@ class RoleController extends Controller
                 $permissions[] = $permission;
             }
             $role->syncPermissions($permissions);
+            app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
         }
 
         return redirect()->route('roles.index')->with('success', 'Rol creado exitosamente.');
@@ -90,6 +91,7 @@ class RoleController extends Controller
         }
         
         $role->syncPermissions($permissions);
+        app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
         return redirect()->route('roles.index')->with('success', 'Rol actualizado exitosamente.');
     }

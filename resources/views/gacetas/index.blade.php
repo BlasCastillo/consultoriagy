@@ -68,12 +68,9 @@
                                             @endif
 
                                             @if($gaceta->estado === 'Devuelta')
-                                                <form action="{{ route('gacetas.subsanar', $gaceta->id) }}" method="POST" class="inline-block mr-3">
-                                                    @csrf
-                                                    <button type="submit" onclick="return confirm('¿Regresar esta gaceta a En Proceso para corregir apartados o reasignar?')" class="inline-flex items-center px-2 py-1 bg-yellow-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-600 active:bg-yellow-700 focus:outline-none focus:border-yellow-700 focus:ring ring-yellow-300 disabled:opacity-25 transition ease-in-out duration-150">
-                                                        Subsanar/Editar Gaceta
-                                                    </button>
-                                                </form>
+                                                <a href="{{ route('gacetas.edit', $gaceta->id) }}" class="inline-flex items-center px-2 py-1 bg-yellow-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-600 active:bg-yellow-700 focus:outline-none focus:border-yellow-700 focus:ring ring-yellow-300 transition ease-in-out duration-150 mr-3">
+                                                    Subsanar/Editar Gaceta
+                                                </a>
                                             @endif
 
                                             @if($gaceta->estado !== 'Publicada')
