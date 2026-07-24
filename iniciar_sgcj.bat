@@ -43,7 +43,7 @@ echo.
 
 :: 5.1 Abre una terminal nueva para el Servidor PHP
 echo [Iniciando Servidor PHP...]
-start "SGCJ - Servidor PHP" cmd /k "php artisan serve"
+start "SGCJ - Servidor PHP" cmd /k "php artisan serve --host=127.0.0.1 --port=8000"
 
 :: PAUSA VITAL 1: Espera 3 segundos para que 'serve' asiente la cache sin estorbar
 timeout /t 3 /nobreak > NUL

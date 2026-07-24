@@ -45,7 +45,7 @@ Route::get('/dashboard', function () {
 
 Route::get('/gacetas-publicadas', [\App\Http\Controllers\GacetaController::class, 'publicadas'])->name('gacetas.publicadas');
 
-Route::middleware(['auth', 'role:Súper Administrador|Super Admin|Jefe de Archivo'])->group(function () {
+Route::middleware(['auth', 'role:Super Admin|Coordinador de Archivo'])->group(function () {
     Route::get('/archivo', [\App\Http\Controllers\ArchivoController::class, 'index'])->name('archivo.index');
     Route::get('/archivo/historico', [\App\Http\Controllers\ArchivoController::class, 'crearRetroactiva'])->name('archivo.retroactiva.create');
     Route::post('/archivo/historico', [\App\Http\Controllers\ArchivoController::class, 'guardarRetroactiva'])->name('archivo.retroactiva.store');
@@ -66,10 +66,7 @@ Route::middleware('auth')->group(function () {
         return response()->json([
             'usuario_actual' => $user->name,
             'roles_asignados' => $user->getRoleNames(),
-            'permisos_directos' => $user->getPermissionNames(),
-            'permisos_heredados_por_rol' => $user->getPermissionsViaRoles()->pluck('name'),
-            'laravel_cree_que_puede_ver_gaceta' => $user->hasPermissionTo('ver gaceta'),
-            'laravel_cree_que_puede_crear_gaceta' => $user->hasPermissionTo('crear gaceta')
+            'todos_los_permisos' => $user->getAllPermissions()->pluck('name')
         ], 200, [], JSON_PRETTY_PRINT);
     });
 
@@ -183,11 +180,11 @@ Route::middleware('auth')->group(function () {
         Route::resource('jefaturas', App\Http\Controllers\JefaturaController::class);
     });
 
-    Route::middleware(['role:Súper Administrador'])->group(function () {
+    Route::middleware(['role:Super Admin'])->group(function () {
         Route::get('/bitacora', [ActivityLogController::class , 'index'])->name('bitacora.index');
     });
 
-    Route::middleware(['role:Súper Administrador'])->group(function () {
+    Route::middleware(['role:Super Admin'])->group(function () {
         Route::get('/backups', [BackupController::class , 'index'])->name('backups.index');
         Route::post('/backups', [BackupController::class , 'create'])->name('backups.create');
         Route::get('/backups/{fileName}', [BackupController::class , 'download'])->name('backups.download');

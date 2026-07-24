@@ -124,8 +124,8 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        $isSuperAdmin = $user->hasAnyRole(['Super Admin', 'Super Administrador']);
-        $superAdminCount = User::role(['Super Admin', 'Super Administrador'])->count();
+        $isSuperAdmin = $user->hasRole('Super Admin');
+        $superAdminCount = User::role('Super Admin')->count();
         if ($isSuperAdmin && $superAdminCount <= 1) {
             return redirect()->route('users.index')->with('error', 'No puedes eliminar al único Super Admin del sistema.');
         }

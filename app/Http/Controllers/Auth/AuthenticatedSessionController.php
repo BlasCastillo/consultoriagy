@@ -28,7 +28,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        if ($request->user()->hasAnyRole(['Institucion', 'Institucional'])) {
+        if ($request->user()->hasRole('Representante Institucional')) {
             return redirect()->intended('/mis-solicitudes');
         }
 

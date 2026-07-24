@@ -3,10 +3,13 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 use App\Models\Solicitud;
 
-class NuevaSolicitudNotification extends Notification
+class NuevaSolicitudNotification extends Notification implements ShouldQueue, ShouldBroadcast
 {
     use Queueable;
 
@@ -19,7 +22,7 @@ class NuevaSolicitudNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     public function toArray(object $notifiable): array
@@ -27,7 +30,16 @@ class NuevaSolicitudNotification extends Notification
         return [
             'solicitud_id' => $this->solicitud->id,
             'mensaje' => "Nueva solicitud '{$this->solicitud->titulo_acto}' de {$this->solicitud->institucion->nombre}",
-            'url' => route('solicitudes.show', $this->solicitud->id)
+            'url' => route('solicitudes.show', $this->solicitud->id, false)
         ];
+    }
+
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage([
+            'solicitud_id' => $this->solicitud->id,
+            'mensaje' => "Nueva solicitud '{$this->solicitud->titulo_acto}' de {$this->solicitud->institucion->nombre}",
+            'url' => route('solicitudes.show', $this->solicitud->id, false)
+        ]);
     }
 }

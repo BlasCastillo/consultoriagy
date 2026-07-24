@@ -12,26 +12,24 @@
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex sm:items-center">
                     
-                    {{-- 1. Panel de Control (Depende del Rol) --}}
-                    @hasrole('Digitalizador')
+                    {{-- 1. Panel de Control --}}
+                    @can('update Gaceta')
                         <x-nav-link :href="url('/gacetas/panel-digitalizador')" :active="request()->is('gacetas/panel-digitalizador')">
                             {{ __('Panel') }}
                         </x-nav-link>
-                    @else
-                    {{-- Ocultamos el Dashboard a las Instituciones --}}
-                    @unlessrole('Institucion')
+                    @endcan
+                    @can('read Dashboard')
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             {{ __('Dashboard') }}
                         </x-nav-link>
-                    @endunlessrole
-                @endhasrole
+                    @endcan
 
 
 
 
 
                     {{-- 4. Planificación (POA) --}}
-                    @hasanyrole('Súper Administrador|Super Admin|Jefe de Archivo')
+                    @can('read Poa')
                     <div class="hidden sm:flex sm:items-center sm:ms-2">
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
@@ -55,17 +53,17 @@
                             </x-slot>
                         </x-dropdown>
                     </div>
-                    @endhasanyrole
+                    @endcan
 
-                    @hasanyrole('Abogado|Digitalizador')
+                    @can('create ActividadPoa')
                         <x-nav-link :href="route('fichas.create')" :active="request()->routeIs('fichas.create')">
                             <i class="fa-solid fa-clipboard-check mr-2"></i> {{ __('Registrar Actividad') }}
                         </x-nav-link>
-                    @endhasanyrole
+                    @endcan
 
                     {{-- C) Para Administradores y Procesadores --}}
                     
-                    @hasanyrole('Súper Administrador|Super Admin|Coordinación de Publicaciones Oficiales|Jefe de Archivo')
+                    @canany(['read Solicitud', 'read Gaceta', 'read PrestamoArchivo'])
 
                     {{-- Dropdown Procesos --}}
                     <div class="hidden sm:flex sm:items-center sm:ms-2">
@@ -86,36 +84,36 @@
                                 </button>
                             </x-slot>
                             <x-slot name="content">
-                                @canany(['read Solicitud', 'create Solicitud', 'ver solicitud', 'crear solicitud'])
+                                @can('read Solicitud')
                                 <x-dropdown-link :href="route('solicitudes.index')">
                                     {{ __('Gestión de Solicitudes') }}
                                 </x-dropdown-link>
-                                @endcanany
-                                @can('ver gacetas')
+                                @endcan
+                                @can('read Gaceta')
                                 <x-dropdown-link :href="route('gacetas.publicadas')">
                                     {{ __('Histórico de Gacetas') }}
                                 </x-dropdown-link>
                                 @endcan
-                                @hasanyrole('Súper Administrador|Coordinación de Publicaciones Oficiales')
+                                @can('create Gaceta')
                                     <x-dropdown-link :href="route('gacetas.index')">
                                         {{ __('Mesa de Control (Gacetas)') }}
                                     </x-dropdown-link>
                                     <x-dropdown-link :href="route('gacetas.create')">
                                         {{ __('Ensamblar Nueva Gaceta') }}
                                     </x-dropdown-link>
-                                @endhasanyrole
-                                @hasanyrole('Súper Administrador|Super Admin|Jefe de Archivo')
+                                @endcan
+                                @can('read PrestamoArchivo')
                                     <x-dropdown-link :href="route('archivo.index')">
                                         {{ __('Módulo de Archivo') }}
                                     </x-dropdown-link>
-                                @endhasanyrole
+                                @endcan
 
                             </x-slot>
                         </x-dropdown>
                     </div>
-                    @endhasanyrole
+                    @endcanany
 
-                    @can('gestionar instituciones')
+                    @canany(['read Institucion', 'read Gobernador', 'read Jefatura'])
 
                     {{-- Dropdown Registros Maestros --}}
                     <div class="hidden sm:flex sm:items-center sm:ms-2">
@@ -136,28 +134,38 @@
                                 </button>
                             </x-slot>
                             <x-slot name="content">
+                                @can('read Institucion')
                                 <x-dropdown-link :href="route('institutions.index')">
                                     {{ __('Instituciones') }}
                                 </x-dropdown-link>
+                                @endcan
+                                @can('read TipoInstitucion')
                                 <x-dropdown-link :href="route('tipo-instituciones.index')">
                                     {{ __('Tipos de Institución') }}
                                 </x-dropdown-link>
+                                @endcan
+                                @can('read Jefatura')
                                 <x-dropdown-link :href="route('jefaturas.index')">
                                     {{ __('Estructura Interna') }}
                                 </x-dropdown-link>
+                                @endcan
+                                @can('read Gobernador')
                                 <x-dropdown-link :href="route('gobernadores.index')">
                                     {{ __('Gobernadores') }}
                                 </x-dropdown-link>
+                                @endcan
+                                @can('read Titulo')
                                 <x-dropdown-link :href="route('titulos.index')">
                                     {{ __('Títulos') }}
                                 </x-dropdown-link>
+                                @endcan
                             </x-slot>
                         </x-dropdown>
                     </div>
-                    @endcan
+                    @endcanany
 
                     {{-- Dropdown Reportes --}}
-                    @can('ver reportes')
+                    @can('read Bitacora')
                     <div class="hidden sm:flex sm:items-center sm:ms-2">
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
@@ -185,7 +193,7 @@
                     @endcan
 
                     {{-- Dropdown Configuración --}}
-                    @can('gestionar configuracion')
+                    @canany(['read User', 'read Role', 'read Permission'])
                     <div class="hidden sm:flex sm:items-center sm:ms-2">
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
@@ -204,19 +212,25 @@
                                 </button>
                             </x-slot>
                             <x-slot name="content">
+                                @can('read User')
                                 <x-dropdown-link :href="route('users.index')">
                                     {{ __('Usuarios') }}
                                 </x-dropdown-link>
+                                @endcan
+                                @can('read Role')
                                 <x-dropdown-link :href="route('roles.index')">
                                     {{ __('Roles y Permisos') }}
                                 </x-dropdown-link>
+                                @endcan
+                                @can('read Backup')
                                 <x-dropdown-link :href="route('backups.index')">
                                     {{ __('Respaldos') }}
                                 </x-dropdown-link>
+                                @endcan
                             </x-slot>
                         </x-dropdown>
                     </div>
-                    @endcan
+                    @endcanany
                 </div>
             </div>
 
@@ -346,28 +360,26 @@
 
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            {{-- 1. Panel de Control (Depende del Rol) --}}
-            @hasrole('Digitalizador')
+            {{-- 1. Panel de Control --}}
+            @can('update Gaceta')
                 <x-responsive-nav-link :href="url('/gacetas/panel-digitalizador')" :active="request()->is('gacetas/panel-digitalizador')">
                     <i class="fa-solid fa-house w-5 h-5 mr-1"></i>
                     {{ __('Panel') }}
                 </x-responsive-nav-link>
-            @else
-                {{-- Ocultamos el Dashboard a las Instituciones --}}
-                @unlessrole('Institucion')
-                    <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        <i class="fa-solid fa-house w-5 h-5 mr-1"></i>
-                        {{ __('Dashboard') }}
-                    </x-responsive-nav-link>
-                @endunlessrole
-            @endhasrole
+            @endcan
+            @can('read Dashboard')
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    <i class="fa-solid fa-house w-5 h-5 mr-1"></i>
+                    {{ __('Dashboard') }}
+                </x-responsive-nav-link>
+            @endcan
 
 
 
 
 
             {{-- 4. Planificación (POA) --}}
-            @hasanyrole('Súper Administrador|Super Admin|Jefe de Archivo')
+            @can('read Poa')
                 <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Planificación (POA)</div>
                 <x-responsive-nav-link :href="route('poa.dashboard')" :active="request()->routeIs('poa.dashboard')">
                     <i class="fa-solid fa-chart-pie w-5 h-5 mr-1"></i>
@@ -377,32 +389,32 @@
                     <i class="fa-solid fa-list-check w-5 h-5 mr-1"></i>
                     {{ __('Gestionar POAs') }}
                 </x-responsive-nav-link>
-            @endhasanyrole
+            @endcan
 
-            @hasanyrole('Abogado|Digitalizador')
+            @can('create ActividadPoa')
                 <x-responsive-nav-link :href="route('fichas.create')" :active="request()->routeIs('fichas.create')">
                     <i class="fa-solid fa-clipboard-check w-5 h-5 mr-1"></i>
                     {{ __('Registrar Actividad') }}
                 </x-responsive-nav-link>
-            @endhasanyrole
+            @endcan
 
-            @hasanyrole('Súper Administrador|Super Admin|Coordinación de Publicaciones Oficiales|Jefe de Archivo')
+            @canany(['read Solicitud', 'read Gaceta', 'read PrestamoArchivo'])
             <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Procesos</div>
             
-            @canany(['read Solicitud', 'create Solicitud', 'ver solicitud', 'crear solicitud'])
+            @can('read Solicitud')
             <x-responsive-nav-link :href="route('solicitudes.index')" :active="request()->routeIs(['solicitudes.index', 'solicitudes.create', 'solicitudes.edit', 'solicitudes.show'])">
                 <i class="fa-solid fa-file-lines w-5 h-5 mr-1"></i>
                 {{ __('Gestión de Solicitudes') }}
             </x-responsive-nav-link>
-            @endcanany
+            @endcan
 
-            @can('ver gacetas')
+            @can('read Gaceta')
             <x-responsive-nav-link :href="route('gacetas.publicadas')" :active="request()->routeIs(['gacetas.publicadas'])">
                 <i class="fa-solid fa-book w-5 h-5 mr-1"></i>
                 {{ __('Histórico de Gacetas') }}
             </x-responsive-nav-link>
             @endcan
-            @hasanyrole('Súper Administrador|Coordinación de Publicaciones Oficiales')
+            @can('create Gaceta')
             <x-responsive-nav-link :href="route('gacetas.index')" :active="request()->routeIs(['gacetas.index'])">
                 <i class="fa-solid fa-table-columns w-5 h-5 mr-1"></i>
                 {{ __('Mesa de Control (Gacetas)') }}
@@ -411,41 +423,51 @@
                 <i class="fa-solid fa-layer-group w-5 h-5 mr-1"></i>
                 {{ __('Ensamblar Nueva Gaceta') }}
             </x-responsive-nav-link>
-            @endhasanyrole
+            @endcan
             
-            @hasanyrole('Súper Administrador|Super Admin|Jefe de Archivo')
+            @can('read PrestamoArchivo')
             <x-responsive-nav-link :href="route('archivo.index')" :active="request()->routeIs(['archivo.index'])">
                 <i class="fa-solid fa-folder w-5 h-5 mr-1"></i>
                 {{ __('Módulo de Archivo') }}
             </x-responsive-nav-link>
-            @endhasanyrole
+            @endcan
 
 
-            @endhasanyrole
+            @endcanany
 
-            @can('gestionar instituciones')
+            @canany(['read Institucion', 'read Gobernador', 'read Jefatura'])
 
             <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Registros Maestros
             </div>
+            @can('read Institucion')
             <x-responsive-nav-link :href="route('institutions.index')" :active="request()->routeIs('institutions.*')">
                 {{ __('Instituciones') }}
             </x-responsive-nav-link>
+            @endcan
+            @can('read TipoInstitucion')
             <x-responsive-nav-link :href="route('tipo-instituciones.index')" :active="request()->routeIs('tipo-instituciones.*')">
                 {{ __('Tipos de Institución') }}
             </x-responsive-nav-link>
+            @endcan
+            @can('read Jefatura')
             <x-responsive-nav-link :href="route('jefaturas.index')" :active="request()->routeIs('jefaturas.*')">
                 {{ __('Estructura Interna') }}
             </x-responsive-nav-link>
+            @endcan
+            @can('read Gobernador')
             <x-responsive-nav-link :href="route('gobernadores.index')" :active="request()->routeIs('gobernadores.*')">
                 {{ __('Gobernadores') }}
             </x-responsive-nav-link>
+            @endcan
+            @can('read Titulo')
             <x-responsive-nav-link :href="route('titulos.index')" :active="request()->routeIs('titulos.*')">
                 {{ __('Títulos') }}
             </x-responsive-nav-link>
-
             @endcan
 
-            @can('ver reportes')
+            @endcanany
+
+            @can('read Bitacora')
             <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Reportes</div>
             <x-responsive-nav-link :href="route('bitacora.index')" :active="request()->routeIs('bitacora.*')">
                 {{ __('Bitácora') }}
@@ -453,18 +475,24 @@
 
             @endcan
 
-            @can('gestionar configuracion')
+            @canany(['read User', 'read Role', 'read Permission'])
             <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Configuración</div>
+            @can('read User')
             <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                 {{ __('Usuarios') }}
             </x-responsive-nav-link>
+            @endcan
+            @can('read Role')
             <x-responsive-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.*')">
                 {{ __('Roles y Permisos') }}
             </x-responsive-nav-link>
+            @endcan
+            @can('read Backup')
             <x-responsive-nav-link :href="route('backups.index')" :active="request()->routeIs('backups.*')">
                 {{ __('Respaldos') }}
             </x-responsive-nav-link>
             @endcan
+            @endcanany
         </div>
 
         @auth

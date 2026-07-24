@@ -24,7 +24,7 @@ class PoaController extends Controller
         
         $query = Poa::with('jefatura')->orderBy('anio', 'desc');
 
-        if (!$user->hasAnyRole(['Super Admin', 'Consultor Juridico', 'Abogado Planificador'])) {
+        if (!$user->hasPermissionTo('read Poa')) {
             $rolesUsuario = $user->roles->pluck('name')->toArray();
             
             $jefaturaIds = [];

@@ -12,7 +12,7 @@ class EvidenciaController extends Controller
     private function validarAccesoPOA($poa)
     {
         $user = auth()->user();
-        if ($user->hasAnyRole(['Super Admin', 'Consultor Juridico', 'Abogado Planificador'])) {
+        if ($user->hasPermissionTo('read Poa')) {
             return true;
         }
 

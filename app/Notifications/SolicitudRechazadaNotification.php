@@ -4,12 +4,14 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 use App\Models\Solicitud;
 
-class SolicitudRechazadaNotification extends Notification
+class SolicitudRechazadaNotification extends Notification implements ShouldQueue, ShouldBroadcast
 {
     use Queueable;
 
@@ -32,7 +34,7 @@ class SolicitudRechazadaNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     /**
@@ -45,7 +47,19 @@ class SolicitudRechazadaNotification extends Notification
         return [
             'mensaje' => "Su solicitud '{$this->solicitud->titulo_acto}' ha sido devuelta.",
             'motivo' => $this->motivo_rechazo,
-            'url' => route('solicitudes.show', $this->solicitud->id)
+            'url' => route('solicitudes.show', $this->solicitud->id, false)
         ];
+    }
+
+    /**
+     * Get the broadcast representation of the notification.
+     */
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage([
+            'mensaje' => "Su solicitud '{$this->solicitud->titulo_acto}' ha sido devuelta.",
+            'motivo' => $this->motivo_rechazo,
+            'url' => route('solicitudes.show', $this->solicitud->id, false)
+        ]);
     }
 }

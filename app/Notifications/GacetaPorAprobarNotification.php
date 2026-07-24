@@ -3,12 +3,13 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 use App\Models\Gaceta;
 
-class GacetaPorAprobarNotification extends Notification implements ShouldBroadcast
+class GacetaPorAprobarNotification extends Notification implements ShouldBroadcast, ShouldQueue
 {
     use Queueable;
 
@@ -29,7 +30,7 @@ class GacetaPorAprobarNotification extends Notification implements ShouldBroadca
         return [
             'gaceta_id' => $this->gaceta->id,
             'mensaje' => 'La Gaceta Nro. ' . $this->gaceta->numero . ' está lista para revisión final y publicación.',
-            'url' => route('gacetas.aprobar', $this->gaceta->id)
+            'url' => route('gacetas.aprobar', $this->gaceta->id, false)
         ];
     }
 
@@ -38,7 +39,7 @@ class GacetaPorAprobarNotification extends Notification implements ShouldBroadca
         return new BroadcastMessage([
             'gaceta_id' => $this->gaceta->id,
             'mensaje' => 'La Gaceta Nro. ' . $this->gaceta->numero . ' está lista para revisión final y publicación.',
-            'url' => route('gacetas.aprobar', $this->gaceta->id)
+            'url' => route('gacetas.aprobar', $this->gaceta->id, false)
         ]);
     }
 }

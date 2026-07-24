@@ -4,10 +4,12 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class GacetaPublicadaNotification extends Notification
+class GacetaPublicadaNotification extends Notification implements ShouldQueue, ShouldBroadcast
 {
     use Queueable;
 
@@ -28,7 +30,7 @@ class GacetaPublicadaNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     /**
@@ -52,7 +54,19 @@ class GacetaPublicadaNotification extends Notification
         return [
             'titulo' => 'Apartado Publicado',
             'mensaje' => 'Su apartado ha sido publicado en la Gaceta ' . $this->gaceta->tipo . ' N° ' . $this->gaceta->numero,
-            'url' => route('solicitudes.index'), // Provide an URL so the UI doesn't crash if it tries to link it
+            'url' => route('solicitudes.index', [], false), // Provide an URL so the UI doesn't crash if it tries to link it
         ];
+    }
+
+    /**
+     * Get the broadcast representation of the notification.
+     */
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage([
+            'titulo' => 'Apartado Publicado',
+            'mensaje' => 'Su apartado ha sido publicado en la Gaceta ' . $this->gaceta->tipo . ' N° ' . $this->gaceta->numero,
+            'url' => route('solicitudes.index', [], false),
+        ]);
     }
 }

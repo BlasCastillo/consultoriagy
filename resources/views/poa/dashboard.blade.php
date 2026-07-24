@@ -19,7 +19,7 @@
                     
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-lg font-medium text-slate-800">Estado General de los POAs</h3>
-                        @can('registrar actividad poa')
+                        @can('create ActividadPoa')
                             <a href="{{ route('fichas.create') }}" class="px-4 py-2 bg-slate-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700">
                                 Registrar Actividad
                             </a>

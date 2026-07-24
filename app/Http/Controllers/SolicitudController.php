@@ -66,7 +66,7 @@ class SolicitudController extends Controller
             ]);
         }
 
-        $evaluadores = \App\Models\User::role(['Súper Administrador', 'Jefe de Publicaciones'])->get();
+        $evaluadores = \App\Models\User::permission('update Solicitud')->get();
         \Illuminate\Support\Facades\Notification::send($evaluadores, new \App\Notifications\NuevaSolicitudNotification($solicitud));
 
         return redirect()->route('solicitudes.index')->with('success', 'Solicitud creada exitosamente.');
@@ -191,8 +191,7 @@ class SolicitudController extends Controller
             ]);
         }
 
-        // Volver a notificar a los evaluadores
-        $evaluadores = \App\Models\User::role(['Súper Administrador', 'Jefe de Publicaciones'])->get();
+        $evaluadores = \App\Models\User::permission('update Solicitud')->get();
         \Illuminate\Support\Facades\Notification::send($evaluadores, new \App\Notifications\NuevaSolicitudNotification($solicitud));
 
         return redirect()->route('solicitudes.show', $solicitud->id)->with('success', 'Apartado corregido y re-enviado exitosamente a Jefatura.');

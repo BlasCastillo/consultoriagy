@@ -3,12 +3,13 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 use App\Models\Gaceta;
 
-class GacetaAsignadaNotification extends Notification implements ShouldBroadcast
+class GacetaAsignadaNotification extends Notification implements ShouldBroadcast, ShouldQueue
 {
     use Queueable;
 
@@ -29,7 +30,7 @@ class GacetaAsignadaNotification extends Notification implements ShouldBroadcast
         return [
             'gaceta_id' => $this->gaceta->id,
             'mensaje' => 'Se te ha asignado la Gaceta Nro. ' . $this->gaceta->numero . ' para escaneo.',
-            'url' => route('gacetas.digitalizador') // We will create this route
+            'url' => route('gacetas.digitalizador', [], false) // We will create this route
         ];
     }
 
@@ -38,7 +39,7 @@ class GacetaAsignadaNotification extends Notification implements ShouldBroadcast
         return new BroadcastMessage([
             'gaceta_id' => $this->gaceta->id,
             'mensaje' => 'Se te ha asignado la Gaceta Nro. ' . $this->gaceta->numero . ' para escaneo.',
-            'url' => route('gacetas.digitalizador')
+            'url' => route('gacetas.digitalizador', [], false)
         ]);
     }
 }
