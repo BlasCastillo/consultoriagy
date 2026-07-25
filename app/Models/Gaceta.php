@@ -57,6 +57,11 @@ class Gaceta extends Model
         return $this->hasMany(PrestamoArchivo::class);
     }
 
+    public function inventario()
+    {
+        return $this->hasOne(InventarioArchivo::class);
+    }
+
     public function solicitudes()
     {
         return $this->hasMany(Solicitud::class)->orderBy('orden_sumario');

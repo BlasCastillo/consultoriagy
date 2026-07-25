@@ -66,6 +66,13 @@ timeout /t 2 /nobreak > NUL
 echo [Iniciando Procesador de Colas...]
 start "SGCJ - Queue Worker" cmd /k "php artisan queue:work"
 
+:: PAUSA VITAL 4: Sincronizacion final para el motor de tareas
+timeout /t 2 /nobreak > NUL
+
+:: 5.5 Abre una terminal nueva para el Motor de Tareas Programadas (Cron de Windows)
+echo [Iniciando Programador de Tareas (Scheduler)...]
+start "SGCJ - Task Scheduler" cmd /k "php artisan schedule:work"
+
 echo.
 echo Listo! Todos los microservicios estan en linea sin colisiones.
 pause

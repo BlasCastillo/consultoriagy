@@ -12,9 +12,10 @@ class ArchivoController extends Controller
 
     public function index()
     {
-        $gacetas = Gaceta::where('estado', 'Publicada')->latest('fecha_publicacion')->get();
+        $sedes = \App\Models\Sede::with('estantes.gavetas')->get();
+        $gacetas = Gaceta::with(['inventario.sede', 'inventario.estante', 'inventario.gaveta'])->where('estado', 'Publicada')->latest('fecha_publicacion')->get();
         $prestamosActivos = PrestamoArchivo::with('gaceta')->where('estado_prestamo', 'Activo')->latest()->get();
-        return view('archivo.index', compact('gacetas', 'prestamosActivos'));
+        return view('archivo.index', compact('gacetas', 'prestamosActivos', 'sedes'));
     }
 
     public function crearRetroactiva()
@@ -88,27 +89,35 @@ class ArchivoController extends Controller
         return redirect()->route('archivo.index')->with('success', 'Gaceta histórica procesada e indexada correctamente.');
     }
 
-    public function actualizarUbicacion(Request $request, Gaceta $gaceta)
+    public function updateInventario(Request $request, Gaceta $gaceta)
     {
         $request->validate([
-            'ubicacion_topografica' => 'nullable|string|max:255',
-            'ejemplares_fisicos' => 'required|integer|min:0',
+            'sede_id' => 'required|exists:sedes,id',
+            'estante_id' => 'nullable|exists:estantes,id',
+            'gaveta_id' => 'nullable|exists:gavetas,id',
+            'ejemplares_fisicos' => 'required|integer|min:0', // the input is named ejemplares_fisicos
         ]);
 
-        $gaceta->ubicacion_topografica = $request->ubicacion_topografica;
-        $gaceta->ejemplares_fisicos = $request->ejemplares_fisicos;
-        $gaceta->save();
+        \App\Models\InventarioArchivo::updateOrCreate(
+            ['gaceta_id' => $gaceta->id],
+            [
+                'sede_id' => $request->sede_id,
+                'estante_id' => $request->estante_id,
+                'gaveta_id' => $request->gaveta_id,
+                'stock' => $request->ejemplares_fisicos
+            ]
+        );
 
         activity()
             ->useLog('Modulo_Archivo')
             ->performedOn($gaceta)
             ->causedBy(auth()->user())
-            ->log('Ubicación topográfica de la Gaceta N° ' . $gaceta->numero . ' actualizada a: ' . $request->ubicacion_topografica);
+            ->log('Inventario logístico de la Gaceta N° ' . $gaceta->numero . ' actualizado.');
 
-        return back()->with('success', 'Ubicación e inventario actualizados correctamente.');
+        return back()->with('success', 'Inventario actualizado');
     }
 
-    public function prestar(Request $request, Gaceta $gaceta)
+    public function storePrestamo(Request $request, Gaceta $gaceta)
     {
         $request->validate([
             'solicitante_cedula' => 'required|string|max:20',
@@ -120,8 +129,8 @@ class ArchivoController extends Controller
             'fecha_devolucion_estimada' => 'required|date|after_or_equal:fecha_salida',
         ]);
 
-        if ($gaceta->ejemplares_fisicos <= 0) {
-            return back()->with('error', 'No hay ejemplares físicos disponibles para préstamo.');
+        if (!$gaceta->inventario || $gaceta->inventario->stock <= 0) {
+            return back()->with('error', 'Stock insuficiente o no asignado.');
         }
 
         PrestamoArchivo::create([
@@ -136,8 +145,10 @@ class ArchivoController extends Controller
             'estado_prestamo' => 'Activo'
         ]);
 
-        $gaceta->ejemplares_fisicos -= 1;
-        $gaceta->save();
+        $gaceta->inventario->decrement('stock', 1);
+
+        $usuariosANotificar = \App\Models\User::role(['Super Admin', 'Coordinador General', 'Director de Consultoría Jurídica'])->get();
+        \Illuminate\Support\Facades\Notification::send($usuariosANotificar, new \App\Notifications\MovimientoArchivoNotification($gaceta, 'Préstamo', auth()->user()->name));
 
         activity()
             ->useLog('Modulo_Archivo')
@@ -148,14 +159,18 @@ class ArchivoController extends Controller
         return back()->with('success', 'Préstamo registrado correctamente.');
     }
 
-    public function devolver(PrestamoArchivo $prestamo)
+    public function marcarDevuelto(PrestamoArchivo $prestamo)
     {
         $prestamo->estado_prestamo = 'Devuelto';
         $prestamo->fecha_devolucion_real = now();
         $prestamo->save();
 
-        $prestamo->gaceta->ejemplares_fisicos += 1;
-        $prestamo->gaceta->save();
+        if ($prestamo->gaceta->inventario) {
+            $prestamo->gaceta->inventario->increment('stock', 1);
+        }
+
+        $usuariosANotificar = \App\Models\User::role(['Super Admin', 'Coordinador General', 'Director de Consultoría Jurídica'])->get();
+        \Illuminate\Support\Facades\Notification::send($usuariosANotificar, new \App\Notifications\MovimientoArchivoNotification($prestamo->gaceta, 'Devolución', auth()->user()->name));
 
         activity()
             ->useLog('Modulo_Archivo')
@@ -171,5 +186,24 @@ class ArchivoController extends Controller
         $prestamo->load('gaceta');
         $pdf = Pdf::loadView('archivo.pdf.acta_prestamo', compact('prestamo'));
         return $pdf->stream('Acta_Prestamo_' . $prestamo->gaceta->numero . '.pdf');
+    }
+
+    public function generarReporte(Request $request)
+    {
+        $sede_id = $request->input('sede_id');
+
+        $query = \App\Models\InventarioArchivo::with(['gaceta', 'sede', 'estante', 'gaveta'])
+                    ->where('stock', '>', 0);
+
+        if ($sede_id) {
+            $query->where('sede_id', $sede_id);
+        }
+
+        $query->orderBy('sede_id')->orderBy('estante_id');
+
+        $inventario = $query->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('archivo.pdf.inventario', compact('inventario'));
+        return $pdf->stream('reporte_inventario.pdf');
     }
 }

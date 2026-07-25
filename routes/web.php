@@ -45,13 +45,14 @@ Route::get('/dashboard', function () {
 
 Route::get('/gacetas-publicadas', [\App\Http\Controllers\GacetaController::class, 'publicadas'])->name('gacetas.publicadas');
 
-Route::middleware(['auth', 'role:Super Admin|Coordinador de Archivo'])->group(function () {
+Route::middleware(['auth', 'permission:read PrestamoArchivo'])->group(function () {
     Route::get('/archivo', [\App\Http\Controllers\ArchivoController::class, 'index'])->name('archivo.index');
+    Route::get('/archivo/reporte-inventario', [\App\Http\Controllers\ArchivoController::class, 'generarReporte'])->name('archivo.reporte.inventario')->middleware('permission:read PrestamoArchivo');
     Route::get('/archivo/historico', [\App\Http\Controllers\ArchivoController::class, 'crearRetroactiva'])->name('archivo.retroactiva.create');
     Route::post('/archivo/historico', [\App\Http\Controllers\ArchivoController::class, 'guardarRetroactiva'])->name('archivo.retroactiva.store');
-    Route::post('/archivo/ubicacion/{gaceta}', [\App\Http\Controllers\ArchivoController::class, 'actualizarUbicacion'])->name('archivo.ubicacion');
-    Route::post('/archivo/prestar/{gaceta}', [\App\Http\Controllers\ArchivoController::class, 'prestar'])->name('archivo.prestar');
-    Route::patch('/archivo/devolver/{prestamo}', [\App\Http\Controllers\ArchivoController::class, 'devolver'])->name('archivo.devolver');
+    Route::post('/archivo/gacetas/{gaceta}/inventario', [\App\Http\Controllers\ArchivoController::class, 'updateInventario'])->name('archivo.inventario.update')->middleware('permission:update PrestamoArchivo');
+    Route::post('/archivo/prestar/{gaceta}', [\App\Http\Controllers\ArchivoController::class, 'storePrestamo'])->name('archivo.prestar');
+    Route::patch('/archivo/devolver/{prestamo}', [\App\Http\Controllers\ArchivoController::class, 'marcarDevuelto'])->name('archivo.devolver');
     Route::get('/archivo/prestamos/{prestamo}/pdf', [\App\Http\Controllers\ArchivoController::class, 'imprimirActa'])->name('archivo.prestamo.pdf');
 });
 
@@ -180,11 +181,17 @@ Route::middleware('auth')->group(function () {
         Route::resource('jefaturas', App\Http\Controllers\JefaturaController::class);
     });
 
-    Route::middleware(['role:Super Admin'])->group(function () {
+    Route::middleware(['permission:update PrestamoArchivo'])->group(function () {
+        Route::resource('sedes', \App\Http\Controllers\SedeController::class);
+        Route::resource('estantes', \App\Http\Controllers\EstanteController::class);
+        Route::resource('gavetas', \App\Http\Controllers\GavetaController::class);
+    });
+
+    Route::middleware(['permission:read Bitacora'])->group(function () {
         Route::get('/bitacora', [ActivityLogController::class , 'index'])->name('bitacora.index');
     });
 
-    Route::middleware(['role:Super Admin'])->group(function () {
+    Route::middleware(['permission:read Backup'])->group(function () {
         Route::get('/backups', [BackupController::class , 'index'])->name('backups.index');
         Route::post('/backups', [BackupController::class , 'create'])->name('backups.create');
         Route::get('/backups/{fileName}', [BackupController::class , 'download'])->name('backups.download');

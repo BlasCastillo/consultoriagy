@@ -44,6 +44,7 @@
         </main>
     </div>
     @stack('scripts')
+    <script src="{{ asset('js/global-validation.js') }}"></script>
 </body>
 
 </html>
