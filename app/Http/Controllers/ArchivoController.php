@@ -86,6 +86,35 @@ class ArchivoController extends Controller
                 ->log("Gaceta Histórica N° {$gaceta->numero} ingresada al sistema vía Fast-Track.");
         });
 
+        // TRIGGER POA: Incremento automático por carga histórica desde Kardex
+        if ($request->has('meta_trimestral_id')) {
+            $meta = \App\Models\MetaTrimestral::with('actividadPoa.poa')->find($request->meta_trimestral_id);
+            if ($meta) {
+                $meta->increment('ejecutada');
+                \App\Models\Poa::checkAndClose($meta->actividadPoa->poa);
+            }
+        } elseif (auth()->check() && auth()->user()->jefatura_id) {
+            $poa = \App\Models\Poa::where('anio', now()->year)
+                ->where('jefatura_id', auth()->user()->jefatura_id)
+                ->where('estado', '!=', 'Cerrado')
+                ->first();
+                
+            if ($poa) {
+                // Busca la actividad específica de carga histórica
+                $actividad = $poa->actividades()->where('descripcion', 'ILIKE', '%históricas%')->first();
+                
+                if ($actividad) {
+                    // Suma al trimestre actual, ya que el esfuerzo físico ocurre hoy
+                    $meta = $actividad->metasTrimestrales()->where('trimestre', ceil(now()->month / 3))->first();
+                    
+                    if ($meta) {
+                        $meta->increment('ejecutada');
+                        \App\Models\Poa::checkAndClose($poa);
+                    }
+                }
+            }
+        }
+
         return redirect()->route('archivo.index')->with('success', 'Gaceta histórica procesada e indexada correctamente.');
     }
 

@@ -4,9 +4,17 @@
             <h2 class="font-semibold text-xl text-slate-800 leading-tight">
                 {{ __('Gestión de Planes Operativos Anuales (POA)') }}
             </h2>
+            @hasanyrole(['Super Admin', 'Coordinador de Seguimiento y Control de Políticas Públicas'])
             <a href="{{ route('poa.create') }}" class="px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 shadow-sm">
                 Nuevo POA
             </a>
+            @else
+            @can('crear_poa')
+            <a href="{{ route('poa.create') }}" class="px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 shadow-sm">
+                Nuevo POA
+            </a>
+            @endcan
+            @endhasanyrole
         </div>
     </x-slot>
 
@@ -41,9 +49,10 @@
                                         <td class="py-3 px-4 text-sm">
                                             <span class="px-2 py-1 text-xs font-semibold rounded-full 
                                                 @if($poa->estado == 'Aprobado') bg-blue-100 text-blue-800 
-                                                @elseif($poa->estado == 'Ejecucion') bg-green-100 text-green-800 
-                                                @elseif($poa->estado == 'Cerrado') bg-slate-100 text-slate-800 
-                                                @else bg-yellow-100 text-yellow-800 @endif">
+                                                @elseif($poa->estado == 'En Ejecución') bg-green-100 text-green-800 
+                                                @elseif($poa->estado == 'Cerrado') bg-red-100 text-red-800 
+                                                @elseif($poa->estado == 'Borrador') bg-gray-100 text-gray-800 
+                                                @else bg-slate-100 text-slate-800 @endif">
                                                 {{ $poa->estado }}
                                             </span>
                                         </td>

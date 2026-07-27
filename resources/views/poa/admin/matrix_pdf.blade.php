@@ -16,6 +16,7 @@
     </style>
 </head>
 <body>
+    @include('poa.header_oficial')
     <div class="header">
         <h1>Matriz de Indicadores - Plan Operativo Anual {{ $poa->anio }}</h1>
         <p>
@@ -58,7 +59,7 @@
                         <td>{{ $meta ? $meta->meta_actual : 0 }}</td>
                     @endfor
 
-                    <td>{{ $actividad->partida_presupuestaria }}</td>
+                    <td>{{ $actividad->partida_presupuestaria }}<br>Bs. {{ number_format($actividad->monto_asignado, 2, ',', '.') }}</td>
                 </tr>
             @endforeach
             

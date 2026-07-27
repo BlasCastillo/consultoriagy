@@ -13,7 +13,36 @@ class FichaActividadController extends Controller
 {
     public function create()
     {
-        $metas = MetaTrimestral::with(['actividadPoa.poa.jefatura'])->get();
+        $query = \App\Models\MetaTrimestral::with(['actividadPoa.poa.jefatura'])
+            ->whereHas('actividadPoa.poa', function($q) {
+                $q->whereIn('estado', ['Aprobado', 'Ejecucion']);
+            });
+
+        $user = auth()->user();
+        if (!$user->hasPermissionTo('read Poa')) {
+            $rolesUsuario = $user->roles->pluck('name')->toArray();
+            
+            $jefaturaIds = [];
+            foreach ($rolesUsuario as $roleName) {
+                if ($roleName === 'Jefe de Publicaciones') {
+                    $j = \App\Models\Jefatura::where('nombre', 'like', '%Publicaciones%')->first();
+                    if($j) $jefaturaIds[] = $j->id;
+                } elseif ($roleName === 'Jefe de Legislacion y Asuntos Juridicos') {
+                    $j = \App\Models\Jefatura::where('nombre', 'like', '%Legislación y Asuntos Jurídicos%')->first();
+                    if($j) $jefaturaIds[] = $j->id;
+                }
+            }
+            
+            $query->whereHas('actividadPoa.poa', function ($q) use ($jefaturaIds) {
+                if (empty($jefaturaIds)) {
+                    $q->whereIn('jefatura_id', [0]);
+                } else {
+                    $q->whereIn('jefatura_id', $jefaturaIds);
+                }
+            });
+        }
+
+        $metas = $query->get();
         return view('poa.fichas.create', compact('metas'));
     }
 
@@ -33,12 +62,9 @@ class FichaActividadController extends Controller
         $ficha = FichaActividad::create($request->except('imagenes'));
 
         if ($request->hasFile('imagenes')) {
-            foreach ($request->file('imagenes') as $file) {
-                $path = $file->store('fichas_imagenes', 'public');
-                ImagenFicha::create([
-                    'ficha_actividad_id' => $ficha->id,
-                    'ruta_imagen' => $path
-                ]);
+            foreach ($request->file('imagenes') as $imagen) {
+                $path = $imagen->store('fichas', 'public');
+                $ficha->imagenes()->create(['ruta_imagen' => $path]);
             }
         }
 
@@ -47,10 +73,10 @@ class FichaActividadController extends Controller
 
     public function exportPdf($id)
     {
-        $ficha = FichaActividad::with(['imagenes', 'metaTrimestral.actividadPoa.poa.jefatura'])->findOrFail($id);
+        $ficha = FichaActividad::with(['metaTrimestral.actividadPoa.poa.jefatura'])->findOrFail($id);
+        $ficha->load('imagenes');
         
-        $pdf = Pdf::loadView('poa.fichas.pdf', compact('ficha'));
-        // Puedes usar stream() para ver en navegador o download()
-        return $pdf->stream('Ficha_Actividad_' . $ficha->id . '.pdf');
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('poa.fichas.pdf', compact('ficha'));
+        return $pdf->stream('informe_actividad_'.$ficha->id.'.pdf');
     }
 }

@@ -62,6 +62,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class , 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class , 'destroy'])->name('profile.destroy');
 
+    Route::resource('atenciones', \App\Http\Controllers\AtencionController::class);
+
     Route::get('/debug-permisos', function() {
         $user = auth()->user();
         return response()->json([

@@ -11,7 +11,7 @@
                 </a>
                 <a href="{{ route('poa.matriz_pdf', $poa->id) }}" target="_blank"
                     class="px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 shadow-sm flex items-center">
-                    <i class="fa-solid fa-file-pdf mr-2"></i> Exportar PDF
+                    <i class="fa-solid fa-file-pdf mr-2"></i> Descargar Matriz PDF
                 </a>
                 <a href="{{ route('actividades.create', $poa->id) }}"
                     class="px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 shadow-sm">

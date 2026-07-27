@@ -24,9 +24,11 @@ if not exist storage\framework\cache mkdir storage\framework\cache
 if not exist storage\framework\sessions mkdir storage\framework\sessions
 if not exist storage\framework\views mkdir storage\framework\views
 
-:: 3. Limpieza profunda
+:: 3. Limpieza profunda y Reconstrucción Segura
 echo [OK] Limpiando cache del sistema...
 call php artisan optimize:clear
+echo [OK] Descubriendo paquetes para evitar colisiones...
+call php artisan package:discover
 
 :: 4. Enlace simbolico de imagenes (Storage Link)
 if not exist public\storage (

@@ -32,9 +32,9 @@
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Estado Inicial</label>
                                 <select name="estado" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
-                                    <option value="Aprobado">Aprobado</option>
-                                    <option value="Ejecucion">En Ejecución</option>
-                                    <option value="Cerrado">Cerrado</option>
+                                    <option value="Aprobado" {{ old('estado') == 'Aprobado' ? 'selected' : '' }}>Aprobado</option>
+                                    <option value="Ejecucion" {{ old('estado') == 'Ejecucion' ? 'selected' : '' }}>En Ejecución</option>
+                                    <option value="Cerrado" {{ old('estado') == 'Cerrado' ? 'selected' : '' }}>Cerrado</option>
                                 </select>
                             </div>
                         </div>

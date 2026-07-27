@@ -22,6 +22,9 @@
 
                     <form action="{{ route('archivo.retroactiva.store') }}" method="POST" enctype="multipart/form-data" id="historicoForm">
                         @csrf
+                        @if(request('meta_trimestral_id'))
+                            <input type="hidden" name="meta_trimestral_id" value="{{ request('meta_trimestral_id') }}">
+                        @endif
                         
                         {{-- BLOQUE SUPERIOR: METADATOS DE LA GACETA --}}
                         <div class="mb-8">

@@ -55,20 +55,20 @@
                                     <x-dropdown-link :href="route('poa.index')">
                                         {{ __('Gestionar POAs') }}
                                     </x-dropdown-link>
+                                    @can('read FichaActividad')
+                                        <x-dropdown-link :href="route('fichas.create')">
+                                            {{ __('Registrar Actividad') }}
+                                        </x-dropdown-link>
+                                    @endcan
                                 </x-slot>
                             </x-dropdown>
                         </div>
                     @endcan
 
-                    @can('create ActividadPoa')
-                        <x-nav-link :href="route('fichas.create')" :active="request()->routeIs('fichas.create')">
-                            <i class="fa-solid fa-clipboard-check mr-2"></i> {{ __('Registrar Actividad') }}
-                        </x-nav-link>
-                    @endcan
 
                     {{-- C) Para Administradores y Procesadores --}}
 
-                    @canany(['read Solicitud', 'read Gaceta', 'read PrestamoArchivo'])
+                    @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->canAny(['read Solicitud', 'read Gaceta', 'read PrestamoArchivo']))
 
                         {{-- Dropdown Procesos --}}
                         <div class="hidden sm:flex sm:items-center sm:ms-2">
@@ -107,18 +107,19 @@
                                             {{ __('Ensamblar Nueva Gaceta') }}
                                         </x-dropdown-link>
                                     @endcan
-                                    @can('read PrestamoArchivo')
+                                    @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('read PrestamoArchivo'))
                                         <x-dropdown-link :href="route('archivo.index')">
                                             {{ __('Módulo de Archivo') }}
                                         </x-dropdown-link>
-                                    @endcan
+                                    @endif
+
 
                                 </x-slot>
                             </x-dropdown>
                         </div>
-                    @endcanany
+                    @endif
 
-                    @canany(['read Institucion', 'read Gobernador', 'read Jefatura'])
+                    @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->canAny(['read Institucion', 'read Gobernador', 'read Jefatura', 'read Sede', 'read Estante', 'read Gaveta', 'ver atenciones']))
 
                         {{-- Dropdown Registros Maestros --}}
                         <div class="hidden sm:flex sm:items-center sm:ms-2">
@@ -164,17 +165,26 @@
                                             {{ __('Títulos') }}
                                         </x-dropdown-link>
                                     @endcan
-                                    @can('update PrestamoArchivo')
+                                    @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('read Sede'))
                                         <x-dropdown-link :href="route('sedes.index')">
-                                            <i class="fa-solid fa-building mr-1"></i> {{ __('Sedes') }}
+                                            <i class="fa-solid fa-building mr-1"></i> {{ __('Sedes (Edificios)') }}
                                         </x-dropdown-link>
+                                    @endif
+                                    @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('read Estante'))
                                         <x-dropdown-link :href="route('estantes.index')">
                                             <i class="fa-solid fa-server mr-1"></i> {{ __('Estantes') }}
                                         </x-dropdown-link>
+                                    @endif
+                                    @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('read Gaveta'))
                                         <x-dropdown-link :href="route('gavetas.index')">
                                             <i class="fa-solid fa-box-archive mr-1"></i> {{ __('Gavetas') }}
                                         </x-dropdown-link>
-                                    @endcan
+                                    @endif
+                                    @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('ver atenciones'))
+                                        <x-dropdown-link :href="route('atenciones.index')">
+                                            <i class="fa-solid fa-users mr-1"></i> {{ __('Atención al Ciudadano') }}
+                                        </x-dropdown-link>
+                                    @endif
                                 </x-slot>
                             </x-dropdown>
                         </div>

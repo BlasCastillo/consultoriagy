@@ -385,6 +385,12 @@ public function publicarGaceta(Request $request, string $id)
     // CASCADA DE ESTADOS ATÓMICA
     $gaceta->solicitudes()->update(['estado' => 'Publicada']);
 
+    // DISPARO SERVICIO CENTRAL POA (Evita bug de contexto de Superadmin)
+    $jefatura = \App\Models\Jefatura::where('nombre', 'ILIKE', '%Publicaciones%')->first();
+    if ($jefatura) {
+        \App\Services\PoaService::registrarEjecucion('gaceta_corriente', $jefatura->id, now());
+    }
+
     // Notificar a las instituciones
     $institucionesIds = $gaceta->solicitudes->pluck('institucion_id')->unique();
     $usuariosNotificar = \App\Models\User::whereIn('institucion_id', $institucionesIds)->get();

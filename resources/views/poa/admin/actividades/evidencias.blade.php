@@ -82,6 +82,22 @@
                             @if(!$meta)
                                 <p class="text-slate-500 text-sm italic text-center py-4">No hay metas para este trimestre.</p>
                             @else
+                                @php
+                                    $anioActual = now()->year;
+                                    $trimestreActual = ceil(now()->month / 3);
+                                    $esTrimesterVencido2026 = ($anioActual == 2026 && $meta->trimestre < $trimestreActual);
+                                    $esActividadHistorica = str_contains(strtolower($actividad->descripcion), 'históricas');
+                                @endphp
+
+                                @if($esActividadHistorica && $esTrimesterVencido2026)
+                                    <div class="mb-4 bg-purple-50 border border-purple-200 p-3 rounded-md flex justify-between items-center">
+                                        <span class="text-sm text-purple-800 font-semibold">Excepción de Trimestre Vencido</span>
+                                        <a href="{{ route('archivo.retroactiva.create', ['meta_trimestral_id' => $meta->id]) }}" class="px-3 py-1 bg-purple-600 text-white rounded shadow-sm text-xs font-bold uppercase tracking-widest hover:bg-purple-700 transition">
+                                            ⬆️ Subir Gaceta Histórica Retroactiva
+                                        </a>
+                                    </div>
+                                @endif
+
                                 <!-- Formulario de Subida -->
                                 <div class="mb-6 bg-slate-50 p-4 rounded border border-slate-200">
                                     <form action="{{ route('evidencias.store', $meta->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
@@ -130,13 +146,22 @@
                                                         @endif
                                                     </div>
                                                     <div class="truncate">
-                                                        <a href="{{ Storage::url($evidencia->archivo_path) }}" target="_blank" class="text-sm font-semibold text-blue-600 hover:underline truncate block">
-                                                            {{ $evidencia->tipo }}
-                                                        </a>
+                                                        <span class="text-sm font-semibold text-blue-600 block">{{ $evidencia->tipo }}</span>
                                                         @if($evidencia->descripcion)
                                                             <p class="text-xs text-slate-500 truncate">{{ $evidencia->descripcion }}</p>
                                                         @endif
-                                                        <span class="text-[10px] text-slate-400">{{ $evidencia->created_at->format('d/m/Y H:i') }}</span>
+                                                        <span class="text-[10px] text-slate-400 block mb-1">{{ $evidencia->created_at->format('d/m/Y H:i') }}</span>
+                                                        <div class="flex items-center space-x-2">
+                                                            <a href="{{ asset('storage/' . $evidencia->archivo_path) }}" target="_blank" class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold hover:bg-emerald-200 transition">Ver Documento</a>
+                                                            @if($evidencia->tipo == 'Ficha')
+                                                                @php
+                                                                    $fichaAsociada = \App\Models\FichaActividad::where('meta_trimestral_id', $meta->id)->first();
+                                                                @endphp
+                                                                @if($fichaAsociada)
+                                                                    <a href="{{ route('fichas.pdf', $fichaAsociada->id) }}" target="_blank" class="px-2 py-1 bg-red-600 text-white rounded text-[10px] font-bold hover:bg-red-700 transition">Generar Reporte Ficha (PDF)</a>
+                                                                @endif
+                                                            @endif
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="ml-4 flex-shrink-0">

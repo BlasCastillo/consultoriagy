@@ -50,9 +50,10 @@
                                     </div>
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full 
                                         @if($poa->estado == 'Aprobado') bg-blue-100 text-blue-800 
-                                        @elseif($poa->estado == 'Ejecucion') bg-green-100 text-green-800 
-                                        @elseif($poa->estado == 'Cerrado') bg-slate-100 text-slate-800 
-                                        @else bg-yellow-100 text-yellow-800 @endif">
+                                        @elseif($poa->estado == 'En Ejecución') bg-green-100 text-green-800 
+                                        @elseif($poa->estado == 'Cerrado') bg-red-100 text-red-800 
+                                        @elseif($poa->estado == 'Borrador') bg-gray-100 text-gray-800 
+                                        @else bg-slate-100 text-slate-800 @endif">
                                         {{ $poa->estado }}
                                     </span>
                                 </div>

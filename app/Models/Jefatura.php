@@ -49,4 +49,16 @@ class Jefatura extends Model
                     ->orderBy('nombre', 'asc')
                     ->with('childrenRecursive');
     }
+
+    public function dependenciasHijas() {
+        return $this->hasMany(Jefatura::class, 'parent_id'); 
+    }
+
+    public function getDescendantsIds() {
+        $ids = [$this->id]; // Se incluye a sí mismo
+        foreach ($this->dependenciasHijas as $hija) {
+            $ids = array_merge($ids, $hija->getDescendantsIds());
+        }
+        return $ids;
+    }
 }

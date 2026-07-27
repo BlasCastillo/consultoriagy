@@ -20,6 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
             target.value = target.value.replace(/[<>;={}]/g, '');
         }
 
+        // Regla .val-solo-letras (Solo permite letras, acentos, ñ y espacios mientras se escribe)
+        if (target.classList.contains('val-solo-letras')) {
+            target.value = target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+        }
+
         // Regla .val-fecha-rango (Sincronización de origen a destino)
         if (target.classList.contains('val-fecha-rango')) {
             const destSelector = target.getAttribute('data-target');

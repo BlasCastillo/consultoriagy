@@ -26,6 +26,10 @@ class AppServiceProvider extends ServiceProvider
     {
         FichaActividad::observe(FichaActividadObserver::class);
         Gaceta::observe(GacetaObserver::class);
+        \App\Models\ActoAdministrativo::observe(\App\Observers\ActoAdministrativoObserver::class);
+        if (class_exists(\App\Models\Atencion::class)) {
+            \App\Models\Atencion::observe(\App\Observers\AtencionObserver::class);
+        }
 
         Gate::before(function ($user, $ability) {
             if ($user->hasAnyRole(['Súper Administrador', 'Super Admin'])) {

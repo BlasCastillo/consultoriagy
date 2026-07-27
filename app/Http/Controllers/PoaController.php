@@ -51,7 +51,7 @@ class PoaController extends Controller
 
     public function create()
     {
-        $jefaturas = Jefatura::all();
+        $jefaturas = \App\Models\Jefatura::whereIn('nivel', [3, 4, 5])->orderBy('nivel')->get();
         return view('poa.admin.create', compact('jefaturas'));
     }
 
@@ -60,14 +60,10 @@ class PoaController extends Controller
         $request->validate([
             'anio' => 'required|integer|min:2020|max:2099',
             'jefatura_id' => 'required|exists:jefaturas,id',
-            'estado' => 'required|in:Aprobado,Ejecucion,Cerrado'
+            'estado' => 'required|in:Borrador,Aprobado,Ejecucion,Cerrado'
         ]);
 
         $data = $request->all();
-
-        if ($data['anio'] == Carbon::now()->year) {
-            $data['estado'] = 'Ejecucion';
-        }
 
         Poa::create($data);
 

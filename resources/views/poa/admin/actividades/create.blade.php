@@ -25,7 +25,14 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Descripción de la Actividad</label>
-                            <textarea name="descripcion" required rows="2" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">{{ old('descripcion') }}</textarea>
+                            <select name="descripcion" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
+                                <option value="" disabled selected>Seleccione una actividad...</option>
+                                <option value="Asesorar jurídicamente a la Gobernación del Estado..." {{ old('descripcion') == 'Asesorar jurídicamente a la Gobernación del Estado...' ? 'selected' : '' }}>Asesorar jurídicamente...</option>
+                                <option value="Investigar y redactar los proyectos de ley, decretos..." {{ old('descripcion') == 'Investigar y redactar los proyectos de ley, decretos...' ? 'selected' : '' }}>Investigar y redactar proyectos normativos</option>
+                                <option value="Elaborar, revisar, anunciar y publicar las Gacetas Oficiales..." {{ old('descripcion') == 'Elaborar, revisar, anunciar y publicar las Gacetas Oficiales...' ? 'selected' : '' }}>Publicación de Gacetas</option>
+                                <option value="Analizar y redactar los convenios, contratos..." {{ old('descripcion') == 'Analizar y redactar los convenios, contratos...' ? 'selected' : '' }}>Redacción de Convenios y Contratos</option>
+                                <option value="Digitalización y Carga de Gacetas Históricas">Digitalización y Carga de Gacetas Históricas</option>
+                            </select>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -39,6 +46,11 @@
                                     <option value="404" {{ old('partida_presupuestaria') == '404' ? 'selected' : '' }}>404 - Activos Reales</option>
                                     <option value="407" {{ old('partida_presupuestaria') == '407' ? 'selected' : '' }}>407 - Transferencias y Donaciones</option>
                                 </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">Monto Asignado</label>
+                                <input type="number" step="0.01" name="monto_asignado" value="{{ old('monto_asignado', '0.00') }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
                             </div>
 
                             <div>

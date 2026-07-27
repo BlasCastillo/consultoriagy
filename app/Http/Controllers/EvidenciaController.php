@@ -51,20 +51,22 @@ class EvidenciaController extends Controller
         }
 
         $request->validate([
-            'archivo' => 'required|mimes:jpg,png,pdf|max:5120',
+            'archivo' => 'required|mimes:pdf|max:5120',
             'descripcion' => 'nullable|string|max:1000',
-            'tipo' => 'required|string|in:Ficha,Foto,Informe',
+            'tipo' => 'nullable|string',
         ]);
 
         if ($request->hasFile('archivo')) {
             $path = $request->file('archivo')->store('evidencias', 'public');
 
-            Evidencia::create([
-                'meta_trimestral_id' => $meta->id,
+            $meta->evidencias()->create([
                 'archivo_path' => $path,
                 'descripcion' => $request->descripcion,
-                'tipo' => $request->tipo,
+                'tipo' => $request->tipo ?? 'Documento Legal'
             ]);
+
+            $meta->increment('ejecutada');
+            \App\Models\Poa::checkAndClose($meta->actividadPoa->poa);
 
             return back()->with('success', 'Evidencia subida correctamente.');
         }
@@ -75,8 +77,9 @@ class EvidenciaController extends Controller
     public function destroy($id)
     {
         $evidencia = Evidencia::with('metaTrimestral.actividadPoa.poa')->findOrFail($id);
+        $meta = $evidencia->metaTrimestral;
 
-        if (!$this->validarAccesoPOA($evidencia->metaTrimestral->actividadPoa->poa)) {
+        if (!$this->validarAccesoPOA($meta->actividadPoa->poa)) {
             return back()->with('error', 'No tienes permiso para eliminar evidencias en este POA.');
         }
 
@@ -85,6 +88,10 @@ class EvidenciaController extends Controller
         }
 
         $evidencia->delete();
+
+        if ($meta->ejecutada > 0) {
+            $meta->decrement('ejecutada');
+        }
 
         return back()->with('success', 'Evidencia eliminada permanentemente.');
     }
