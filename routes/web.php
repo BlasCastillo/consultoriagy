@@ -25,22 +25,55 @@ Route::get('/dashboard', function () {
         return redirect('/mis-solicitudes');
     }
 
-    $totalUsers = User::count();
-    $totalRoles = Role::count();
-    $totalInstitutions = \App\Models\Institucion::count();
+    // --- 1. KPIs CON REGLAS DE NEGOCIO ESTRICTAS ---
+    $kpiGacetas = \App\Models\Gaceta::where('estado', 'Publicada')->count();
 
-    $rolesDistribution = Role::withCount('users')->get()->map(function ($role) {
-        return [
-            'name' => $role->name,
-            'count' => $role->users_count
-        ];
-    });
+    // Solicitudes se consideran atendidas si su estado es 'Publicada'
+    $kpiSolicitudesAtendidas = \App\Models\Solicitud::where('estado', 'Publicada')->count();
 
-    $poasAnuales = \App\Models\Poa::with(['actividades.metasTrimestrales'])
-        ->where('anio', \Carbon\Carbon::now()->year)
+    // Instituciones activas: Tienen un usuario asignado
+    $kpiInstitucionesActivas = \App\Models\User::whereNotNull('institucion_id')->distinct('institucion_id')->count('institucion_id');
+
+    $kpiTotalInstituciones = \App\Models\Institucion::count();
+
+    $kpiPoasActuales = \App\Models\Poa::where('anio', now()->year)->count();
+
+    // Préstamos Activos (Todo lo que no esté 'Devuelto')
+    $kpiPrestamosActivos = \App\Models\PrestamoArchivo::where('estado_prestamo', '!=', 'Devuelto')->count();
+
+    // --- 2. GRÁFICOS ---
+    // Gráfico 1: Solicitudes por Mes (PostgreSQL strict)
+    $chartSolicitudesMes = \App\Models\Solicitud::selectRaw('EXTRACT(MONTH FROM created_at) as mes, COUNT(*) as total')
+        ->whereYear('created_at', now()->year)
+        ->groupByRaw('EXTRACT(MONTH FROM created_at)')
+        ->orderBy('mes')
+        ->pluck('total', 'mes')
+        ->toArray();
+
+    // Gráfico 2: Atenciones por Coordinación (Agrupación Real + Eager Loading)
+    $atencionesRaw = \App\Models\Atencion::with('jefaturaDestino')
+        ->selectRaw('jefatura_destino_id, COUNT(*) as total')
+        ->whereYear('created_at', now()->year)
+        ->groupBy('jefatura_destino_id')
         ->get();
 
-    return view('dashboard', compact('totalUsers', 'totalRoles', 'rolesDistribution', 'totalInstitutions', 'poasAnuales'));
+    // Preparamos colecciones limpias para Chart.js
+    $chartAtencionesLabels = $atencionesRaw->map(function ($item) {
+        return $item->jefaturaDestino ? $item->jefaturaDestino->nombre : 'Sin Asignar';
+    });
+    $chartAtencionesData = $atencionesRaw->pluck('total');
+
+    return view('dashboard', compact(
+        'kpiGacetas',
+        'kpiSolicitudesAtendidas',
+        'kpiInstitucionesActivas',
+        'kpiTotalInstituciones',
+        'kpiPoasActuales',
+        'kpiPrestamosActivos',
+        'chartSolicitudesMes',
+        'chartAtencionesLabels',
+        'chartAtencionesData'
+    ));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/gacetas-publicadas', [\App\Http\Controllers\GacetaController::class, 'publicadas'])->name('gacetas.publicadas');
@@ -58,13 +91,16 @@ Route::middleware(['auth', 'permission:read PrestamoArchivo'])->group(function (
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/profile', [ProfileController::class , 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class , 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class , 'destroy'])->name('profile.destroy');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Ruta del Motor de Inteligencia Artificial (Chatbot)
+    Route::post('/chatbot/ask', [\App\Http\Controllers\ChatbotController::class, 'ask'])->name('chatbot.ask');
 
     Route::resource('atenciones', \App\Http\Controllers\AtencionController::class);
 
-    Route::get('/debug-permisos', function() {
+    Route::get('/debug-permisos', function () {
         $user = auth()->user();
         return response()->json([
             'usuario_actual' => $user->name,
@@ -87,13 +123,13 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['permission:update Gaceta'])->group(function () {
         Route::patch('solicitudes/{solicitud}/aprobar', [\App\Http\Controllers\SolicitudController::class, 'aprobar'])->name('solicitudes.aprobar');
         Route::patch('solicitudes/{solicitud}/rechazar', [\App\Http\Controllers\SolicitudController::class, 'rechazar'])->name('solicitudes.rechazar');
-        
+
         Route::get('gacetas/{gaceta}/checklist', [GacetaController::class, 'evaluarChecklist'])->name('gacetas.checklist');
         Route::post('gacetas/{gaceta}/checklist', [GacetaController::class, 'guardarChecklist'])->name('gacetas.checklist.save');
-        
+
         Route::get('gacetas/{gaceta}/asignar', [GacetaController::class, 'asignarDigitalizador'])->name('gacetas.asignar');
         Route::post('gacetas/{gaceta}/asignar', [GacetaController::class, 'guardarAsignacion'])->name('gacetas.asignar.save');
-        
+
         Route::get('gacetas/{gaceta}/aprobar', [GacetaController::class, 'aprobarPublicacion'])->name('gacetas.aprobar');
 
         // Nuevas rutas de revisión para el Coordinador (Jefatura)
@@ -155,30 +191,30 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/poa/admin/{poa_id}/actividades/create', [\App\Http\Controllers\ActividadPoaController::class, 'create'])->name('actividades.create');
         Route::post('/poa/admin/{poa_id}/actividades', [\App\Http\Controllers\ActividadPoaController::class, 'store'])->name('actividades.store');
-        
+
         Route::get('/poa/admin/actividades/{actividad_id}/replanificar', [\App\Http\Controllers\ActividadPoaController::class, 'replanificar'])->name('actividades.replanificar');
         Route::post('/poa/admin/actividades/{actividad_id}/replanificar', [\App\Http\Controllers\ActividadPoaController::class, 'storeReplanificacion'])->name('actividades.storeReplanificacion');
-        
+
         Route::get('/poa/admin/actividades/{actividad_id}/evidencias', [\App\Http\Controllers\EvidenciaController::class, 'manage'])->name('actividades.evidencias');
         Route::post('/poa/admin/metas/{meta_trimestral_id}/evidencias', [\App\Http\Controllers\EvidenciaController::class, 'store'])->name('evidencias.store');
         Route::delete('/poa/admin/evidencias/{evidencia_id}', [\App\Http\Controllers\EvidenciaController::class, 'destroy'])->name('evidencias.destroy');
-        
+
         Route::get('/poa/admin/{poa}/matriz-pdf', [\App\Http\Controllers\PoaController::class, 'exportMatrixPdf'])->name('poa.matriz_pdf');
     });
 
     Route::middleware(['permission:read User|read Role'])->group(function () {
-        Route::patch('roles/{id}/restore', [RoleController::class , 'restore'])->name('roles.restore');
+        Route::patch('roles/{id}/restore', [RoleController::class, 'restore'])->name('roles.restore');
         Route::resource('roles', RoleController::class);
 
-        Route::patch('users/{id}/restore', [UserController::class , 'restore'])->name('users.restore');
+        Route::patch('users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
         Route::resource('users', UserController::class);
     });
 
     Route::middleware(['permission:read Institucion'])->group(function () {
-        Route::patch('institutions/{id}/restore', [InstitutionController::class , 'restore'])->name('institutions.restore');
+        Route::patch('institutions/{id}/restore', [InstitutionController::class, 'restore'])->name('institutions.restore');
         Route::resource('institutions', InstitutionController::class);
         Route::resource('tipo-instituciones', TipoInstitucionController::class);
-        Route::patch('jefaturas/{id}/restore', [App\Http\Controllers\JefaturaController::class , 'restore'])->name('jefaturas.restore');
+        Route::patch('jefaturas/{id}/restore', [App\Http\Controllers\JefaturaController::class, 'restore'])->name('jefaturas.restore');
         Route::get('jefaturas/exportar-organigrama', [App\Http\Controllers\JefaturaController::class, 'exportarPdf'])->name('jefaturas.pdf');
         Route::resource('jefaturas', App\Http\Controllers\JefaturaController::class);
     });
@@ -190,15 +226,29 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware(['permission:read Bitacora'])->group(function () {
-        Route::get('/bitacora', [ActivityLogController::class , 'index'])->name('bitacora.index');
+        Route::get('/bitacora', [ActivityLogController::class, 'index'])->name('bitacora.index');
     });
 
     Route::middleware(['permission:read Backup'])->group(function () {
-        Route::get('/backups', [BackupController::class , 'index'])->name('backups.index');
-        Route::post('/backups', [BackupController::class , 'create'])->name('backups.create');
-        Route::get('/backups/{fileName}', [BackupController::class , 'download'])->name('backups.download');
-        Route::delete('/backups/{fileName}', [BackupController::class , 'destroy'])->name('backups.destroy');
+        Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
+        Route::post('/backups', [BackupController::class, 'create'])->name('backups.create');
+        Route::get('/backups/{fileName}', [BackupController::class, 'download'])->name('backups.download');
+        Route::delete('/backups/{fileName}', [BackupController::class, 'destroy'])->name('backups.destroy');
     });
 });
 
 require __DIR__ . '/auth.php';
+Route::get('/test-gemini', function () {
+    $llave = env('GEMINI_API_KEY');
+
+    try {
+        // Hacemos una petición GET al endpoint de "models"
+        $respuesta = \Illuminate\Support\Facades\Http::withoutVerifying()
+            ->get("https://generativelanguage.googleapis.com/v1beta/models?key=" . $llave);
+
+        return $respuesta->json();
+
+    } catch (\Exception $e) {
+        return "Error real de red: " . $e->getMessage();
+    }
+});

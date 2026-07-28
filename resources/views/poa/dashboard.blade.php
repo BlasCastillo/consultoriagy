@@ -29,16 +29,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         @forelse($poas as $poa)
                             @php
-                                $totalMeta = 0;
-                                $totalEjecutada = 0;
-
-                                foreach($poa->actividades as $act) {
-                                    foreach($act->metasTrimestrales as $meta) {
-                                        $totalMeta += $meta->meta_actual;
-                                        $totalEjecutada += $meta->ejecutada;
-                                    }
-                                }
-
+                                $totalMeta = $poa->total_meta ?? 0;
+                                $totalEjecutada = $poa->total_ejecutada ?? 0;
                                 $porcentaje = $totalMeta > 0 ? min(100, round(($totalEjecutada / $totalMeta) * 100)) : 0;
                             @endphp
 

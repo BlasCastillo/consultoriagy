@@ -13,8 +13,13 @@ class PoaController extends Controller
     public function dashboard()
     {
         // En el dashboard ya no hay "tipo = General", todos son de jefaturas.
-        // Simularemos el POA General sumando todos los del año en curso.
-        $poas = Poa::with(['jefatura', 'actividades.metasTrimestrales'])->where('anio', Carbon::now()->year)->get();
+        // Optimizamos la carga usando agregación en la base de datos (withSum) en lugar de Lazy/Eager Collection
+        $poas = Poa::with('jefatura')
+            ->withSum('metasTrimestrales as total_meta', 'meta_actual')
+            ->withSum('metasTrimestrales as total_ejecutada', 'ejecutada')
+            ->where('anio', Carbon::now()->year)
+            ->get();
+
         return view('poa.dashboard', compact('poas'));
     }
 

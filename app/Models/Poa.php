@@ -71,4 +71,9 @@ class Poa extends Model
     {
         return $this->hasMany(ActividadPoa::class);
     }
+
+    public function metasTrimestrales()
+    {
+        return $this->hasManyThrough(MetaTrimestral::class, ActividadPoa::class);
+    }
 }

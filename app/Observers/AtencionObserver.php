@@ -17,6 +17,9 @@ class AtencionObserver
             ->where('jefatura_id', $atencion->jefatura_destino_id)
             ->where('estado', '!=', 'Cerrado')
             ->first();
+        if (!$poa) {
+            return;
+        }
 
         if ($poa) {
             // Busca la actividad relacionada a personas atendidas

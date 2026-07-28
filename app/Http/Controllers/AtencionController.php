@@ -24,6 +24,11 @@ class AtencionController extends Controller
 
         \App\Services\PoaService::registrarEjecucion('atencion', $request->jefatura_destino_id, now());
 
+        $usuariosDestino = \App\Models\User::where('jefatura_id', $atencion->jefatura_destino_id)->get();
+        if ($usuariosDestino->isNotEmpty()) {
+            \Illuminate\Support\Facades\Notification::send($usuariosDestino, new \App\Notifications\NuevaAtencionNotification($atencion));
+        }
+
         return redirect()->route('atenciones.index')->with('success', 'Atención registrada exitosamente y meta del POA actualizada.');
     }
 }

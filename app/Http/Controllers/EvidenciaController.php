@@ -57,16 +57,18 @@ class EvidenciaController extends Controller
         ]);
 
         if ($request->hasFile('archivo')) {
-            $path = $request->file('archivo')->store('evidencias', 'public');
+            \Illuminate\Support\Facades\DB::transaction(function () use ($request, $meta) {
+                $path = $request->file('archivo')->store('evidencias', 'public');
 
-            $meta->evidencias()->create([
-                'archivo_path' => $path,
-                'descripcion' => $request->descripcion,
-                'tipo' => $request->tipo ?? 'Documento Legal'
-            ]);
+                $meta->evidencias()->create([
+                    'archivo_path' => $path,
+                    'descripcion' => $request->descripcion,
+                    'tipo' => $request->tipo ?? 'Documento Legal'
+                ]);
 
-            $meta->increment('ejecutada');
-            \App\Models\Poa::checkAndClose($meta->actividadPoa->poa);
+                $meta->increment('ejecutada');
+                \App\Models\Poa::checkAndClose($meta->actividadPoa->poa);
+            });
 
             return back()->with('success', 'Evidencia subida correctamente.');
         }

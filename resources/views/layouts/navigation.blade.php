@@ -1,5 +1,5 @@
 <nav x-data="{ open: false }" class="bg-slate-900 border-b border-slate-700">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
                 <div class="shrink-0 flex items-center">
@@ -121,73 +121,73 @@
 
                     @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->canAny(['read Institucion', 'read Gobernador', 'read Jefatura', 'read Sede', 'read Estante', 'read Gaveta', 'ver atenciones']))
 
-                        {{-- Dropdown Registros Maestros --}}
-                        <div class="hidden sm:flex sm:items-center sm:ms-2">
-                            <x-dropdown align="left" width="48">
-                                <x-slot name="trigger">
-                                    <button
-                                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-400 bg-slate-900 hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
-                                        <i class="fa-solid fa-database mr-2"></i>
-                                        <div>{{ __('Registros Maestros') }}</div>
-                                        <div class="ms-1">
-                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd"
-                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                    clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
-                                    </button>
-                                </x-slot>
-                                <x-slot name="content">
-                                    @can('read Institucion')
-                                        <x-dropdown-link :href="route('institutions.index')">
-                                            {{ __('Instituciones') }}
-                                        </x-dropdown-link>
-                                    @endcan
-                                    @can('read TipoInstitucion')
-                                        <x-dropdown-link :href="route('tipo-instituciones.index')">
-                                            {{ __('Tipos de Institución') }}
-                                        </x-dropdown-link>
-                                    @endcan
-                                    @can('read Jefatura')
-                                        <x-dropdown-link :href="route('jefaturas.index')">
-                                            {{ __('Estructura Interna') }}
-                                        </x-dropdown-link>
-                                    @endcan
-                                    @can('read Gobernador')
-                                        <x-dropdown-link :href="route('gobernadores.index')">
-                                            {{ __('Gobernadores') }}
-                                        </x-dropdown-link>
-                                    @endcan
-                                    @can('read Titulo')
-                                        <x-dropdown-link :href="route('titulos.index')">
-                                            {{ __('Títulos') }}
-                                        </x-dropdown-link>
-                                    @endcan
-                                    @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('read Sede'))
-                                        <x-dropdown-link :href="route('sedes.index')">
-                                            <i class="fa-solid fa-building mr-1"></i> {{ __('Sedes (Edificios)') }}
-                                        </x-dropdown-link>
-                                    @endif
-                                    @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('read Estante'))
-                                        <x-dropdown-link :href="route('estantes.index')">
-                                            <i class="fa-solid fa-server mr-1"></i> {{ __('Estantes') }}
-                                        </x-dropdown-link>
-                                    @endif
-                                    @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('read Gaveta'))
-                                        <x-dropdown-link :href="route('gavetas.index')">
-                                            <i class="fa-solid fa-box-archive mr-1"></i> {{ __('Gavetas') }}
-                                        </x-dropdown-link>
-                                    @endif
-                                    @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('ver atenciones'))
-                                        <x-dropdown-link :href="route('atenciones.index')">
-                                            <i class="fa-solid fa-users mr-1"></i> {{ __('Atención al Ciudadano') }}
-                                        </x-dropdown-link>
-                                    @endif
-                                </x-slot>
-                            </x-dropdown>
-                        </div>
+                    {{-- Dropdown Registros Maestros --}}
+                    <div class="hidden sm:flex sm:items-center sm:ms-2">
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-400 bg-slate-900 hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <i class="fa-solid fa-database mr-2"></i>
+                                    <div>{{ __('Registros Maestros') }}</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                @can('read Institucion')
+                                    <x-dropdown-link :href="route('institutions.index')">
+                                        {{ __('Instituciones') }}
+                                    </x-dropdown-link>
+                                @endcan
+                                @can('read TipoInstitucion')
+                                    <x-dropdown-link :href="route('tipo-instituciones.index')">
+                                        {{ __('Tipos de Institución') }}
+                                    </x-dropdown-link>
+                                @endcan
+                                @can('read Jefatura')
+                                    <x-dropdown-link :href="route('jefaturas.index')">
+                                        {{ __('Estructura Interna') }}
+                                    </x-dropdown-link>
+                                @endcan
+                                @can('read Gobernador')
+                                    <x-dropdown-link :href="route('gobernadores.index')">
+                                        {{ __('Gobernadores') }}
+                                    </x-dropdown-link>
+                                @endcan
+                                @can('read Titulo')
+                                    <x-dropdown-link :href="route('titulos.index')">
+                                        {{ __('Títulos') }}
+                                    </x-dropdown-link>
+                                @endcan
+                                @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('read Sede'))
+                                    <x-dropdown-link :href="route('sedes.index')">
+                                        <i class="fa-solid fa-building mr-1"></i> {{ __('Sedes (Edificios)') }}
+                                    </x-dropdown-link>
+                                @endif
+                                @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('read Estante'))
+                                    <x-dropdown-link :href="route('estantes.index')">
+                                        <i class="fa-solid fa-server mr-1"></i> {{ __('Estantes') }}
+                                    </x-dropdown-link>
+                                @endif
+                                @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('read Gaveta'))
+                                    <x-dropdown-link :href="route('gavetas.index')">
+                                        <i class="fa-solid fa-box-archive mr-1"></i> {{ __('Gavetas') }}
+                                    </x-dropdown-link>
+                                @endif
+                                @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('ver atenciones'))
+                                    <x-dropdown-link :href="route('atenciones.index')">
+                                        <i class="fa-solid fa-users mr-1"></i> {{ __('Atención al Ciudadano') }}
+                                    </x-dropdown-link>
+                                @endif
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
                     @endcanany
 
                     {{-- Dropdown Reportes --}}
@@ -290,7 +290,7 @@
                                 @csrf
 
                                 <x-dropdown-link :href="route('logout')" onclick="event.preventDefault();
-                                                        this.closest('form').submit();">
+                                                            this.closest('form').submit();">
                                     <i class="fa-solid fa-right-from-bracket"></i>
                                     {{ __('Log Out') }}
                                 </x-dropdown-link>
@@ -299,39 +299,39 @@
                     </x-dropdown>
 
                     <div class="relative ml-5" x-data="{
-                            unreadCount: {{ auth()->user()->unreadNotifications->count() ?? 0 }},
-                            notifications: {{ auth()->user()->unreadNotifications->take(5)->toJson() ?? '[]' }},
-                            showDropdown: false
-                        }" @click.away="showDropdown = false" x-init="
-                            if (typeof Echo !== 'undefined') {
-                                Echo.private('App.Models.User.' + {{ auth()->id() }})
-                                    .notification((notification) => {
-                                        // 1. Alpine actualiza el contador de la campana en automático
-                                        unreadCount++;
+                                unreadCount: {{ auth()->user()->unreadNotifications->count() ?? 0 }},
+                                notifications: {{ auth()->user()->unreadNotifications->take(5)->toJson() ?? '[]' }},
+                                showDropdown: false
+                            }" @click.away="showDropdown = false" x-init="
+                                if (typeof Echo !== 'undefined') {
+                                    Echo.private('App.Models.User.' + {{ auth()->id() }})
+                                        .notification((notification) => {
+                                            // 1. Alpine actualiza el contador de la campana en automático
+                                            unreadCount++;
 
-                                        // 2. Ocultar el mensaje de vacío si existe
-                                        let emptyMsg = document.getElementById('empty-notifications');
-                                        if (emptyMsg) emptyMsg.style.display = 'none';
+                                            // 2. Ocultar el mensaje de vacío si existe
+                                            let emptyMsg = document.getElementById('empty-notifications');
+                                            if (emptyMsg) emptyMsg.style.display = 'none';
 
-                                        // 3. Inyectar el nuevo HTML en la lista
-                                        let list = document.getElementById('notifications-list');
-                                        if (list) {
-                                            let msg = notification.mensaje || 'Tienes una nueva notificación';
-                                            let id = notification.id || ''; 
-                                            // Preparamos la URL. Si no hay ID en el broadcast, mandamos un #
-                                            let url = id ? `/notificaciones/${id}/leer` : '#';
+                                            // 3. Inyectar el nuevo HTML en la lista
+                                            let list = document.getElementById('notifications-list');
+                                            if (list) {
+                                                let msg = notification.mensaje || 'Tienes una nueva notificación';
+                                                let id = notification.id || ''; 
+                                                // Preparamos la URL. Si no hay ID en el broadcast, mandamos un #
+                                                let url = id ? `/notificaciones/${id}/leer` : '#';
 
-                                            let html = `
-                                                <a href='${url}' class='block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-100 bg-slate-50 transition-colors'>
-                                                    <div class='text-sm text-gray-800 font-semibold'>${msg}</div>
-                                                    <div class='text-xs text-gray-400 mt-1'>Justo ahora</div>
-                                                </a>
-                                            `;
-                                            list.insertAdjacentHTML('afterbegin', html);
-                                        }
-                                    });
-                            }
-                        ">
+                                                let html = `
+                                                    <a href='${url}' class='block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-100 bg-slate-50 transition-colors'>
+                                                        <div class='text-sm text-gray-800 font-semibold'>${msg}</div>
+                                                        <div class='text-xs text-gray-400 mt-1'>Justo ahora</div>
+                                                    </a>
+                                                `;
+                                                list.insertAdjacentHTML('afterbegin', html);
+                                            }
+                                        });
+                                }
+                            ">
                         <button @click="showDropdown = !showDropdown" class="text-gray-400 hover:text-white transition">
                             <div class="relative inline-block">
                                 <i class="fa-solid fa-bell text-xl"></i>
@@ -555,7 +555,7 @@
                         @csrf
 
                         <x-responsive-nav-link :href="route('logout')" onclick="event.preventDefault();
-                                                this.closest('form').submit();">
+                                                    this.closest('form').submit();">
                             <i class="fa-solid fa-right-from-bracket"></i>
                             {{ __('Log Out') }}
                         </x-responsive-nav-link>
