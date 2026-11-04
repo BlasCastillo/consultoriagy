@@ -38,7 +38,7 @@ class SolicitudController extends Controller
     {
         $request->validate([
             'titulo_acto' => 'required|string|max:255',
-            'archivo_pdf' => 'required|mimes:pdf|max:10240',
+            'archivo_pdf' => 'required|mimes:pdf|max:100000', //100mb modificación
             'institucion_id' => 'nullable|exists:instituciones,id',
             'actos' => 'required|array|min:1',
             'actos.*.tipo_acto' => 'required|string',

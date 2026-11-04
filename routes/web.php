@@ -239,7 +239,7 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__ . '/auth.php';
 Route::get('/test-gemini', function () {
-    $llave = env('GEMINI_API_KEY');
+    $llave = config('services.gemini.key') ?? env('GEMINI_API_KEY');
 
     try {
         // Hacemos una petición GET al endpoint de "models"

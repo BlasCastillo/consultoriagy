@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Gaceta Oficial - Sumario</title>
     <style>
-        @page { margin: 50px 50px 100px 50px; }
+        @page { size: letter portrait; margin: 40px 50px 50px 50px; }
         body { font-family: sans-serif; }
         .text-center { text-align: center; }
         .text-justify { text-align: justify; }
@@ -13,7 +13,7 @@
         .tracking-widest { letter-spacing: 2px; }
         .mb-2 { margin-bottom: 0.5rem; }
         .mb-4 { margin-bottom: 1rem; }
-        .mb-10 { margin-bottom: 2.5rem; }
+        .mb-10 { margin-bottom: 1.5rem; }
         h1 { font-size: 3.5rem; line-height: 1; margin: 0; padding: 0; transform: scaleY(0.85); }
         h2 { font-size: 1.2rem; margin-top: 5px; }
         .separator { border-top: 2px solid black; width: 100%; margin: 6px 0; }
@@ -24,10 +24,10 @@
         .col-center { text-align: center; width: 34%; }
         .col-right { text-align: right; width: 33%; }
         .small-text { font-size: 9px; line-height: 1.2; }
-        .sumario-title { font-size: 16px; letter-spacing: 3px; margin-bottom: 20px; font-weight: bold; }
-        .institucion-title { text-align: center; font-size: 14px; font-weight: bold; margin-top: 20px; margin-bottom: 10px; }
-        .acto-item { font-size: 12px; line-height: 1.5; margin-bottom: 10px; text-align: justify; }
-        .firma { position: absolute; bottom: -50px; width: 100%; text-align: center; font-size: 14px; font-weight: bold; }
+        .sumario-title { font-size: 16px; letter-spacing: 3px; margin-bottom: 16px; font-weight: bold; }
+        .institucion-title { text-align: center; font-size: 13px; font-weight: bold; margin-top: 15px; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
+        .acto-item { font-size: 11px; line-height: 1.4; margin-bottom: 10px; text-align: justify; page-break-inside: avoid; }
+        .firma { width: 100%; text-align: center; font-size: 13px; font-weight: bold; margin-top: 25px; page-break-inside: avoid; }
     </style>
 </head>
 <body>
@@ -55,12 +55,12 @@
         <tr>
             <td class="col-left uppercase">
                 <span style="border-bottom: 1px solid black; padding-bottom: 2px;">
-                    {{ $gaceta->anio_politico ?? 'AÑO CXIV' }} – {{ $gaceta->mes_politico ?? 'MES IV' }}
+                    {{ $gaceta->texto_politico }}
                 </span>
             </td>
             <td class="col-center uppercase">
                 SAN FELIPE,
-                {{ $gaceta->fecha_emision ? mb_strtoupper($gaceta->fecha_emision->translatedFormat('d \d\e F \d\e Y')) : '___ DE ____________ DE 202_' }}
+                {{ ($gaceta->fecha_emision ?? $gaceta->fecha_publicacion) ? mb_strtoupper(($gaceta->fecha_emision ?? $gaceta->fecha_publicacion)->translatedFormat('d \d\e F \d\e Y')) : '___ DE ____________ DE 202_' }}
             </td>
             <td class="col-right uppercase">
                 NÚMERO {{ $gaceta->numero }}
@@ -74,19 +74,66 @@
         <div class="sumario-title uppercase">SUMARIO</div>
 
         @php
+            $jerarquiaTipos = [
+                'ley' => 1,
+                'ley estadal' => 1,
+                'decreto' => 2,
+                'resolución' => 3,
+                'resolucion' => 3,
+                'providencia' => 4,
+                'providencia administrativa' => 4,
+                'acuerdo' => 5,
+                'ordenanza' => 6,
+                'reglamento' => 7,
+                'circular' => 8,
+                'auto' => 9,
+            ];
+
             $agrupadoPorInstitucion = $gaceta->solicitudes->groupBy(function ($item) {
                 return $item->institucion->nombre ?? 'GOBERNACIÓN DEL ESTADO';
+            })->sortBy(function($solicitudesInst, $nombre) {
+                if (stripos($nombre, 'gobern') !== false || stripos($nombre, 'despacho') !== false) {
+                    return 0;
+                }
+                return 1;
             });
         @endphp
 
         <div>
             @forelse($agrupadoPorInstitucion as $institucion => $solicitudesInst)
+                @php
+                    $actos = $solicitudesInst->flatMap(function ($solicitud) {
+                        return $solicitud->actos;
+                    })->sort(function ($a, $b) use ($jerarquiaTipos) {
+                        $tipoA = mb_strtolower(trim($a->tipo_acto ?? ''));
+                        $tipoB = mb_strtolower(trim($b->tipo_acto ?? ''));
+                        $pesoA = $jerarquiaTipos[$tipoA] ?? 99;
+                        $pesoB = $jerarquiaTipos[$tipoB] ?? 99;
+
+                        if ($pesoA !== $pesoB) {
+                            return $pesoA <=> $pesoB;
+                        }
+                        return strnatcasecmp($a->numero ?? '', $b->numero ?? '');
+                    });
+                @endphp
+
                 <div class="institucion-title uppercase">{{ $institucion }}</div>
-                @foreach($solicitudesInst as $solicitud)
+                @forelse($actos as $acto)
                     <div class="acto-item">
-                        {{ mb_strtoupper($solicitud->titulo_acto) }}
+                        <span class="font-bold uppercase">
+                            {{ $acto->tipo_acto }} {{ !preg_match('/^(n[°ºo\.]|número|numero)/iu', trim($acto->numero)) ? 'N° ' : '' }}{{ $acto->numero }}
+                        </span>
+                        <div style="font-weight: normal; margin-top: 2px;">
+                            {{ $acto->sumario }}
+                        </div>
                     </div>
-                @endforeach
+                @empty
+                    @foreach($solicitudesInst as $solicitud)
+                        <div class="acto-item">
+                            {{ mb_strtoupper($solicitud->titulo_acto) }}
+                        </div>
+                    @endforeach
+                @endforelse
             @empty
                 <p style="text-align: center; color: gray; font-style: italic;">No hay solicitudes registradas en el sumario.</p>
             @endforelse

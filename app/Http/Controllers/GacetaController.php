@@ -129,7 +129,8 @@ class GacetaController extends Controller
             'tipo' => 'required|in:Ordinaria,Extraordinaria',
             'anio' => 'required|integer',
             'gobernador_id' => 'required|exists:gobernadores,id',
-            'anio_politico' => 'required|string',
+            'anio_politico' => 'nullable|string',
+            'ano_politico' => 'nullable|string',
             'mes_politico' => 'required|string',
             'fecha_recepcion_fisica' => 'required|date',
         ]);
@@ -138,7 +139,7 @@ class GacetaController extends Controller
         $gaceta->tipo = $request->tipo;
         $gaceta->anio = $request->anio;
         $gaceta->gobernador_id = $request->gobernador_id;
-        $gaceta->anio_politico = $request->anio_politico;
+        $gaceta->ano_politico = $request->input('anio_politico', $request->input('ano_politico'));
         $gaceta->mes_politico = $request->mes_politico;
         $gaceta->fecha_recepcion_fisica = $request->fecha_recepcion_fisica;
         
@@ -297,10 +298,10 @@ public function preview(string $id)
 // 2. Extraemos la lógica de Fusión en un método privado
 private function mergePdfs(Gaceta $gaceta, $isFinal = false)
 {
-    $gaceta->load(['gobernador.titulo', 'solicitudes.institucion']);
+    $gaceta->load(['gobernador.titulo', 'solicitudes.institucion', 'solicitudes.actos']);
 
     $pdfSumarioPath = storage_path('app/SGCJ/temp_sumario_' . $gaceta->id . '.pdf');
-    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('gacetas.pdf_sumario', compact('gaceta'));
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('gacetas.pdf_sumario', compact('gaceta'))->setPaper('letter', 'portrait');
     $pdf->save($pdfSumarioPath);
 
     $uploadedPdfPath = storage_path('app/SGCJ/' . $gaceta->ruta_archivo);
@@ -481,7 +482,13 @@ public function subsanarGaceta(Request $request, string $id)
 
     public function show(string $id)
     {
-        $gaceta = Gaceta::with(['solicitudes.institucion', 'corregidaDe', 'correcciones'])->findOrFail($id);
+        $gaceta = Gaceta::with([
+            'gobernador.titulo',
+            'solicitudes.institucion',
+            'solicitudes.actos',
+            'corregidaDe',
+            'correcciones'
+        ])->findOrFail($id);
         return view('gacetas.show', compact('gaceta'));
     }
 

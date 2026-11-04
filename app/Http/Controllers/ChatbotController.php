@@ -96,31 +96,63 @@ class ChatbotController extends Controller
             ]
         ];
 
-        // 4. Consumo mediante Cliente HTTP Laravel
-        $apiKey = env('GEMINI_API_KEY');
+        // 4. Consumo mediante Cliente HTTP Laravel (Con Resiliencia y Fallback)
+        $apiKey = config('services.gemini.key') ?? env('GEMINI_API_KEY');
         if (!$apiKey) {
-            return response()->json(['reply' => 'Error Crítico del Sistema: Variable GEMINI_API_KEY ausente en el archivo .env.'], 500);
+            return response()->json(['reply' => 'Error Crítico del Sistema: Variable GEMINI_API_KEY ausente en la configuración del servidor.'], 500);
         }
 
-        // Se usa gemini-flash-latest para mayor compatibilidad
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={$apiKey}";
+        $primaryModel = config('services.gemini.model') ?? 'gemini-3.5-flash-lite';
+        $fallbackModel = config('services.gemini.fallback_model') ?? 'gemini-2.5-flash';
+        $modelsToTry = array_unique([$primaryModel, $fallbackModel]);
 
-        try {
-            $response = \Illuminate\Support\Facades\Http::withoutVerifying()
-                            ->withHeaders(['Content-Type' => 'application/json'])
-                            ->post($url, $payload);
+        $lastError = null;
+        foreach ($modelsToTry as $model) {
+            $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
 
-            if ($response->successful()) {
-                $data = $response->json();
-                $reply = $data['candidates'][0]['content']['parts'][0]['text'] ?? 'La respuesta generada está vacía. Reformula tu pregunta.';
-                return response()->json(['reply' => $reply]);
-            } else {
-                \Illuminate\Support\Facades\Log::error('Fallo API Gemini: ' . $response->body());
-                return response()->json(['reply' => 'El núcleo de IA no pudo procesar la solicitud en este momento.'], 500);
+            try {
+                $response = \Illuminate\Support\Facades\Http::withoutVerifying()
+                                ->timeout(25)
+                                ->withHeaders([
+                                    'Content-Type' => 'application/json',
+                                    'x-goog-api-key' => $apiKey
+                                ])
+                                ->post($url, $payload);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+
+                    // Extracción limpia de texto ignorando razonamiento interno (thought)
+                    $parts = $data['candidates'][0]['content']['parts'] ?? [];
+                    $reply = '';
+                    foreach ($parts as $part) {
+                        if (!empty($part['text']) && empty($part['thought'])) {
+                            $reply .= $part['text'];
+                        }
+                    }
+
+                    if (empty($reply) && !empty($parts[0]['text'])) {
+                        $reply = $parts[0]['text'];
+                    }
+
+                    if (empty($reply)) {
+                        $reply = 'La respuesta generada está vacía. Reformula tu pregunta.';
+                    }
+
+                    return response()->json(['reply' => $reply]);
+                } else {
+                    $lastError = "Fallo modelo {$model} (HTTP {$response->status()}): " . $response->body();
+                    \Illuminate\Support\Facades\Log::warning("Fallo API Gemini en modelo {$model}: " . $response->body());
+                    // Continúa con el siguiente modelo de respaldo
+                }
+            } catch (\Exception $e) {
+                $lastError = "Caída de red modelo {$model}: " . $e->getMessage();
+                \Illuminate\Support\Facades\Log::warning("Excepción API Gemini en modelo {$model}: " . $e->getMessage());
+                // Continúa con el siguiente modelo de respaldo
             }
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Caída API Gemini: ' . $e->getMessage());
-            return response()->json(['reply' => 'Error de conectividad interna con el servicio de IA.'], 500);
         }
+
+        \Illuminate\Support\Facades\Log::error('Agotados todos los modelos de Gemini. Último error: ' . $lastError);
+        return response()->json(['reply' => 'El núcleo de IA no pudo procesar la solicitud en este momento. Intenta de nuevo en unos instantes.'], 500);
     }
 }

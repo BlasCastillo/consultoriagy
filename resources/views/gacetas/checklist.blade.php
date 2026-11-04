@@ -51,12 +51,12 @@
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Año Político <span class="text-red-500">*</span></label>
-                                    <input type="text" name="anio_politico" required placeholder="Ej: 168°" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-900 focus:ring-blue-900 sm:text-sm">
+                                    <input type="text" name="anio_politico" required value="{{ old('anio_politico', $gaceta->ano_politico ?? $gaceta->anio_politico) }}" placeholder="Ej: 168°" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-900 focus:ring-blue-900 sm:text-sm">
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Mes Político <span class="text-red-500">*</span></label>
-                                    <input type="text" name="mes_politico" required placeholder="Ej: 120°" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-900 focus:ring-blue-900 sm:text-sm">
+                                    <input type="text" name="mes_politico" required value="{{ old('mes_politico', $gaceta->mes_politico) }}" placeholder="Ej: 120°" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-900 focus:ring-blue-900 sm:text-sm">
                                 </div>
 
                                 <div>

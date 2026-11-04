@@ -92,6 +92,73 @@ class Gaceta extends Model
         return $this->belongsTo(User::class, 'digitalizador_id');
     }
 
+    public static function numeroARomano($valor): string
+    {
+        if (empty($valor)) return '';
+        $str = trim((string)$valor);
+        $clean = preg_replace('/^(a[ñn]o|mes)\s*/iu', '', $str);
+        $clean = trim(str_replace(['°', 'º'], '', $clean));
+        if (preg_match('/^[IVXLCDM]+$/i', $clean)) {
+            return strtoupper($clean);
+        }
+        if (preg_match('/\d+/', $clean, $matches)) {
+            $num = (int)$matches[0];
+            if ($num > 0 && $num < 4000) {
+                $map = [
+                    'M' => 1000, 'CM' => 900, 'D' => 500, 'CD' => 400,
+                    'C' => 100, 'XC' => 90, 'L' => 50, 'XL' => 40,
+                    'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1
+                ];
+                $roman = '';
+                foreach ($map as $rom => $v) {
+                    while ($num >= $v) {
+                        $roman .= $rom;
+                        $num -= $v;
+                    }
+                }
+                return $roman;
+            }
+        }
+        return strtoupper($str);
+    }
+
+    public function getAnioPoliticoAttribute()
+    {
+        return $this->attributes['ano_politico'] ?? null;
+    }
+
+    public function setAnioPoliticoAttribute($value)
+    {
+        $this->attributes['ano_politico'] = $value;
+    }
+
+    public function getAnoPoliticoRomanoAttribute(): string
+    {
+        return self::numeroARomano($this->ano_politico);
+    }
+
+    public function getAnioPoliticoRomanoAttribute(): string
+    {
+        return $this->ano_politico_romano;
+    }
+
+    public function getMesPoliticoRomanoAttribute(): string
+    {
+        return self::numeroARomano($this->mes_politico);
+    }
+
+    public function getTextoPoliticoAttribute(): string
+    {
+        $ano = $this->ano_politico_romano ?: 'CXIV';
+        $mes = $this->mes_politico_romano ?: 'IV';
+        return "AÑO {$ano} – MES {$mes}";
+    }
+
+    public function getFechaParaMostrarAttribute()
+    {
+        return $this->fecha_emision ?? $this->fecha_publicacion;
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

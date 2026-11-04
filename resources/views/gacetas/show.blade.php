@@ -56,12 +56,12 @@
                 <div class="flex justify-between items-center font-sans font-bold text-sm uppercase">
                     <div class="w-1/3 text-left">
                         <span style=" padding-bottom: 1px;">
-                            {{ $gaceta->anio_politico ?? 'AÑO CXIV' }} – {{ $gaceta->mes_politico ?? 'MES IV' }}
+                            {{ $gaceta->texto_politico }}
                         </span>
                     </div>
                     <div class="w-1/2 text-center text-[0.95rem]">
                         SAN FELIPE,
-                        {{ $gaceta->fecha_emision ? mb_strtoupper($gaceta->fecha_emision->translatedFormat('d \d\e F \d\e Y')) : '__ DE ____________ DE 202_' }}
+                        {{ ($gaceta->fecha_emision ?? $gaceta->fecha_publicacion) ? mb_strtoupper(($gaceta->fecha_emision ?? $gaceta->fecha_publicacion)->translatedFormat('d \d\e F \d\e Y')) : '__ DE ____________ DE 202_' }}
                     </div>
                     <div class="w-1/3 text-right text-lg tracking-wide">
                         NÚMERO {{ $gaceta->numero }}
@@ -74,26 +74,72 @@
                     <h3 class="text-lg tracking-[0.2em] mb-4">SUMARIO</h3>
 
                     @php
+                        $jerarquiaTipos = [
+                            'ley' => 1,
+                            'ley estadal' => 1,
+                            'decreto' => 2,
+                            'resolución' => 3,
+                            'resolucion' => 3,
+                            'providencia' => 4,
+                            'providencia administrativa' => 4,
+                            'acuerdo' => 5,
+                            'ordenanza' => 6,
+                            'reglamento' => 7,
+                            'circular' => 8,
+                            'auto' => 9,
+                        ];
+
                         $agrupadoPorInstitucion = $gaceta->solicitudes->groupBy(function ($item) {
                             return $item->institucion->nombre ?? 'GOBERNACIÓN DEL ESTADO';
+                        })->sortBy(function($solicitudesInst, $nombre) {
+                            if (stripos($nombre, 'gobern') !== false || stripos($nombre, 'despacho') !== false) {
+                                return 0;
+                            }
+                            return 1;
                         });
                     @endphp
 
-                    <div class="space-y-10 text-left px-2">
+                    <div class="space-y-8 text-left px-2">
                         @forelse($agrupadoPorInstitucion as $institucion => $solicitudesInst)
+                            @php
+                                $actos = $solicitudesInst->flatMap(function ($solicitud) {
+                                    return $solicitud->actos;
+                                })->sort(function ($a, $b) use ($jerarquiaTipos) {
+                                    $tipoA = mb_strtolower(trim($a->tipo_acto ?? ''));
+                                    $tipoB = mb_strtolower(trim($b->tipo_acto ?? ''));
+                                    $pesoA = $jerarquiaTipos[$tipoA] ?? 99;
+                                    $pesoB = $jerarquiaTipos[$tipoB] ?? 99;
+
+                                    if ($pesoA !== $pesoB) {
+                                        return $pesoA <=> $pesoB;
+                                    }
+                                    return strnatcasecmp($a->numero ?? '', $b->numero ?? '');
+                                });
+                            @endphp
+
                             <div>
-                                <h4 class="text-center text-md uppercase font-bold mb-6 tracking-wide">{{ $institucion }}
-                                </h4>
-                                <div class="space-y-5 font-sans text-[0.85rem] leading-relaxed text-justify">
-                                    @foreach($solicitudesInst as $solicitud)
-                                        <p>
-                                            {{ mb_strtoupper($solicitud->titulo_acto) }}
-                                        </p>
-                                    @endforeach
+                                <h4 class="text-center text-md uppercase font-bold mb-4 tracking-wide">{{ $institucion }}</h4>
+                                <div class="space-y-4 font-sans text-[0.85rem] leading-relaxed text-justify">
+                                    @forelse($actos as $acto)
+                                        <div>
+                                            <p class="font-bold uppercase tracking-wide">
+                                                {{ $acto->tipo_acto }} {{ !preg_match('/^(n[°ºo\.]|número|numero)/iu', trim($acto->numero)) ? 'N° ' : '' }}{{ $acto->numero }}
+                                            </p>
+                                            <p class="font-normal text-justify text-gray-900 mt-0.5 leading-relaxed">
+                                                {{ $acto->sumario }}
+                                            </p>
+                                        </div>
+                                    @empty
+                                        @foreach($solicitudesInst as $solicitud)
+                                            <p class="font-normal text-justify text-gray-900">
+                                                {{ mb_strtoupper($solicitud->titulo_acto) }}
+                                            </p>
+                                        @endforeach
+                                    @endforelse
                                 </div>
                             </div>
                         @empty
-                            <p class="text-center italic text-gray-500">No hay solicitudes registradas en el sumario.</p>
+                            <p class="text-center italic text-gray-500 font-normal">No hay solicitudes registradas en el sumario.</p>
                         @endforelse
                     </div>
                 </div>
@@ -101,9 +147,9 @@
                 <div style="border-top: 4px solid black; width: 100%; margin-top: 24px; margin-bottom: 8px;"></div>
 
                 <div id="firma-gobernador" class="text-center font-sans font-bold text-[0.95rem] leading-tight pb-2">
-                    <p>{{ mb_strtoupper($gaceta->gobernador->titulo->abreviatura ?? '???') }}
-                        {{ mb_strtoupper($gaceta->gobernador->nombres ?? '???') }}
-                        {{ mb_strtoupper($gaceta->gobernador->apellidos ?? '???') }}</p>
+                    <p>{{ mb_strtoupper($gaceta->gobernador->titulo->abreviatura ?? 'LCDO.') }}
+                        {{ mb_strtoupper($gaceta->gobernador->nombres ?? 'JULIO CÉSAR') }}
+                        {{ mb_strtoupper($gaceta->gobernador->apellidos ?? 'LEÓN HEREDIA') }}</p>
                     <p>GOBERNADOR DEL ESTADO YARACUY</p>
                 </div>
 
