@@ -60,8 +60,8 @@
                 </div>
             </div>
 
-            <!-- Importación de Chart.js -->
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <!-- Importación de Chart.js (defer: no bloquea el parseo) -->
+            <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 
             <script>
             document.addEventListener('DOMContentLoaded', function () {

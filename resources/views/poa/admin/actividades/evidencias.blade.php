@@ -165,7 +165,8 @@
                                                     </div>
                                                 </div>
                                                 <div class="ml-4 flex-shrink-0">
-                                                    <form action="{{ route('evidencias.destroy', $evidencia->id) }}" method="POST" onsubmit="return confirm('¿Eliminar esta evidencia permanentemente?');">
+                                                    <form action="{{ route('evidencias.destroy', $evidencia->id) }}" method="POST"
+                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Eliminar evidencia?', text: 'El archivo se eliminará permanentemente y no podrá recuperarse.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded transition" title="Eliminar archivo">

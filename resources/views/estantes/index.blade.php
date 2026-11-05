@@ -37,7 +37,8 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $estante->nombre }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                         <a href="{{ route('estantes.edit', $estante) }}" class="text-indigo-600 hover:text-indigo-900 mx-2"><i class="fa-solid fa-pen-to-square"></i> Editar</a>
-                                        <form action="{{ route('estantes.destroy', $estante) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Seguro que deseas inhabilitar este estante?');">
+                                        <form action="{{ route('estantes.destroy', $estante) }}" method="POST" class="inline-block"
+                                            onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Inhabilitar estante?', text: 'El estante dejará de estar disponible para ubicar gacetas.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, inhabilitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-900 mx-2"><i class="fa-solid fa-trash"></i> Eliminar</button>
                                         </form>
@@ -50,5 +51,4 @@
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </x-app-layout>

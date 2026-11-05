@@ -132,7 +132,8 @@
                             <a href="{{ route('archivo.index') }}" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded shadow-sm hover:bg-gray-50 font-medium mr-3 transition">
                                 Cancelar
                             </a>
-                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded shadow-sm font-medium transition" onclick="return confirm('¿Está seguro de procesar esta Gaceta Histórica? La indexación será permanente.')">
+                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded shadow-sm font-medium transition"
+                                onclick="event.preventDefault(); const form = this.closest('form'); if (!form.reportValidity()) return; Swal.fire({ title: '¿Procesar Gaceta Histórica?', text: 'La indexación será permanente y la gaceta quedará registrada en el archivo.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, procesar e indexar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
                                 <i class="fa-solid fa-floppy-disk mr-2"></i> Procesar e Indexar
                             </button>
                         </div>

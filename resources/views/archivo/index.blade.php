@@ -151,7 +151,9 @@
                                         <form action="{{ route('archivo.devolver', $prestamo->id) }}" method="POST" class="inline-block">
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" onclick="return confirm('¿Confirmar que la gaceta ha sido devuelta físicamente?')" class="bg-emerald-500 hover:bg-emerald-600 text-white py-1.5 px-3 rounded shadow transition mb-1 sm:mb-0">
+                                            <button type="submit"
+                                                onclick="event.preventDefault(); const form = this.closest('form'); Swal.fire({ title: '¿Confirmar devolución?', text: 'Se registrará que la gaceta fue devuelta físicamente al archivo.', icon: 'question', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, marcar como devuelto', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
+                                                class="bg-emerald-500 hover:bg-emerald-600 text-white py-1.5 px-3 rounded shadow transition mb-1 sm:mb-0">
                                                 Marcar como Devuelto
                                             </button>
                                         </form>
@@ -302,7 +304,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function abrirModalReporte() {
             document.getElementById('modalReporteInventario').classList.remove('hidden');

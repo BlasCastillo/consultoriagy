@@ -75,40 +75,59 @@
                         </div>
                     </div>
 
-                    {{-- Columna Derecha: Selección de Apartados --}}
+                    {{-- Columna Derecha: Selección y Orden de Apartados --}}
                     <div class="w-full lg:w-2/3">
                         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-full">
-                            <div class="flex flex-col sm:flex-row justify-between items-center mb-4 border-b pb-2 gap-2">
+                            <div class="flex flex-col sm:flex-row justify-between items-center mb-2 border-b pb-2 gap-2">
                                 <h3 class="text-lg font-bold text-gray-900">Apartados Aprobados</h3>
                                 <span id="contador-apartados" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">0 Apartados seleccionados</span>
                             </div>
+                            <p class="text-xs text-gray-500 mb-4 flex items-center gap-1">
+                                <svg class="w-4 h-4 inline text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                                Marque los apartados a incluir y <strong class="text-indigo-600 mx-1">arrástrelos</strong> para definir el orden en que aparecerán en la Gaceta.
+                            </p>
 
                             @if($apartadosAprobados->isEmpty())
                                 <div class="text-center py-12 text-gray-500">
                                     No hay apartados aprobados esperando por ensamblaje en este momento.
                                 </div>
                             @else
-                                <div class="overflow-y-auto pr-2 space-y-3" style="max-height: 600px;">
+                                {{-- Lista reordenable --}}
+                                <ul id="lista-apartados" class="overflow-y-auto pr-2 space-y-2" style="max-height: 600px;">
                                     @foreach($apartadosAprobados as $apartado)
-                                        <label class="block cursor-pointer">
-                                            <div class="border border-gray-200 rounded-lg p-4 hover:bg-indigo-50 transition-colors flex items-start gap-4">
-                                                <div class="pt-1">
-                                                    <input type="checkbox" name="apartados[]" value="{{ $apartado->id }}" class="apartado-checkbox h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <li class="apartado-item" data-id="{{ $apartado->id }}">
+                                            <div class="border border-gray-200 rounded-lg p-3 bg-white hover:bg-indigo-50 transition-colors flex items-start gap-3 select-none">
+                                                {{-- Handle de arrastre --}}
+                                                <div class="drag-handle pt-1 cursor-grab text-gray-300 hover:text-indigo-400 flex-shrink-0" title="Arrastrar para reordenar">
+                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 110 4 2 2 0 010-4zm6 0a2 2 0 110 4 2 2 0 010-4zM7 8a2 2 0 110 4 2 2 0 010-4zm6 0a2 2 0 110 4 2 2 0 010-4zm-6 6a2 2 0 110 4 2 2 0 010-4zm6 0a2 2 0 110 4 2 2 0 010-4z"/></svg>
                                                 </div>
-                                                <div class="flex-1">
-                                                    <h4 class="font-bold text-gray-800">{{ $apartado->institucion->nombre ?? 'N/A' }}</h4>
-                                                    <p class="text-sm text-gray-600 mt-1 line-clamp-2" title="{{ $apartado->titulo_acto }}">{{ $apartado->titulo_acto }}</p>
-                                                    <div class="mt-3 flex justify-end">
-                                                        <a href="{{ route('solicitudes.show', $apartado->id) }}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 font-medium inline-flex items-center gap-1" onclick="event.stopPropagation();">
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                {{-- Número de posición --}}
+                                                <div class="posicion-numero flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-500 text-xs font-bold flex items-center justify-center mt-0.5">
+                                                    {{ $loop->iteration }}
+                                                </div>
+                                                {{-- Checkbox --}}
+                                                <div class="pt-1 flex-shrink-0">
+                                                    <input type="checkbox"
+                                                           class="apartado-checkbox h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                                           data-id="{{ $apartado->id }}">
+                                                </div>
+                                                {{-- Contenido --}}
+                                                <div class="flex-1 min-w-0">
+                                                    <h4 class="font-bold text-gray-800 text-sm">{{ $apartado->institucion->nombre ?? 'N/A' }}</h4>
+                                                    <p class="text-xs text-gray-600 mt-0.5 line-clamp-2" title="{{ $apartado->titulo_acto }}">{{ $apartado->titulo_acto }}</p>
+                                                    <div class="mt-2 flex justify-end">
+                                                        <a href="{{ route('solicitudes.show', $apartado->id) }}" target="_blank"
+                                                           class="text-xs text-blue-600 hover:text-blue-800 font-medium inline-flex items-center gap-1"
+                                                           onclick="event.stopPropagation();">
+                                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                                             Ver Sumario de Actos
                                                         </a>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </label>
+                                        </li>
                                     @endforeach
-                                </div>
+                                </ul>
                             @endif
                         </div>
                     </div>
@@ -118,19 +137,42 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {{-- SortableJS para drag & drop de apartados (defer: no bloquea el parseo) --}}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const checkboxes = document.querySelectorAll('.apartado-checkbox');
+            const lista = document.getElementById('lista-apartados');
             const contador = document.getElementById('contador-apartados');
 
+            // ─── DRAG & DROP ───────────────────────────────────────────
+            if (lista) {
+                Sortable.create(lista, {
+                    handle: '.drag-handle',       // Solo arrastra desde el icono de puntos
+                    animation: 150,
+                    ghostClass: 'bg-indigo-100',  // Color fantasma al arrastrar
+                    onEnd: function () {
+                        actualizarNumerosDeOrden();
+                    }
+                });
+            }
+
+            // ─── ACTUALIZAR NÚMEROS VISUALES DE POSICIÓN ──────────────
+            function actualizarNumerosDeOrden() {
+                const items = document.querySelectorAll('#lista-apartados .apartado-item');
+                items.forEach(function (item, index) {
+                    const badge = item.querySelector('.posicion-numero');
+                    if (badge) badge.textContent = index + 1;
+                });
+            }
+
+            // ─── CONTADOR DE SELECCIONADOS ─────────────────────────────
             function actualizarContador() {
                 const seleccionados = document.querySelectorAll('.apartado-checkbox:checked').length;
-                contador.textContent = seleccionados === 1 
+                contador.textContent = seleccionados === 1
                     ? '1 Apartado seleccionado para esta edición'
                     : seleccionados + ' Apartados seleccionados para esta edición';
-                    
-                if(seleccionados > 0) {
+
+                if (seleccionados > 0) {
                     contador.classList.replace('bg-indigo-100', 'bg-emerald-100');
                     contador.classList.replace('text-indigo-800', 'text-emerald-800');
                 } else {
@@ -139,39 +181,67 @@
                 }
             }
 
-            checkboxes.forEach(chk => {
+            // Escuchar cambios en checkboxes
+            document.querySelectorAll('.apartado-checkbox').forEach(function (chk) {
                 chk.addEventListener('change', actualizarContador);
             });
-            
+
             actualizarContador();
         });
 
+        // ─── CONSTRUIR CAMPOS HIDDEN ANTES DE ENVIAR ──────────────────
+        // Recorre el DOM en su orden visual actual (tras drag & drop)
+        // y sólo incluye los que están marcados con checkbox.
+        function inyectarOrdenEnForm() {
+            const form = document.getElementById('ensamblaje-form');
+
+            // Eliminar campos previos para no duplicar
+            form.querySelectorAll('input[name="apartados_ordenados[]"]').forEach(el => el.remove());
+
+            const items = document.querySelectorAll('#lista-apartados .apartado-item');
+            let posicion = 1;
+
+            items.forEach(function (item) {
+                const chk = item.querySelector('.apartado-checkbox');
+                if (chk && chk.checked) {
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = 'apartados_ordenados[]';
+                    hidden.value = item.dataset.id;
+                    form.appendChild(hidden);
+                    posicion++;
+                }
+            });
+        }
+
+        // ─── CONFIRMACIÓN Y ENVÍO ──────────────────────────────────────
         function confirmarEnsamblaje() {
             const seleccionados = document.querySelectorAll('.apartado-checkbox:checked').length;
-            
-            if(seleccionados === 0) {
+
+            if (seleccionados === 0) {
                 Swal.fire('Atención', 'Debe seleccionar al menos un apartado para ensamblar la gaceta.', 'warning');
                 return;
             }
 
             const form = document.getElementById('ensamblaje-form');
-            if(!form.checkValidity()) {
+            if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
             }
 
             Swal.fire({
                 title: '¿Confirmar Ensamblaje?',
-                text: `Se agruparán ${seleccionados} apartados en esta Gaceta y se enviará al proceso de digitalización.`,
+                text: `Se agruparán ${seleccionados} apartados en esta Gaceta en el orden que definió, y se enviará al proceso de digitalización.`,
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#059669', // emerald-600
+                confirmButtonColor: '#059669',
                 cancelButtonColor: '#6b7280',
                 confirmButtonText: 'Sí, Ensamblar',
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    form.submit();
+                    inyectarOrdenEnForm(); // 1. Construir campos con el orden correcto
+                    form.submit();         // 2. Enviar
                 }
             });
         }

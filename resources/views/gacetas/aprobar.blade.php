@@ -46,7 +46,7 @@
                         </div>
                     </div>
 
-                    <form id="approval-form" action="{{ route('gacetas.publicar', $gaceta->id) }}" method="POST">
+                    <form id="approval-form" action="{{ route('gacetas.publicar_oficial', $gaceta->id) }}" method="POST">
                         @csrf
                         <input type="hidden" name="accion" id="accion-input" value="">
 

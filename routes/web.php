@@ -146,12 +146,15 @@ Route::middleware('auth')->group(function () {
         Route::get('gacetas/{gaceta}/upload-pdf', [GacetaController::class, 'uploadPdf'])->name('gacetas.upload_pdf');
         Route::post('gacetas/{gaceta}/upload-pdf', [GacetaController::class, 'savePdf'])->name('gacetas.save_pdf');
         Route::post('gacetas/{gaceta}/enviar-revision', [GacetaController::class, 'enviarARevision'])->name('gacetas.enviar_revision');
+        Route::post('gacetas/{gaceta}/actos/{acto}/pdf', [GacetaController::class, 'subirPdfActo'])->name('gacetas.actos.pdf');
+        Route::delete('gacetas/{gaceta}/actos/{acto}/pdf', [GacetaController::class, 'eliminarPdfActo'])->name('gacetas.actos.pdf.delete');
         Route::patch('gacetas/{gaceta}/devolver', [GacetaController::class, 'devolver'])->name('gacetas.devolver');
     });
 
     Route::middleware(['permission:read Gaceta'])->group(function () {
         Route::get('gacetas', [GacetaController::class, 'index'])->name('gacetas.index');
         Route::get('gacetas/{gaceta}', [GacetaController::class, 'show'])->name('gacetas.show');
+        Route::get('gacetas/{gaceta}/descargar', [GacetaController::class, 'descargarPdf'])->name('gacetas.descargar');
         Route::get('/gacetas/{id}/preview', [App\Http\Controllers\GacetaController::class, 'preview'])->name('gacetas.preview');
     });
 

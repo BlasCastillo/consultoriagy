@@ -32,6 +32,7 @@ class Gaceta extends Model
         'fecha_publicacion',
         'ruta_archivo',
         'archivo_pdf_completo',
+        'pdf_final',
         'estado',
         'corregida_de_id',
         'motivo_devolucion',

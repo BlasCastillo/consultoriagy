@@ -98,7 +98,4 @@
             </div>
         </div>
     </div>
-
-    <!-- Script de Validación Global -->
-    <script src="{{ asset('js/global-validation.js') }}"></script>
 </x-app-layout>

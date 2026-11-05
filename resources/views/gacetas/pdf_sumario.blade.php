@@ -1,35 +1,133 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Gaceta Oficial - Sumario</title>
     <style>
-        @page { size: letter portrait; margin: 40px 50px 50px 50px; }
-        body { font-family: sans-serif; }
-        .text-center { text-align: center; }
-        .text-justify { text-align: justify; }
-        .font-bold { font-weight: bold; }
-        .uppercase { text-transform: uppercase; }
-        .tracking-widest { letter-spacing: 2px; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .mb-10 { margin-bottom: 1.5rem; }
-        h1 { font-size: 3.5rem; line-height: 1; margin: 0; padding: 0; transform: scaleY(0.85); }
-        h2 { font-size: 1.2rem; margin-top: 5px; }
-        .separator { border-top: 2px solid black; width: 100%; margin: 6px 0; }
-        .separator-thick { border-top: 3px solid black; width: 100%; margin: 10px 0; }
-        .header-info { width: 100%; margin-bottom: 10px; font-size: 12px; font-weight: bold; }
-        .header-info td { vertical-align: bottom; }
-        .col-left { text-align: left; width: 33%; }
-        .col-center { text-align: center; width: 34%; }
-        .col-right { text-align: right; width: 33%; }
-        .small-text { font-size: 9px; line-height: 1.2; }
-        .sumario-title { font-size: 16px; letter-spacing: 3px; margin-bottom: 16px; font-weight: bold; }
-        .institucion-title { text-align: center; font-size: 13px; font-weight: bold; margin-top: 15px; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
-        .acto-item { font-size: 11px; line-height: 1.4; margin-bottom: 10px; text-align: justify; page-break-inside: avoid; }
-        .firma { width: 100%; text-align: center; font-size: 13px; font-weight: bold; margin-top: 25px; page-break-inside: avoid; }
+        @page {
+            size: letter portrait;
+            margin: 40px 50px 50px 50px;
+        }
+
+        body {
+            font-family: sans-serif;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-justify {
+            text-align: justify;
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        .uppercase {
+            text-transform: uppercase;
+        }
+
+        .tracking-widest {
+            letter-spacing: 2px;
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-10 {
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            line-height: 1;
+            margin: 0;
+            padding: 0;
+            transform: scaleY(0.85);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-top: 5px;
+        }
+
+        .separator {
+            border-top: 2px solid black;
+            width: 100%;
+            margin: 6px 0;
+        }
+
+        .separator-thick {
+            border-top: 3px solid black;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .header-info {
+            width: 100%;
+            margin-bottom: 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .header-info td {
+            vertical-align: bottom;
+        }
+
+        .col-left {
+            text-align: left;
+            width: 33%;
+        }
+
+        .col-center {
+            text-align: center;
+            width: 34%;
+        }
+
+        .col-right {
+            text-align: right;
+            width: 33%;
+        }
+
+        .small-text {
+            font-size: 9px;
+            line-height: 1.2;
+        }
+
+        .sumario-title {
+            font-size: 16px;
+            letter-spacing: 3px;
+            margin-bottom: 16px;
+            font-weight: bold;
+        }
+
+        .institucion-title {
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            padding-bottom: 3px;
+        }
+
+        .acto-item {
+            font-size: 11px;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            text-align: justify;
+            page-break-inside: avoid;
+        }
     </style>
 </head>
+
 <body>
     <div class="text-center">
         <h1>GACETA OFICIAL</h1>
@@ -54,7 +152,7 @@
     <table class="header-info">
         <tr>
             <td class="col-left uppercase">
-                <span style="border-bottom: 1px solid black; padding-bottom: 2px;">
+                <span>
                     {{ $gaceta->texto_politico }}
                 </span>
             </td>
@@ -90,12 +188,7 @@
             ];
 
             $agrupadoPorInstitucion = $gaceta->solicitudes->groupBy(function ($item) {
-                return $item->institucion->nombre ?? 'GOBERNACIÓN DEL ESTADO';
-            })->sortBy(function($solicitudesInst, $nombre) {
-                if (stripos($nombre, 'gobern') !== false || stripos($nombre, 'despacho') !== false) {
-                    return 0;
-                }
-                return 1;
+                return $item->institucion?->nombre_sumario ?? 'GOBERNACIÓN DEL ESTADO';
             });
         @endphp
 
@@ -118,10 +211,12 @@
                 @endphp
 
                 <div class="institucion-title uppercase">{{ $institucion }}</div>
+
                 @forelse($actos as $acto)
                     <div class="acto-item">
                         <span class="font-bold uppercase">
-                            {{ $acto->tipo_acto }} {{ !preg_match('/^(n[°ºo\.]|número|numero)/iu', trim($acto->numero)) ? 'N° ' : '' }}{{ $acto->numero }}
+                            {{ $acto->tipo_acto }}
+                            {{ !preg_match('/^(n[°ºo\.]|número|numero)/iu', trim((string) $acto->numero)) ? 'N° ' : '' }}{{ $acto->numero }}
                         </span>
                         <div style="font-weight: normal; margin-top: 2px;">
                             {{ $acto->sumario }}
@@ -130,20 +225,16 @@
                 @empty
                     @foreach($solicitudesInst as $solicitud)
                         <div class="acto-item">
-                            {{ mb_strtoupper($solicitud->titulo_acto) }}
+                            {{ mb_strtoupper((string) $solicitud->titulo_acto) }}
                         </div>
                     @endforeach
                 @endforelse
             @empty
-                <p style="text-align: center; color: gray; font-style: italic;">No hay solicitudes registradas en el sumario.</p>
+                <p style="text-align: center; color: gray; font-style: italic;">No hay solicitudes registradas en el
+                    sumario.</p>
             @endforelse
         </div>
     </div>
-
-    <div class="firma">
-        <div class="separator-thick" style="width: 100%; margin: 0 auto 10px auto;"></div>
-        <p style="margin: 0;">{{ mb_strtoupper($gaceta->gobernador->titulo->abreviatura ?? 'LCDO.') }} {{ mb_strtoupper($gaceta->gobernador->nombres ?? 'JULIO CÉSAR') }} {{ mb_strtoupper($gaceta->gobernador->apellidos ?? 'LEÓN HEREDIA') }}</p>
-        <p style="margin: 0;">GOBERNADOR DEL ESTADO YARACUY</p>
-    </div>
 </body>
+
 </html>
