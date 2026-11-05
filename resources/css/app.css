@@ -1,3 +1,374 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* =====================================================================
+   SGCJ · Sistema de Diseño Corporativo
+   Paleta:
+   - Corporativo / marca ....... azul marino institucional (#1e3a8a)
+   - Acción principal ......... esmeralda institucional (#059669)
+   - Neutros .................. slate (fondos, bordes, textos)
+   - Estados .................. esmeralda (éxito), ámbar (alerta),
+                                rojo (peligro), slate (inactivo)
+   ===================================================================== */
+
+@layer base {
+    :root {
+        --sgcj-brand: #1e3a8a;
+        --sgcj-brand-dark: #172554;
+        --sgcj-brand-soft: #eff6ff;
+        --sgcj-accent: #059669;
+        --sgcj-accent-dark: #047857;
+        --sgcj-surface: #ffffff;
+        --sgcj-canvas: #f8fafc;
+        --sgcj-border: #e2e8f0;
+        --sgcj-text: #0f172a;
+        --sgcj-muted: #64748b;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-slate-50 text-slate-800 antialiased;
+    }
+
+    ::selection {
+        background-color: #bfdbfe;
+        color: #172554;
+    }
+}
+
+@layer components {
+    /* -----------------------------------------------------------------
+       TARJETAS · diseño unificado
+       ----------------------------------------------------------------- */
+    .card {
+        @apply bg-white rounded-lg border border-slate-200 shadow-sm;
+    }
+
+    .card-hover {
+        @apply transition-all duration-300 ease-out hover:shadow-md hover:border-slate-300;
+    }
+
+    .card-header {
+        @apply px-6 py-4 border-b border-slate-200 bg-white rounded-t-lg;
+    }
+
+    .card-body {
+        @apply p-6;
+    }
+
+    .card-footer {
+        @apply px-6 py-4 border-t border-slate-200 bg-slate-50/60 rounded-b-lg;
+    }
+
+    .kpi-card {
+        @apply card relative overflow-hidden p-5 transition-all duration-300 ease-out hover:shadow-md hover:-translate-y-0.5;
+    }
+
+    .kpi-card::before {
+        content: '';
+        @apply absolute inset-y-0 left-0 w-1 bg-blue-900;
+    }
+
+    .kpi-label {
+        @apply text-xs font-semibold uppercase tracking-wider text-slate-500;
+    }
+
+    .kpi-value {
+        @apply mt-2 text-3xl font-extrabold tracking-tight text-slate-800;
+    }
+
+    /* -----------------------------------------------------------------
+       BOTONES · transiciones suaves, focus accesible y microinteracción
+       ----------------------------------------------------------------- */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg border border-transparent
+               px-4 py-2.5 text-sm font-semibold leading-5
+               transition-all duration-200 ease-out
+               focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+               disabled:cursor-not-allowed disabled:opacity-50
+               active:scale-[0.97];
+    }
+
+    .btn:hover {
+        @apply -translate-y-0.5 shadow-md;
+    }
+
+    .btn:active {
+        @apply translate-y-0 shadow-sm;
+    }
+
+    .btn-primary {
+        @apply bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 focus-visible:ring-emerald-500;
+    }
+
+    .btn-secondary {
+        @apply border-slate-300 bg-white text-slate-700 shadow-sm hover:border-slate-400 hover:bg-slate-50 focus-visible:ring-slate-400;
+    }
+
+    .btn-neutral {
+        @apply bg-slate-800 text-white shadow-sm hover:bg-slate-900 focus-visible:ring-slate-500;
+    }
+
+    .btn-danger {
+        @apply bg-red-600 text-white shadow-sm hover:bg-red-700 focus-visible:ring-red-500;
+    }
+
+    .btn-warning {
+        @apply bg-amber-500 text-white shadow-sm hover:bg-amber-600 focus-visible:ring-amber-400;
+    }
+
+    .btn-brand {
+        @apply bg-blue-900 text-white shadow-sm hover:bg-blue-800 focus-visible:ring-blue-700;
+    }
+
+    .btn-ghost {
+        @apply bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-slate-400;
+    }
+
+    .btn-sm {
+        @apply gap-1.5 rounded-md px-3 py-1.5 text-xs;
+    }
+
+    .btn-lg {
+        @apply px-6 py-3 text-base;
+    }
+
+    /* Botón de acción compacto (solo icono) */
+    .btn-icon {
+        @apply relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-transparent
+               text-sm shadow-sm transition-all duration-200 ease-out
+               focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+               active:scale-95;
+    }
+
+    .btn-icon:hover {
+        @apply -translate-y-0.5 scale-105 shadow-md;
+    }
+
+    .btn-icon--brand {
+        @apply bg-blue-900 text-white hover:bg-blue-800 focus-visible:ring-blue-700;
+    }
+
+    .btn-icon--primary {
+        @apply bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-500;
+    }
+
+    .btn-icon--neutral {
+        @apply border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 focus-visible:ring-slate-400;
+    }
+
+    .btn-icon--warning {
+        @apply bg-amber-500 text-white hover:bg-amber-600 focus-visible:ring-amber-400;
+    }
+
+    .btn-icon--danger {
+        @apply bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500;
+    }
+
+    .btn-icon--dark {
+        @apply bg-slate-800 text-white hover:bg-slate-900 focus-visible:ring-slate-500;
+    }
+
+    /* -----------------------------------------------------------------
+       TOOLTIPS · fade-in suave, solo al hacer hover/focus
+       ----------------------------------------------------------------- */
+    .has-tooltip {
+        @apply relative;
+    }
+
+    .tooltip-content {
+        @apply pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 whitespace-nowrap rounded-md
+               bg-slate-900 px-2.5 py-1.5 text-[11px] font-medium leading-none text-white shadow-lg;
+        opacity: 0;
+        visibility: hidden;
+        transform: translate(-50%, 4px) scale(0.96);
+        transition: opacity 180ms ease-out, transform 180ms ease-out, visibility 180ms ease-out;
+    }
+
+    .tooltip-content::after {
+        content: '';
+        @apply absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-4 border-transparent border-t-slate-900;
+    }
+
+    .has-tooltip:hover .tooltip-content,
+    .has-tooltip:focus-visible .tooltip-content,
+    .has-tooltip:focus-within .tooltip-content {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, 0) scale(1);
+    }
+
+    .tooltip-end .tooltip-content {
+        left: auto;
+        right: 0;
+        transform: translate(0, 4px) scale(0.96);
+    }
+
+    .tooltip-end .tooltip-content::after {
+        left: auto;
+        right: 12px;
+        transform: none;
+    }
+
+    .tooltip-end:hover .tooltip-content,
+    .tooltip-end:focus-visible .tooltip-content,
+    .tooltip-end:focus-within .tooltip-content {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* -----------------------------------------------------------------
+       NAVEGACIÓN · microinteracciones
+       ----------------------------------------------------------------- */
+    .nav-trigger {
+        @apply inline-flex items-center rounded-md border border-transparent px-3 py-2 text-sm font-medium
+               text-slate-300 transition-all duration-200 ease-out
+               hover:-translate-y-0.5 hover:bg-slate-800 hover:text-white
+               focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400
+               active:translate-y-0 active:scale-[0.98];
+    }
+
+    .nav-dropdown-item {
+        @apply flex w-full items-center px-4 py-2.5 text-start text-sm text-slate-600
+               transition-all duration-150 ease-out
+               hover:translate-x-0.5 hover:bg-slate-100 hover:text-blue-900
+               focus:bg-slate-100 focus:text-blue-900 focus:outline-none;
+    }
+
+    .nav-drawer-link {
+        @apply block w-full border-l-4 border-transparent py-2 pe-4 ps-3 text-start text-base font-medium
+               text-slate-600 transition-all duration-200 ease-out
+               hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900
+               focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400;
+    }
+
+    .nav-drawer-link-active {
+        @apply border-blue-900 bg-blue-50 text-blue-900;
+    }
+
+    /* -----------------------------------------------------------------
+       TABLAS
+       ----------------------------------------------------------------- */
+    .table-corporate {
+        @apply min-w-full divide-y divide-slate-200;
+    }
+
+    .table-corporate thead {
+        @apply bg-slate-50;
+    }
+
+    .table-corporate th {
+        @apply px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500;
+    }
+
+    .table-corporate td {
+        @apply px-6 py-4 text-sm text-slate-600;
+    }
+
+    .table-corporate tbody tr {
+        @apply transition-colors duration-150 hover:bg-slate-50/80;
+    }
+
+    /* -----------------------------------------------------------------
+       BADGES DE ESTADO · neutrales y sobrios
+       ----------------------------------------------------------------- */
+    .badge {
+        @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold;
+    }
+
+    .badge-neutral {
+        @apply border-slate-200 bg-slate-100 text-slate-600;
+    }
+
+    .badge-success {
+        @apply border-emerald-200 bg-emerald-50 text-emerald-700;
+    }
+
+    .badge-warning {
+        @apply border-amber-200 bg-amber-50 text-amber-700;
+    }
+
+    .badge-danger {
+        @apply border-red-200 bg-red-50 text-red-700;
+    }
+
+    .badge-info {
+        @apply border-blue-200 bg-blue-50 text-blue-800;
+    }
+
+    /* -----------------------------------------------------------------
+       GRÁFICAS
+       ----------------------------------------------------------------- */
+    .chart-card {
+        @apply card p-6 transition-all duration-300 ease-out hover:shadow-md;
+    }
+
+    .chart-card h3 {
+        @apply mb-4 text-base font-semibold text-slate-700;
+    }
+
+    /* -----------------------------------------------------------------
+       MENSAJES / ALERTAS
+       ----------------------------------------------------------------- */
+    .alert {
+        @apply mb-4 rounded-lg border-l-4 p-4 text-sm;
+    }
+
+    .alert-success {
+        @apply border-emerald-500 bg-emerald-50 text-emerald-800;
+    }
+
+    .alert-error {
+        @apply border-red-500 bg-red-50 text-red-800;
+    }
+
+    .alert-warning {
+        @apply border-amber-500 bg-amber-50 text-amber-800;
+    }
+}
+
+@layer utilities {
+    .animate-fade-in {
+        animation: sgcj-fade-in 220ms ease-out both;
+    }
+
+    .animate-tooltip-in {
+        animation: sgcj-tooltip-in 180ms ease-out both;
+    }
+}
+
+@keyframes sgcj-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes sgcj-tooltip-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 4px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

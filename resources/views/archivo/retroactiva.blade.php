@@ -1,14 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
             {{ __('Fast-Track: Subir Gaceta Histórica') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
+            <div class="card overflow-hidden">
+                <div class="p-6 bg-white border-b border-slate-200">
                     
                     @if ($errors->any())
                         <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -28,26 +28,26 @@
                         
                         {{-- BLOQUE SUPERIOR: METADATOS DE LA GACETA --}}
                         <div class="mb-8">
-                            <h3 class="text-lg font-bold text-gray-800 border-b pb-2 mb-4">1. Metadatos de la Gaceta</h3>
+                            <h3 class="text-lg font-bold text-slate-800 border-b pb-2 mb-4">1. Metadatos de la Gaceta</h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Número de Gaceta <span class="text-red-500">*</span></label>
-                                    <input type="text" name="numero" value="{{ old('numero') }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <label class="block text-sm font-medium text-slate-700">Número de Gaceta <span class="text-red-500">*</span></label>
+                                    <input type="text" name="numero" value="{{ old('numero') }}" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Tipo <span class="text-red-500">*</span></label>
-                                    <select name="tipo" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <label class="block text-sm font-medium text-slate-700">Tipo <span class="text-red-500">*</span></label>
+                                    <select name="tipo" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                         <option value="Ordinaria" {{ old('tipo') == 'Ordinaria' ? 'selected' : '' }}>Ordinaria</option>
                                         <option value="Extraordinaria" {{ old('tipo') == 'Extraordinaria' ? 'selected' : '' }}>Extraordinaria</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Fecha de Publicación <span class="text-red-500">*</span></label>
-                                    <input type="date" name="fecha_publicacion" value="{{ old('fecha_publicacion') }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <label class="block text-sm font-medium text-slate-700">Fecha de Publicación <span class="text-red-500">*</span></label>
+                                    <input type="date" name="fecha_publicacion" value="{{ old('fecha_publicacion') }}" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Gobernador <span class="text-red-500">*</span></label>
-                                    <select name="gobernador_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <label class="block text-sm font-medium text-slate-700">Gobernador <span class="text-red-500">*</span></label>
+                                    <select name="gobernador_id" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                         <option value="">Seleccione...</option>
                                         @foreach($gobernadores as $gobernador)
                                             <option value="{{ $gobernador->id }}" {{ old('gobernador_id') == $gobernador->id ? 'selected' : '' }}>
@@ -57,21 +57,21 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Año Político <span class="text-red-500">*</span></label>
-                                    <input type="text" name="ano_politico" value="{{ old('ano_politico') }}" required placeholder="Ej: 164°" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <label class="block text-sm font-medium text-slate-700">Año Político <span class="text-red-500">*</span></label>
+                                    <input type="text" name="ano_politico" value="{{ old('ano_politico') }}" required placeholder="Ej: 164°" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Mes Político <span class="text-red-500">*</span></label>
-                                    <input type="text" name="mes_politico" value="{{ old('mes_politico') }}" required placeholder="Ej: 164°" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <label class="block text-sm font-medium text-slate-700">Mes Político <span class="text-red-500">*</span></label>
+                                    <input type="text" name="mes_politico" value="{{ old('mes_politico') }}" required placeholder="Ej: 164°" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                 </div>
                                 <div class="md:col-span-3">
-                                    <label class="block text-sm font-medium text-gray-700">Archivo PDF Escaneado (Max 20MB) <span class="text-red-500">*</span></label>
+                                    <label class="block text-sm font-medium text-slate-700">Archivo PDF Escaneado (Max 20MB) <span class="text-red-500">*</span></label>
                                     <input type="file" name="archivo_pdf_completo" accept="application/pdf" required class="mt-1 block w-full text-sm text-slate-500
                                         file:mr-4 file:py-2 file:px-4
                                         file:rounded-md file:border-0
                                         file:text-sm file:font-semibold
-                                        file:bg-indigo-50 file:text-indigo-700
-                                        hover:file:bg-indigo-100 border border-gray-300 rounded-md">
+                                        file:bg-emerald-50 file:text-emerald-700
+                                        hover:file:bg-emerald-100 border border-slate-300 rounded-md">
                                 </div>
                             </div>
                         </div>
@@ -79,8 +79,8 @@
                         {{-- BLOQUE INFERIOR: SUMARIO DINAMICO (ACTOS) --}}
                         <div class="mb-6">
                             <div class="flex justify-between items-center border-b pb-2 mb-4">
-                                <h3 class="text-lg font-bold text-gray-800">2. Sumario de Actos</h3>
-                                <button type="button" onclick="agregarActo()" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1 rounded shadow-sm text-sm font-medium transition">
+                                <h3 class="text-lg font-bold text-slate-800">2. Sumario de Actos</h3>
+                                <button type="button" onclick="agregarActo()" class="bg-blue-100 text-blue-800 hover:bg-blue-200 px-3 py-1 rounded shadow-sm text-sm font-medium transition">
                                     <i class="fa-solid fa-plus mr-1"></i> Agregar otro Acto
                                 </button>
                             </div>
@@ -90,8 +90,8 @@
                                 <div class="acto-row bg-slate-50 border border-slate-200 p-4 rounded-md relative">
                                     <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                                         <div class="md:col-span-4">
-                                            <label class="block text-xs font-semibold text-gray-600 uppercase">Institución Emisora</label>
-                                            <select name="actos[0][institucion_id]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                            <label class="block text-xs font-semibold text-slate-600 uppercase">Institución Emisora</label>
+                                            <select name="actos[0][institucion_id]" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                                 <option value="">Seleccione Institución...</option>
                                                 @foreach($instituciones as $inst)
                                                     <option value="{{ $inst->id }}">{{ $inst->nombre }}</option>
@@ -99,8 +99,8 @@
                                             </select>
                                         </div>
                                         <div class="md:col-span-3">
-                                            <label class="block text-xs font-semibold text-gray-600 uppercase">Tipo de Acto</label>
-                                            <select name="actos[0][tipo_acto]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                            <label class="block text-xs font-semibold text-slate-600 uppercase">Tipo de Acto</label>
+                                            <select name="actos[0][tipo_acto]" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                                 <option value="">Seleccione...</option>
                                                 <option value="Decreto">Decreto</option>
                                                 <option value="Resolución">Resolución</option>
@@ -110,8 +110,8 @@
                                             </select>
                                         </div>
                                         <div class="md:col-span-4">
-                                            <label class="block text-xs font-semibold text-gray-600 uppercase">Número de Acto</label>
-                                            <input type="text" name="actos[0][numero]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                            <label class="block text-xs font-semibold text-slate-600 uppercase">Número de Acto</label>
+                                            <input type="text" name="actos[0][numero]" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                         </div>
                                         <div class="md:col-span-1 flex items-end justify-center pb-1">
                                             <!-- Botón eliminar (oculto en el primero) -->
@@ -120,16 +120,16 @@
                                             </button>
                                         </div>
                                         <div class="md:col-span-12">
-                                            <label class="block text-xs font-semibold text-gray-600 uppercase">Sumario / Extracto</label>
-                                            <textarea name="actos[0][sumario]" rows="2" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                                            <label class="block text-xs font-semibold text-slate-600 uppercase">Sumario / Extracto</label>
+                                            <textarea name="actos[0][sumario]" rows="2" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm"></textarea>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex justify-end pt-4 border-t border-gray-200">
-                            <a href="{{ route('archivo.index') }}" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded shadow-sm hover:bg-gray-50 font-medium mr-3 transition">
+                        <div class="flex justify-end pt-4 border-t border-slate-200">
+                            <a href="{{ route('archivo.index') }}" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded shadow-sm hover:bg-slate-50 font-medium mr-3 transition">
                                 Cancelar
                             </a>
                             <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded shadow-sm font-medium transition"
@@ -158,8 +158,8 @@
             newRow.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <div class="md:col-span-4">
-                        <label class="block text-xs font-semibold text-gray-600 uppercase">Institución Emisora</label>
-                        <select name="actos[${actoIndex}][institucion_id]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase">Institución Emisora</label>
+                        <select name="actos[${actoIndex}][institucion_id]" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                             <option value="">Seleccione Institución...</option>
                             @foreach($instituciones as $inst)
                                 <option value="{{ $inst->id }}">{{ $inst->nombre }}</option>
@@ -167,8 +167,8 @@
                         </select>
                     </div>
                     <div class="md:col-span-3">
-                        <label class="block text-xs font-semibold text-gray-600 uppercase">Tipo de Acto</label>
-                        <select name="actos[${actoIndex}][tipo_acto]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase">Tipo de Acto</label>
+                        <select name="actos[${actoIndex}][tipo_acto]" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                             <option value="">Seleccione...</option>
                             <option value="Decreto">Decreto</option>
                             <option value="Resolución">Resolución</option>
@@ -178,8 +178,8 @@
                         </select>
                     </div>
                     <div class="md:col-span-4">
-                        <label class="block text-xs font-semibold text-gray-600 uppercase">Número de Acto</label>
-                        <input type="text" name="actos[${actoIndex}][numero]" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase">Número de Acto</label>
+                        <input type="text" name="actos[${actoIndex}][numero]" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                     </div>
                     <div class="md:col-span-1 flex items-end justify-center pb-1">
                         <button type="button" onclick="eliminarActo(this)" class="text-red-500 hover:text-red-700 transition" title="Eliminar Acto">
@@ -187,8 +187,8 @@
                         </button>
                     </div>
                     <div class="md:col-span-12">
-                        <label class="block text-xs font-semibold text-gray-600 uppercase">Sumario / Extracto</label>
-                        <textarea name="actos[${actoIndex}][sumario]" rows="2" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase">Sumario / Extracto</label>
+                        <textarea name="actos[${actoIndex}][sumario]" rows="2" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm"></textarea>
                     </div>
                 </div>
             `;

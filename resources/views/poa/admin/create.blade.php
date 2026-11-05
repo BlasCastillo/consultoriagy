@@ -7,7 +7,7 @@
 
     <div class="py-12">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-slate-200">
+            <div class="card overflow-hidden">
                 <div class="p-6 text-slate-900">
                     
                     @if ($errors->any())
@@ -52,7 +52,7 @@
 
                         <div class="flex items-center justify-end pt-4 border-t border-slate-200">
                             <a href="{{ route('poa.index') }}" class="mr-4 text-sm font-medium text-slate-600 hover:text-slate-500">Cancelar</a>
-                            <button type="submit" class="px-4 py-2 bg-slate-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700">
+                            <button type="submit" class="btn btn-neutral">
                                 Guardar POA
                             </button>
                         </div>

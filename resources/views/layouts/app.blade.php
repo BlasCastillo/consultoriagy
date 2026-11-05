@@ -52,7 +52,7 @@
         <!-- Ventana del Chat (Oculta por defecto) -->
         <div id="ai-chatbot-window" class="hidden flex-col bg-white w-80 sm:w-96 rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transition-all duration-300 transform origin-bottom-right mb-4">
             <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 flex justify-between items-center text-white shadow-md">
+            <div class="bg-gradient-to-r from-blue-900 to-blue-800 p-4 flex justify-between items-center text-white shadow-md">
                 <div class="flex items-center gap-2">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     <span class="font-semibold tracking-wide">Asistente SGCJ</span>
@@ -61,7 +61,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            
+
             <!-- Mensajes -->
             <div id="ai-messages-container" class="p-4 h-80 overflow-y-auto bg-slate-50 flex flex-col gap-3 text-sm">
                 <div class="bg-white border border-slate-200 text-slate-700 p-3 rounded-xl rounded-tl-none self-start max-w-[85%] shadow-sm">
@@ -71,15 +71,15 @@
 
             <!-- Input Box -->
             <div class="p-3 bg-white border-t border-slate-200 flex gap-2 items-center">
-                <input type="text" id="ai-chat-input" class="flex-1 border border-slate-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Consulta un trámite o gaceta...">
-                <button id="ai-send-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-2 w-10 h-10 flex items-center justify-center transition-colors shadow-md">
+                <input type="text" id="ai-chat-input" class="flex-1 border border-slate-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-blue-800 transition-all" placeholder="Consulta un trámite o gaceta...">
+                <button id="ai-send-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full p-2 w-10 h-10 flex items-center justify-center transition-colors shadow-md">
                     <svg class="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
                 </button>
             </div>
         </div>
 
         <!-- Botón Flotante (FAB) -->
-        <button id="ai-fab-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-transform hover:scale-110 flex items-center justify-center ml-auto">
+        <button id="ai-fab-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-transform hover:scale-110 flex items-center justify-center ml-auto">
             <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
         </button>
     </div>
@@ -105,8 +105,8 @@
 
         const appendMessage = (text, isUser = false) => {
             const div = document.createElement('div');
-            div.className = isUser 
-                ? 'bg-indigo-600 text-white p-3 rounded-xl rounded-tr-none self-end max-w-[85%] shadow-sm' 
+            div.className = isUser
+                ? 'bg-emerald-600 text-white p-3 rounded-xl rounded-tr-none self-end max-w-[85%] shadow-sm'
                 : 'bg-white border border-slate-200 text-slate-700 p-3 rounded-xl rounded-tl-none self-start max-w-[85%] shadow-sm whitespace-pre-wrap leading-relaxed';
             div.innerHTML = isUser ? text : text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
             msgContainer.appendChild(div);
@@ -143,7 +143,7 @@
 
                 const data = await response.json();
                 document.getElementById(loadingId).remove();
-                
+
                 if (response.ok) {
                     appendMessage(data.reply);
                 } else {

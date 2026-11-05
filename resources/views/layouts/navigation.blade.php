@@ -4,7 +4,7 @@
             <div class="flex">
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}"
-                        class="flex items-center gap-1 text-white font-bold text-xl tracking-wider">
+                        class="flex items-center gap-1 text-white font-bold text-xl tracking-wider transition-transform duration-200 hover:scale-[1.02]">
                         <img src="{{ asset('img/logo-gobernacion.svg') }}" alt="Logo Yaracuy" class="h-14 w-auto">
                         <span>SGCJ</span>
                     </a>
@@ -35,7 +35,7 @@
                             <x-dropdown align="left" width="48">
                                 <x-slot name="trigger">
                                     <button
-                                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-400 bg-slate-900 hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                        class="nav-trigger">
                                         <i class="fa-solid fa-chart-pie mr-2"></i>
                                         <div>{{ __('Planificación (POA)') }}</div>
                                         <div class="ms-1">
@@ -75,7 +75,7 @@
                             <x-dropdown align="left" width="48">
                                 <x-slot name="trigger">
                                     <button
-                                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-400 bg-slate-900 hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                        class="nav-trigger">
                                         <i class="fa-solid fa-gears mr-2"></i>
                                         <div>{{ __('Procesos') }}</div>
                                         <div class="ms-1">
@@ -126,7 +126,7 @@
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
                                 <button
-                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-400 bg-slate-900 hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    class="nav-trigger">
                                     <i class="fa-solid fa-database mr-2"></i>
                                     <div>{{ __('Registros Maestros') }}</div>
                                     <div class="ms-1">
@@ -167,22 +167,22 @@
                                 @endcan
                                 @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('read Sede'))
                                     <x-dropdown-link :href="route('sedes.index')">
-                                        <i class="fa-solid fa-building mr-1"></i> {{ __('Sedes (Edificios)') }}
+                                        {{ __('Sedes (Edificios)') }}
                                     </x-dropdown-link>
                                 @endif
                                 @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('read Estante'))
                                     <x-dropdown-link :href="route('estantes.index')">
-                                        <i class="fa-solid fa-server mr-1"></i> {{ __('Estantes') }}
+                                        {{ __('Estantes') }}
                                     </x-dropdown-link>
                                 @endif
                                 @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('read Gaveta'))
                                     <x-dropdown-link :href="route('gavetas.index')">
-                                        <i class="fa-solid fa-box-archive mr-1"></i> {{ __('Gavetas') }}
+                                        {{ __('Gavetas') }}
                                     </x-dropdown-link>
                                 @endif
                                 @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->can('ver atenciones'))
                                     <x-dropdown-link :href="route('atenciones.index')">
-                                        <i class="fa-solid fa-users mr-1"></i> {{ __('Atención al Ciudadano') }}
+                                        {{ __('Atención al Ciudadano') }}
                                     </x-dropdown-link>
                                 @endif
                             </x-slot>
@@ -196,7 +196,7 @@
                             <x-dropdown align="left" width="48">
                                 <x-slot name="trigger">
                                     <button
-                                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-400 bg-slate-900 hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                        class="nav-trigger">
                                         <i class="fa-solid fa-chart-bar mr-2"></i>
                                         <div>{{ __('Reportes') }}</div>
                                         <div class="ms-1">
@@ -224,7 +224,7 @@
                             <x-dropdown align="left" width="48">
                                 <x-slot name="trigger">
                                     <button
-                                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-400 bg-slate-900 hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                        class="nav-trigger">
                                         <i class="fa-solid fa-screwdriver-wrench mr-2"></i>
                                         <div>{{ __('Configuración') }}</div>
                                         <div class="ms-1">
@@ -266,7 +266,7 @@
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
                             <button
-                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-slate-200 bg-slate-800 hover:text-white hover:bg-slate-700 focus:outline-none transition ease-in-out duration-150">
+                                class="inline-flex items-center rounded-md border border-transparent bg-slate-800 px-3 py-2 text-sm font-medium leading-4 text-slate-200 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-slate-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 active:translate-y-0">
                                 <div>{{ Auth::user()->name }}</div>
 
                                 <div class="ms-1">
@@ -282,7 +282,6 @@
 
                         <x-slot name="content">
                             <x-dropdown-link :href="route('profile.edit')">
-                                <i class="fa-regular fa-circle-user"></i>
                                 {{ __('Profile') }}
                             </x-dropdown-link>
 
@@ -291,7 +290,6 @@
 
                                 <x-dropdown-link :href="route('logout')" onclick="event.preventDefault();
                                                             this.closest('form').submit();">
-                                    <i class="fa-solid fa-right-from-bracket"></i>
                                     {{ __('Log Out') }}
                                 </x-dropdown-link>
                             </form>
@@ -322,9 +320,9 @@
                                                 let url = id ? `/notificaciones/${id}/leer` : '#';
 
                                                 let html = `
-                                                    <a href='${url}' class='block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-100 bg-slate-50 transition-colors'>
-                                                        <div class='text-sm text-gray-800 font-semibold'>${msg}</div>
-                                                        <div class='text-xs text-gray-400 mt-1'>Justo ahora</div>
+                                                    <a href='${url}' class='block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100 border-b border-slate-100 bg-slate-50 transition-colors'>
+                                                        <div class='text-sm text-slate-800 font-semibold'>${msg}</div>
+                                                        <div class='text-xs text-slate-400 mt-1'>Justo ahora</div>
                                                     </a>
                                                 `;
                                                 list.insertAdjacentHTML('afterbegin', html);
@@ -332,7 +330,7 @@
                                         });
                                 }
                             ">
-                        <button @click="showDropdown = !showDropdown" class="text-gray-400 hover:text-white transition">
+                        <button @click="showDropdown = !showDropdown" class="text-slate-400 hover:text-white transition">
                             <div class="relative inline-block">
                                 <i class="fa-solid fa-bell text-xl"></i>
                                 <span x-show="unreadCount > 0" x-text="unreadCount"
@@ -342,22 +340,22 @@
                         </button>
 
                         <div x-show="showDropdown"
-                            class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200"
+                            class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg py-1 z-50 border border-slate-200"
                             style="display: none;">
-                            <div class="px-4 py-2 border-b border-gray-100 font-semibold text-gray-700">Notificaciones</div>
+                            <div class="px-4 py-2 border-b border-slate-100 font-semibold text-slate-700">Notificaciones</div>
 
                             <div id="notifications-list" class="max-h-64 overflow-y-auto">
                                 @forelse(auth()->user()->unreadNotifications as $notificacion)
                                     <a href="{{ route('notificaciones.leer', $notificacion->id) }}"
-                                        class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-100">
-                                        <div class="text-sm text-gray-800">
+                                        class="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100 border-b border-slate-100">
+                                        <div class="text-sm text-slate-800">
                                             {{ $notificacion->data['mensaje'] ?? 'Tienes una nueva notificación' }}
                                         </div>
-                                        <div class="text-xs text-gray-400 mt-1">{{ $notificacion->created_at->diffForHumans() }}
+                                        <div class="text-xs text-slate-400 mt-1">{{ $notificacion->created_at->diffForHumans() }}
                                         </div>
                                     </a>
                                 @empty
-                                    <div id="empty-notifications" class="px-4 py-3 text-sm text-gray-500 text-center">No tienes
+                                    <div id="empty-notifications" class="px-4 py-3 text-sm text-slate-500 text-center">No tienes
                                         notificaciones nuevas.</div>
                                 @endforelse
                             </div>
@@ -365,7 +363,7 @@
                     </div>
                 @else
                     <a href="{{ route('login') }}"
-                        class="text-sm font-bold text-gray-700 hover:text-blue-600 bg-gray-100 px-4 py-2 rounded-md shadow-sm">
+                        class="text-sm font-bold text-slate-700 hover:text-blue-600 bg-slate-100 px-4 py-2 rounded-md shadow-sm">
                         Iniciar Sesión (Funcionarios)
                     </a>
                 @endauth
@@ -373,7 +371,7 @@
 
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open"
-                    class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                    class="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none focus:bg-slate-100 focus:text-slate-500 transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex"
                             stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -409,7 +407,7 @@
 
             {{-- 4. Planificación (POA) --}}
             @can('read Poa')
-                <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Planificación (POA)
+                <div class="px-4 py-2 mt-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Planificación (POA)
                 </div>
                 <x-responsive-nav-link :href="route('poa.dashboard')" :active="request()->routeIs('poa.dashboard')">
                     <i class="fa-solid fa-chart-pie w-5 h-5 mr-1"></i>
@@ -429,7 +427,7 @@
             @endcan
 
             @canany(['read Solicitud', 'read Gaceta', 'read PrestamoArchivo'])
-                <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Procesos</div>
+                <div class="px-4 py-2 mt-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Procesos</div>
 
                 @can('read Solicitud')
                     <x-responsive-nav-link :href="route('solicitudes.index')" :active="request()->routeIs(['solicitudes.index', 'solicitudes.create', 'solicitudes.edit', 'solicitudes.show'])">
@@ -468,7 +466,7 @@
 
             @canany(['read Institucion', 'read Gobernador', 'read Jefatura'])
 
-                <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Registros Maestros
+                <div class="px-4 py-2 mt-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Registros Maestros
                 </div>
                 @can('read Institucion')
                     <x-responsive-nav-link :href="route('institutions.index')" :active="request()->routeIs('institutions.*')">
@@ -511,7 +509,7 @@
             @endcanany
 
             @can('read Bitacora')
-                <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Reportes</div>
+                <div class="px-4 py-2 mt-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Reportes</div>
                 <x-responsive-nav-link :href="route('bitacora.index')" :active="request()->routeIs('bitacora.*')">
                     {{ __('Bitácora') }}
                 </x-responsive-nav-link>
@@ -519,7 +517,7 @@
             @endcan
 
             @canany(['read User', 'read Role', 'read Permission'])
-                <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Configuración</div>
+                <div class="px-4 py-2 mt-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Configuración</div>
                 @can('read User')
                     <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                         {{ __('Usuarios') }}
@@ -539,10 +537,10 @@
         </div>
 
         @auth
-            <div class="pt-4 pb-1 border-t border-gray-200">
+            <div class="pt-4 pb-1 border-t border-slate-200">
                 <div class="px-4">
-                    <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                    <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+                    <div class="font-medium text-base text-slate-800">{{ Auth::user()->name }}</div>
+                    <div class="font-medium text-sm text-slate-500">{{ Auth::user()->email }}</div>
                 </div>
 
                 <div class="mt-3 space-y-1">
@@ -563,7 +561,7 @@
                 </div>
             </div>
         @else
-            <div class="pt-4 pb-1 border-t border-gray-200">
+            <div class="pt-4 pb-1 border-t border-slate-200">
                 <div class="mt-3 space-y-1">
                     <x-responsive-nav-link :href="route('login')">
                         <i class="fa-solid fa-right-to-bracket"></i>

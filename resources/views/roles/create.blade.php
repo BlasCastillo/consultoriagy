@@ -7,7 +7,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-slate-200">
+            <div class="card overflow-hidden">
                 <div class="p-6 text-slate-900">
 
                     @if ($errors->any())
@@ -31,8 +31,8 @@
                         <div class="mb-6">
                             <h3 class="text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200">Matriz de Permisos</h3>
                             <div class="overflow-x-auto rounded-lg border border-slate-200">
-                                <table class="min-w-full bg-white">
-                                    <thead class="bg-slate-800 text-white border-b border-slate-300">
+                                <table class="table-corporate">
+                                    <thead>
                                         <tr>
                                             <th class="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Módulo / Modelo</th>
                                             <th class="py-3 px-4 text-center text-sm font-semibold uppercase tracking-wider">Crear</th>
@@ -71,16 +71,10 @@
                         </div>
 
                         <div class="flex items-center justify-end mt-8 pt-4 border-t border-slate-200 gap-3">
-                            <a href="{{ route('roles.index') }}" class="px-4 py-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center gap-2 font-medium text-sm md:text-base bg-slate-200 hover:bg-slate-300 text-slate-700">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                                </svg>
+                            <a href="{{ route('roles.index') }}" class="btn btn-secondary">
                                 Volver
                             </a>
-                            <button type="submit" class="px-4 py-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center gap-2 font-medium text-sm md:text-base bg-slate-800 hover:bg-slate-900 text-white">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
-                                </svg>
+                            <button type="submit" class="btn btn-neutral">
                                 Guardar Rol
                             </button>
                         </div>

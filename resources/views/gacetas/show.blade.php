@@ -4,17 +4,19 @@
             <h2 class="font-semibold text-xl text-slate-800 leading-tight">
                 Vista Previa Legal: Gaceta {{ $gaceta->numero }} / {{ $gaceta->anio }}
             </h2>
-            <div class="flex space-x-3">
+            <div class="flex items-center gap-2">
                 @if($gaceta->pdf_final || $gaceta->archivo_pdf_completo || $gaceta->ruta_archivo)
-                    <a href="{{ route('gacetas.descargar', $gaceta->id) }}"
-                        class="inline-flex items-center px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs uppercase rounded transition-colors shadow-md">
-                        <i class="fa-solid fa-download mr-2"></i> Descargar PDF Oficial
-                    </a>
+                    <x-action-button :href="route('gacetas.descargar', $gaceta->id)"
+                        action="Descargar PDF oficial"
+                        icon="fa-solid fa-download"
+                        tone="brand"
+                        align="end" />
                 @endif
-                <a href="{{ route('gacetas.index') }}"
-                    class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold text-xs uppercase rounded transition-colors shadow-sm">
-                    <i class="fa-solid fa-arrow-left mr-2"></i> Volver al listado
-                </a>
+                <x-action-button :href="route('gacetas.index')"
+                    action="Volver al listado"
+                    icon="fa-solid fa-arrow-left"
+                    tone="neutral"
+                    align="end" />
             </div>
         </div>
     </x-slot>
@@ -29,12 +31,12 @@
         }
     @endphp
 
-    <div class="py-12 bg-gray-200">
-        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-slate-200 py-12">
+        <div class="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
 
             @if(session('success'))
-                <div class="mb-5 bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-sm">
-                    <i class="fa-solid fa-circle-check mr-2"></i> {{ session('success') }}
+                <div class="alert alert-success">
+                    {{ session('success') }}
                 </div>
             @endif
 
@@ -44,16 +46,15 @@
 
                 @if($pdfPreviewUrl)
                     <div id="pdf-pages-container" class="space-y-8 w-full flex flex-col items-center">
-                        <div id="pdf-loading" class="text-center text-gray-500 font-bold py-10">
-                            <i class="fa-solid fa-spinner fa-spin text-3xl mb-3"></i><br>
+                        <div id="pdf-loading" class="bg-slate-50 py-10 text-center font-bold text-slate-500">
+                            <i class="fa-solid fa-spinner fa-spin mb-3 text-3xl"></i><br>
                             Cargando las páginas de la Gaceta...
                         </div>
                     </div>
                 @else
-                    <div class="bg-white shadow-2xl mx-auto relative text-black"
+                    <div class="relative mx-auto bg-white text-black shadow-2xl"
                         style="width: 100%; max-width: 850px; padding: 3rem 4rem;">
-                        <div class="w-full py-16 bg-gray-50 border-2 border-dashed border-gray-300 text-center text-gray-500">
-                            <i class="fa-solid fa-file-pdf text-4xl mb-3 text-gray-300"></i>
+                        <div class="w-full border-2 border-dashed border-slate-300 bg-slate-50 py-16 text-center text-slate-500">
                             <p>Las páginas del documento aparecerán aquí cuando el PDF sea subido.</p>
                         </div>
                     </div>

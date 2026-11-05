@@ -20,14 +20,14 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
+
             @if(session('success'))
                 <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
                     <span class="block sm:inline">{{ session('success') }}</span>
                 </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-slate-200">
+            <div class="card overflow-hidden">
                 <div class="p-6 text-slate-900">
                     <div class="overflow-x-auto">
                         <table class="min-w-full">
@@ -47,11 +47,11 @@
                                             <i class="fa-solid fa-building text-slate-400 mr-1"></i> {{ $poa->jefatura->nombre ?? 'Jefatura Desconocida' }}
                                         </td>
                                         <td class="py-3 px-4 text-sm">
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                                                @if($poa->estado == 'Aprobado') bg-blue-100 text-blue-800 
-                                                @elseif($poa->estado == 'En Ejecución') bg-green-100 text-green-800 
-                                                @elseif($poa->estado == 'Cerrado') bg-red-100 text-red-800 
-                                                @elseif($poa->estado == 'Borrador') bg-gray-100 text-gray-800 
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                                @if($poa->estado == 'Aprobado') bg-blue-100 text-blue-800
+                                                @elseif($poa->estado == 'En Ejecución') bg-green-100 text-green-800
+                                                @elseif($poa->estado == 'Cerrado') bg-red-100 text-red-800
+                                                @elseif($poa->estado == 'Borrador') bg-slate-100 text-slate-800
                                                 @else bg-slate-100 text-slate-800 @endif">
                                                 {{ $poa->estado }}
                                             </span>

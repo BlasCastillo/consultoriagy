@@ -7,21 +7,21 @@
 
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-slate-200">
+            <div class="card overflow-hidden">
                 <div class="p-6 text-slate-900">
                     <form action="{{ route('solicitudes.store') }}" method="POST" enctype="multipart/form-data" id="solicitudForm">
                         @csrf
                         
                         <div class="mb-6">
                             <label for="titulo_acto" class="block font-medium text-sm text-slate-700 mb-2">Asunto / Número de Oficio de Remisión <span class="text-red-500">*</span></label>
-                            <input type="text" name="titulo_acto" id="titulo_acto" required class="block w-full border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm sm:text-sm" placeholder="Ej. Oficio de Remisión Nro 001-2026..." value="{{ old('titulo_acto') }}">
+                            <input type="text" name="titulo_acto" id="titulo_acto" required class="block w-full border-slate-300 focus:border-blue-800 focus:ring-blue-800 rounded-md shadow-sm sm:text-sm" placeholder="Ej. Oficio de Remisión Nro 001-2026..." value="{{ old('titulo_acto') }}">
                             @error('titulo_acto') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
                         @if(!auth()->user()->institucion_id)
                         <div class="mb-6">
                             <label for="institucion_id" class="block font-medium text-sm text-slate-700 mb-2">Institución <span class="text-red-500">*</span></label>
-                            <select name="institucion_id" id="institucion_id" required class="block w-full border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm sm:text-sm">
+                            <select name="institucion_id" id="institucion_id" required class="block w-full border-slate-300 focus:border-blue-800 focus:ring-blue-800 rounded-md shadow-sm sm:text-sm">
                                 <option value="" disabled selected>Seleccione una institución</option>
                                 @foreach($instituciones as $institucion)
                                     <option value="{{ $institucion->id }}" {{ old('institucion_id') == $institucion->id ? 'selected' : '' }}>{{ $institucion->nombre }}</option>
@@ -33,7 +33,7 @@
 
                         <div class="mb-6">
                             <label for="archivo_pdf" class="block font-medium text-sm text-slate-700 mb-2">Documento Oficial (Solo PDF) <span class="text-red-500">*</span></label>
-                            <input type="file" name="archivo_pdf" id="archivo_pdf" required accept=".pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                            <input type="file" name="archivo_pdf" id="archivo_pdf" required accept=".pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
                             <p class="mt-1 text-xs text-slate-500">Sube el documento preliminar que será evaluado por la Consultoría Jurídica.</p>
                             @error('archivo_pdf') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
@@ -55,10 +55,10 @@
                         </div>
 
                         <div class="flex items-center justify-end mt-6 pt-4 border-t border-slate-200 gap-3">
-                            <a href="{{ route('solicitudes.index') }}" class="px-4 py-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center font-medium text-sm bg-slate-200 hover:bg-slate-300 text-slate-700">
+                            <a href="{{ route('solicitudes.index') }}" class="btn btn-secondary">
                                 Cancelar
                             </a>
-                            <button type="submit" class="px-4 py-2.5 rounded-lg shadow-sm transition-all duration-300 flex items-center justify-center font-medium text-sm bg-indigo-600 hover:bg-indigo-700 text-white">
+                            <button type="submit" class="btn btn-primary">
                                 Solicitar Apartado
                             </button>
                         </div>
@@ -80,7 +80,7 @@
                 row.innerHTML = `
                     <div class="w-1/4">
                         <label class="block text-xs font-medium text-slate-700 mb-1">Tipo de Acto <span class="text-red-500">*</span></label>
-                        <select name="actos[${actoIndex}][tipo_acto]" required class="block w-full border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm sm:text-sm">
+                        <select name="actos[${actoIndex}][tipo_acto]" required class="block w-full border-slate-300 focus:border-blue-800 focus:ring-blue-800 rounded-md shadow-sm sm:text-sm">
                             <option value="" disabled selected>Seleccione</option>
                             <option value="Decreto">Decreto</option>
                             <option value="Resolución">Resolución</option>
@@ -93,11 +93,11 @@
                     </div>
                     <div class="w-1/4">
                         <label class="block text-xs font-medium text-slate-700 mb-1">Número <span class="text-red-500">*</span></label>
-                        <input type="text" name="actos[${actoIndex}][numero]" placeholder="Ej. 001-2026" required class="block w-full border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm sm:text-sm">
+                        <input type="text" name="actos[${actoIndex}][numero]" placeholder="Ej. 001-2026" required class="block w-full border-slate-300 focus:border-blue-800 focus:ring-blue-800 rounded-md shadow-sm sm:text-sm">
                     </div>
                     <div class="w-2/4">
                         <label class="block text-xs font-medium text-slate-700 mb-1">Sumario <span class="text-red-500">*</span></label>
-                        <textarea name="actos[${actoIndex}][sumario]" placeholder="Descripción para la gaceta..." required class="block w-full border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm sm:text-sm resize-none h-10"></textarea>
+                        <textarea name="actos[${actoIndex}][sumario]" placeholder="Descripción para la gaceta..." required class="block w-full border-slate-300 focus:border-blue-800 focus:ring-blue-800 rounded-md shadow-sm sm:text-sm resize-none h-10"></textarea>
                     </div>
                     <div class="pt-6">
                         <button type="button" class="btn-remove-acto text-red-500 hover:text-red-700 p-1 bg-red-50 rounded" title="Eliminar Fila">

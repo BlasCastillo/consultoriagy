@@ -1,17 +1,17 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <div class="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+            <h2 class="text-xl font-semibold leading-tight text-slate-800">
                 {{ __('Sedes (Edificios)') }}
             </h2>
-            <a href="{{ route('sedes.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded shadow transition font-medium text-sm">
-                <i class="fa-solid fa-plus mr-1"></i> Nueva Sede
+            <a href="{{ route('sedes.create') }}" class="btn btn-primary">
+                Nueva Sede
             </a>
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-10">
+        <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
             @if(session('success'))
                 <script>
                     document.addEventListener('DOMContentLoaded', function () {
@@ -20,31 +20,35 @@
                 </script>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($sedes as $sede)
+            <div class="card">
+                <div class="card-body">
+                    <div class="overflow-x-auto rounded-lg border border-slate-200">
+                        <table class="table-corporate">
+                            <thead>
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $sede->nombre }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                        <a href="{{ route('sedes.edit', $sede) }}" class="text-indigo-600 hover:text-indigo-900 mx-2"><i class="fa-solid fa-pen-to-square"></i> Editar</a>
-                                        <form action="{{ route('sedes.destroy', $sede) }}" method="POST" class="inline-block"
-                                            onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Inhabilitar sede?', text: 'La sede dejará de estar disponible para ubicar gacetas.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, inhabilitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900 mx-2"><i class="fa-solid fa-trash"></i> Eliminar</button>
-                                        </form>
-                                    </td>
+                                    <th>Nombre</th>
+                                    <th class="text-center">Acciones</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach($sedes as $sede)
+                                    <tr>
+                                        <td class="font-medium text-slate-800">{{ $sede->nombre }}</td>
+                                        <td>
+                                            <div class="flex items-center justify-center gap-2">
+                                                <a href="{{ route('sedes.edit', $sede) }}" class="btn btn-warning btn-sm">Editar</a>
+                                                <form action="{{ route('sedes.destroy', $sede) }}" method="POST" class="inline-block"
+                                                    onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Inhabilitar sede?', text: 'La sede dejará de estar disponible para ubicar gacetas.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, inhabilitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

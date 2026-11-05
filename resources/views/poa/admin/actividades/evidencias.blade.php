@@ -36,7 +36,7 @@
             @endif
 
             <!-- Tarjeta Principal de la Actividad -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-slate-200">
+            <div class="card overflow-hidden">
                 <div class="p-6">
                     <h3 class="text-lg font-bold text-slate-800 mb-2">Actividad Programada</h3>
                     <p class="text-slate-600 mb-4">{{ $actividad->descripcion }}</p>
@@ -61,7 +61,7 @@
                         $meta = $actividad->metasTrimestrales->where('trimestre', $i)->first();
                     @endphp
 
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-slate-200 flex flex-col">
+                    <div class="card overflow-hidden flex flex-col">
                         <div class="bg-slate-100 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
                             <h4 class="font-bold text-slate-800">Trimestre {{ $i }}</h4>
                             @if($meta)

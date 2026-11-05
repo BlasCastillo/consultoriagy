@@ -2,13 +2,13 @@
     <x-slot name="header">
         <div class="flex justify-between items-center flex-wrap gap-4">
             <h2 class="font-semibold text-xl text-slate-800 leading-tight">
-                <i class="fa-solid fa-file-pdf mr-2 text-emerald-700"></i>
                 Digitalización: Gaceta Nro. {{ $gaceta->numero }} / {{ $gaceta->anio }} ({{ $gaceta->tipo }})
             </h2>
-            <a href="{{ route('gacetas.digitalizador') }}"
-                class="inline-flex items-center px-3 py-1.5 border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 text-xs font-bold uppercase rounded shadow-sm hover:shadow transition-colors">
-                <i class="fa-solid fa-arrow-left mr-2"></i> Cancelar y Volver
-            </a>
+            <x-action-button :href="route('gacetas.digitalizador')"
+                action="Cancelar y volver"
+                icon="fa-solid fa-arrow-left"
+                tone="neutral"
+                align="end" />
         </div>
     </x-slot>
 
@@ -80,24 +80,24 @@
         $actosConPdf = $actosConPdf->values();
     @endphp
 
-    <div class="py-8 bg-gray-100">
-        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-slate-100 py-8">
+        <div class="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
 
             @if(session('success'))
-                <div class="mb-5 bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-sm">
-                    <i class="fa-solid fa-circle-check mr-2"></i> {{ session('success') }}
+                <div class="alert alert-success">
+                    {{ session('success') }}
                 </div>
             @endif
 
             @if(session('error'))
-                <div class="mb-5 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-sm">
-                    <i class="fa-solid fa-circle-xmark mr-2"></i> {{ session('error') }}
+                <div class="alert alert-error">
+                    {{ session('error') }}
                 </div>
             @endif
 
             @if($errors->any())
-                <div class="mb-5 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-sm">
-                    <p class="font-bold mb-2">Por favor corrija los siguientes errores:</p>
+                <div class="alert alert-error">
+                    <p class="mb-2 font-bold">Por favor corrija los siguientes errores:</p>
                     <ul class="list-disc list-inside text-sm">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -112,23 +112,23 @@
                      COLUMNA IZQUIERDA: VISTA PREVIA LEGAL EN TIEMPO REAL
                      ══════════════════════════════════════════════════════ --}}
                 <div class="w-full xl:w-2/3">
-                    <div class="mb-3 flex items-center gap-2 flex-wrap">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                            <i class="fa-solid fa-eye mr-1.5"></i> Vista Previa en Tiempo Real
+                    <div class="mb-3 flex flex-wrap items-center gap-2">
+                        <span class="badge badge-warning">
+                            Vista Previa en Tiempo Real
                         </span>
-                        <span class="text-xs text-gray-500">Los PDFs asignados se muestran en el orden del sumario.</span>
+                        <span class="text-xs text-slate-500">Los PDFs asignados se muestran en el orden del sumario.</span>
                     </div>
 
-                    <div class="bg-gray-200 py-8 px-4 rounded-lg">
-                        <div class="space-y-8 w-full flex flex-col items-center">
+                    <div class="rounded-lg bg-slate-200 px-4 py-8">
+                        <div class="flex w-full flex-col items-center space-y-8">
 
                             {{-- Portada + sumario con títulos y firmas por institución --}}
                             @include('gacetas.partials.portada')
 
                             {{-- Páginas de cada PDF de acto, renderizadas con PDF.js --}}
                             <div id="pdf-pages-container" class="space-y-8 w-full flex flex-col items-center">
-                                <div id="pdf-loading" class="text-center text-gray-500 font-bold py-10">
-                                    <i class="fa-solid fa-spinner fa-spin text-3xl mb-3"></i><br>
+                                <div id="pdf-loading" class="bg-slate-50 py-10 text-center font-bold text-slate-500">
+                                    <i class="fa-solid fa-spinner fa-spin mb-3 text-3xl"></i><br>
                                     Cargando páginas de los actos...
                                 </div>
                             </div>
@@ -142,17 +142,17 @@
                 <div class="w-full xl:w-1/3 space-y-6">
 
                     {{-- Bloque A: PDF maestro / envío a revisión --}}
-                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="bg-emerald-700 text-white px-6 py-4">
-                            <h3 class="text-lg font-bold"><i class="fa-solid fa-paper-plane mr-2"></i> Enviar a Revisión</h3>
-                            <p class="text-emerald-100 text-xs mt-0.5">Gaceta Nro. {{ $gaceta->numero }} / {{ $gaceta->anio }}</p>
+                    <div class="card overflow-hidden">
+                        <div class="bg-emerald-700 px-6 py-4 text-white">
+                            <h3 class="text-lg font-bold">Enviar a Revisión</h3>
+                            <p class="mt-0.5 text-xs text-emerald-100">Gaceta Nro. {{ $gaceta->numero }} / {{ $gaceta->anio }}</p>
                         </div>
 
                         <div class="p-5 space-y-4">
 
                             @if($gaceta->estado === 'Devuelta a Digitalizador')
-                                <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded text-sm">
-                                    <p class="font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Gaceta rechazada</p>
+                                <div class="rounded border-l-4 border-red-500 bg-red-50 p-3 text-sm text-red-700">
+                                    <p class="font-bold">Gaceta rechazada</p>
                                     <p class="mt-1"><strong>Motivo:</strong> {{ $gaceta->motivo_devolucion }}</p>
                                 </div>
                             @endif
@@ -179,47 +179,45 @@
                                 @csrf
 
                                 <div class="mb-4">
-                                    <label class="block text-sm font-bold text-gray-700 mb-2">
+                                    <label class="mb-2 block text-sm font-bold text-slate-700">
                                         PDF Maestro (opcional si todos los actos tienen PDF)
                                     </label>
                                     <input type="file" name="archivo_pdf_completo" accept=".pdf"
                                         @if($actosSinPdf->isNotEmpty() || $todosLosActos->isEmpty()) required @endif
-                                        class="block w-full text-sm text-gray-500
-                                            file:mr-4 file:py-2 file:px-4
-                                            file:rounded-md file:border-0
-                                            file:text-sm file:font-bold
-                                            file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100
-                                            border border-gray-300 rounded-md p-2 transition-colors focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
-                                    <p class="text-xs text-gray-500 mt-2">
-                                        <i class="fa-solid fa-shield-halved mr-1"></i> Formato PDF. Límite: 20MB.
+                                        class="block w-full rounded-lg border border-slate-300 p-2 text-sm text-slate-500
+                                            transition-colors file:mr-4 file:rounded-md file:border-0 file:bg-emerald-50
+                                            file:px-4 file:py-2 file:text-sm file:font-bold file:text-emerald-700
+                                            hover:file:bg-emerald-100 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                    <p class="mt-2 text-xs text-slate-500">
+                                        Formato PDF. Límite: 20MB.
                                     </p>
                                 </div>
 
                                 <button type="submit"
                                     onclick="event.preventDefault(); const form = this.closest('form'); if (!form.reportValidity()) return; Swal.fire({ title: '¿Enviar a revisión final?', text: 'Confirme que el escaneo es correcto. La gaceta pasará a la bandeja de la Jefatura.', icon: 'question', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, enviar a revisión', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
-                                    class="w-full inline-flex justify-center items-center py-3 px-6 border border-transparent shadow-md text-sm font-bold rounded-md text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">
-                                    <i class="fa-solid fa-paper-plane mr-2"></i> Enviar a Jefatura para Revisión
+                                    class="btn btn-primary w-full">
+                                    Enviar a Jefatura para Revisión
                                 </button>
                             </form>
 
-                            <div class="border-t pt-4">
+                            <div class="border-t border-slate-200 pt-4">
                                 <button type="button" onclick="document.getElementById('devolucion-box').classList.toggle('hidden')"
-                                    class="w-full inline-flex justify-center items-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-bold rounded-md text-red-600 bg-white hover:bg-red-50 transition-colors">
-                                    <i class="fa-solid fa-rotate-left mr-2"></i> Devolver a Jefatura
+                                    class="btn btn-secondary w-full text-red-600">
+                                    Devolver a Jefatura
                                 </button>
 
-                                <div id="devolucion-box" class="hidden mt-3 bg-red-50 p-3 rounded-md border border-red-200">
+                                <div id="devolucion-box" class="mt-3 hidden rounded-lg border border-red-200 bg-red-50 p-3">
                                     <form action="{{ route('gacetas.devolver', $gaceta->id) }}" method="POST">
                                         @csrf
                                         @method('PATCH')
-                                        <label class="block text-xs font-bold text-red-900 mb-1">Motivo de la Devolución *</label>
+                                        <label class="mb-1 block text-xs font-bold text-red-900">Motivo de la Devolución *</label>
                                         <textarea name="motivo_devolucion" rows="3" required
-                                            class="w-full rounded-md border-red-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm"
+                                            class="w-full rounded-lg border-red-300 text-sm shadow-sm focus:border-red-500 focus:ring-red-500"
                                             placeholder="Ej: Faltan firmas, escaneo ilegible..."></textarea>
                                         <div class="mt-2 flex justify-end">
                                             <button type="submit"
                                                 onclick="event.preventDefault(); const form = this.closest('form'); if (!form.reportValidity()) return; Swal.fire({ title: '¿Devolver esta Gaceta?', text: 'La gaceta volverá a la Jefatura con el motivo indicado.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, confirmar devolución', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
-                                                class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded shadow-sm text-sm transition">
+                                                class="btn btn-danger btn-sm">
                                                 Confirmar Devolución
                                             </button>
                                         </div>
@@ -230,10 +228,10 @@
                     </div>
 
                     {{-- Bloque B: PDFs por acto administrativo --}}
-                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="bg-blue-900 text-white px-6 py-4">
-                            <h3 class="text-lg font-bold"><i class="fa-solid fa-file-circle-plus mr-2"></i> PDF por Acto Administrativo</h3>
-                            <p class="text-blue-200 text-xs mt-0.5">Asigne un archivo a cada acto del sumario.</p>
+                    <div class="card overflow-hidden">
+                        <div class="bg-blue-900 px-6 py-4 text-white">
+                            <h3 class="text-lg font-bold">PDF por Acto Administrativo</h3>
+                            <p class="mt-0.5 text-xs text-blue-200">Asigne un archivo a cada acto del sumario.</p>
                         </div>
 
                         <div class="p-4 space-y-5 max-h-[70vh] overflow-y-auto">
@@ -251,57 +249,57 @@
                                                     {{ !preg_match('/^(n[°ºo\.]|número|numero)/iu', trim((string) $acto->numero)) ? 'N° ' : '' }}{{ $acto->numero }}
                                                 </p>
                                                 @if($acto->archivo_pdf)
-                                                    <span class="flex-shrink-0 text-[10px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-300 rounded-full px-2 py-0.5">
-                                                        <i class="fa-solid fa-circle-check mr-1"></i> PDF
+                                                    <span class="badge badge-success flex-shrink-0">
+                                                        PDF
                                                     </span>
                                                 @else
-                                                    <span class="flex-shrink-0 text-[10px] font-bold text-amber-700 bg-amber-100 border border-amber-300 rounded-full px-2 py-0.5">
-                                                        <i class="fa-solid fa-clock mr-1"></i> Pendiente
+                                                    <span class="badge badge-warning flex-shrink-0">
+                                                        Pendiente
                                                     </span>
                                                 @endif
                                             </div>
 
-                                            <p class="text-xs text-gray-600 mt-1 mb-2">{{ \Illuminate\Support\Str::limit($acto->sumario, 130) }}</p>
+                                    <p class="mb-2 mt-1 text-xs text-slate-600">{{ \Illuminate\Support\Str::limit($acto->sumario, 130) }}</p>
 
                                             <form method="POST" action="{{ route('gacetas.actos.pdf', [$gaceta->id, $acto->id]) }}"
                                                 enctype="multipart/form-data" class="flex items-center gap-2">
                                                 @csrf
                                                 <input type="file" name="archivo_pdf" accept=".pdf" required
-                                                    class="block w-full text-[11px] text-gray-500
-                                                        file:mr-2 file:py-1.5 file:px-2
-                                                        file:rounded file:border-0
-                                                        file:text-[11px] file:font-bold
-                                                        file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100
-                                                        border border-gray-300 rounded p-1">
-                                                <button type="submit"
-                                                    class="flex-shrink-0 inline-flex items-center px-2.5 py-1.5 bg-blue-700 hover:bg-blue-800 text-white text-[11px] font-bold rounded transition-colors">
-                                                    <i class="fa-solid fa-upload mr-1"></i> Asignar
-                                                </button>
+                                                    class="block w-full rounded border border-slate-300 p-1 text-[11px] text-slate-500
+                                                        file:mr-2 file:rounded file:border-0 file:bg-blue-50
+                                                        file:px-2 file:py-1.5 file:text-[11px] file:font-bold
+                                                        file:text-blue-700 hover:file:bg-blue-100">
+                                                <x-action-button type="submit"
+                                                    action="Asignar PDF al acto"
+                                                    icon="fa-solid fa-upload"
+                                                    tone="brand" />
                                             </form>
 
                                             @if($acto->archivo_pdf)
-                                                <div class="mt-2 flex items-center gap-3 text-xs">
-                                                    <a href="{{ asset('storage/' . $acto->archivo_pdf) }}" target="_blank"
-                                                        class="inline-flex items-center text-blue-700 hover:text-blue-900 font-bold">
-                                                        <i class="fa-solid fa-eye mr-1"></i> Ver PDF
-                                                    </a>
+                                                <div class="mt-2 flex items-center gap-2">
+                                                    <x-action-button :href="asset('storage/' . $acto->archivo_pdf)"
+                                                        action="Ver PDF del acto"
+                                                        icon="fa-solid fa-eye"
+                                                        tone="neutral"
+                                                        target="_blank" />
                                                     <form method="POST" action="{{ route('gacetas.actos.pdf.delete', [$gaceta->id, $acto->id]) }}"
                                                         onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Quitar el PDF de este acto?', text: 'El archivo se desvinculará del acto administrativo.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, quitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="inline-flex items-center text-red-600 hover:text-red-800 font-bold">
-                                                            <i class="fa-solid fa-trash-can mr-1"></i> Quitar
-                                                        </button>
+                                                        <x-action-button type="submit"
+                                                            action="Quitar PDF del acto"
+                                                            icon="fa-solid fa-trash-can"
+                                                            tone="danger" />
                                                     </form>
                                                 </div>
                                             @endif
                                         </div>
                                     @empty
-                                        <p class="text-xs italic text-gray-500 mb-3">Sin actos registrados.</p>
+                                        <p class="mb-3 text-xs italic text-slate-500">Sin actos registrados.</p>
                                     @endforelse
                                 </div>
                             @empty
-                                <p class="text-sm italic text-gray-500">No hay actos registrados en esta Gaceta.</p>
+                                <p class="text-sm italic text-slate-500">No hay actos registrados en esta Gaceta.</p>
                             @endforelse
                         </div>
                     </div>
@@ -320,7 +318,7 @@
             const loadingMsg = document.getElementById('pdf-loading');
 
             if (!documentos.length) {
-                loadingMsg.innerHTML = '<span class="text-gray-500 font-bold"><i class="fa-solid fa-file-circle-question mr-2"></i>Aún no hay PDFs asignados. Suba el primer archivo para ver la vista previa.</span>';
+                loadingMsg.innerHTML = '<span class="font-bold text-slate-500">Aún no hay PDFs asignados. Suba el primer archivo para ver la vista previa.</span>';
                 return;
             }
 
@@ -434,7 +432,7 @@
                     loadingMsg.style.display = 'none';
                 } catch (error) {
                     console.error("Error cargando los PDFs de los actos:", error);
-                    loadingMsg.innerHTML = '<span class="text-red-500 font-bold"><i class="fa-solid fa-circle-xmark mr-2"></i>Error al cargar uno de los PDFs. Verifique el archivo.</span>';
+                    loadingMsg.innerHTML = '<span class="font-bold text-red-500">Error al cargar uno de los PDFs. Verifique el archivo.</span>';
                 }
             }
 

@@ -31,7 +31,7 @@
             @endif
 
             <!-- Datos del POA -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-slate-200">
+            <div class="card overflow-hidden">
                 <div class="p-6 text-slate-900 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <p class="text-sm text-slate-500 font-medium">Jefatura Asignada</p>
@@ -53,7 +53,7 @@
             </div>
 
             <!-- Tabla de Actividades -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-slate-200">
+            <div class="card overflow-hidden">
                 <div class="p-6">
                     <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Actividades y Metas</h3>
                     <div class="overflow-x-auto">
