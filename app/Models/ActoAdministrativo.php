@@ -9,6 +9,8 @@ class ActoAdministrativo extends Model
 {
     use SoftDeletes;
 
+    protected $table = 'acto_administrativos';
+
     protected $fillable = ['solicitud_id', 'tipo_acto', 'numero', 'sumario', 'archivo_pdf'];
 
     public function solicitud()

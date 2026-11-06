@@ -21,14 +21,14 @@
                             {{-- Filtros Directos de Gaceta --}}
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Año</label>
-                                <input type="number" name="anio" value="{{ request('anio') }}"
-                                    class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm"
+                                <input type="number" name="anio" value="{{ request('anio') }}" min="1900" max="2100"
+                                    class="val-numerico mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm"
                                     placeholder="Ej: {{ date('Y') }}">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Número</label>
-                                <input type="text" name="numero" value="{{ request('numero') }}"
-                                    class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm"
+                                <input type="text" name="numero" value="{{ request('numero') }}" maxlength="100"
+                                    class="val-texto-limpio mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm"
                                     placeholder="N° de Gaceta">
                             </div>
                             <div>
@@ -70,8 +70,8 @@
                             </div>
                             <div class="md:col-span-2 lg:col-span-3">
                                 <label class="block text-sm font-medium text-slate-700">Palabras Clave (Sumario o Nro de Acto)</label>
-                                <input type="text" name="keyword" value="{{ request('keyword') }}"
-                                    class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm"
+                                <input type="text" name="keyword" value="{{ request('keyword') }}" maxlength="100"
+                                    class="val-texto-limpio mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm"
                                     placeholder="Buscar contenido dentro de la Gaceta...">
                             </div>
                         </div>
@@ -89,7 +89,7 @@
             </div>
 
             @auth
-                @if(auth()->user()->hasAnyRole(['Jefe de Digitalización', 'Super Admin', 'Súper Administrador']) || auth()->user()->roles->count() === 0)
+                @if(auth()->user()->hasAnyRole(['Super Admin', 'Director de Consultoría Jurídica', 'Coordinador de Publicaciones Oficiales']) || auth()->user()->roles->count() === 0)
                     <div class="flex justify-end">
                         <a href="{{ route('solicitudes.create') }}" class="btn btn-primary">
                             Registrar Solicitud

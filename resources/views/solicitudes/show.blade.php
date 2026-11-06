@@ -5,7 +5,11 @@
                 {{ __('Detalles y Evaluación de Solicitud') }}
             </h2>
             <span class="px-3 py-1 rounded-full text-sm font-bold
-                {{ $solicitud->estado == 'Pendiente' ? 'bg-yellow-200 text-yellow-800' : ($solicitud->estado == 'Aprobada' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }}">
+                @if($solicitud->estado == 'Publicada') bg-emerald-200 text-emerald-800
+                @elseif($solicitud->estado == 'Aprobada') bg-green-200 text-green-800
+                @elseif($solicitud->estado == 'En Digitalización') bg-blue-200 text-blue-800
+                @elseif($solicitud->estado == 'Rechazada') bg-red-200 text-red-800
+                @else bg-yellow-200 text-yellow-800 @endif">
                 {{ $solicitud->estado }}
             </span>
         </div>
@@ -13,6 +17,20 @@
 
     <div class="py-12">
         <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            @if (session('error'))
+                <div class="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {{ session('error') }}
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <ul class="list-disc list-inside text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             <div class="card overflow-hidden">
                 <div class="p-6 bg-slate-50 border-b border-slate-200">
@@ -94,7 +112,7 @@
                 </div>
             </div>
 
-            @can('update Solicitud')
+            @can('actualizar Solicitud')
                 @if($solicitud->estado == 'Pendiente')
                 <div class="card overflow-hidden border border-blue-200">
                     <div class="p-6">
@@ -107,7 +125,7 @@
                             <div class="mb-6 bg-blue-50 p-4 rounded-md border border-blue-100">
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700">Fecha Recepción Física <span class="text-red-500">*</span></label>
-                                    <input type="date" name="fecha_recepcion_fisica" required value="{{ date('Y-m-d') }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-900 focus:ring-blue-900 sm:text-sm">
+                                    <input type="date" name="fecha_recepcion_fisica" required value="{{ old('fecha_recepcion_fisica', date('Y-m-d')) }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-900 focus:ring-blue-900 sm:text-sm">
                                 </div>
                             </div>
 
@@ -128,10 +146,9 @@
 
                             <div class="mt-6 flex gap-4 border-t pt-4">
                                 <button type="button" onclick="confirmarAprobacion({{ $solicitud->id }})" class="px-6 py-2 bg-green-600 text-white font-bold rounded shadow hover:bg-green-700 transition">Aprobar Apartado para Ensamblaje</button>
-                        </form>
-
                                 <button type="button" onclick="toggleRechazo()" class="px-6 py-2 bg-red-600 text-white font-bold rounded shadow hover:bg-red-700 transition">Rechazar Documento</button>
                             </div>
+                        </form>
 
                         <div id="zona-rechazo" class="mt-6 border-t border-red-200 pt-6 hidden" style="display: none;">
                             <h4 class="text-md font-bold text-red-700 mb-3">Motivo de Devolución</h4>
@@ -139,7 +156,7 @@
                                 @csrf
                                 @method('PATCH')
                                 <div class="mb-4">
-                                    <textarea name="motivo_rechazo" id="motivo_rechazo" required rows="3" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm" placeholder="Especifique el motivo para devolver a la institución..."></textarea>
+                                    <textarea name="motivo_rechazo" id="motivo_rechazo" minlength="5" maxlength="1000" required rows="3" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm" placeholder="Especifique el motivo para devolver a la institución...">{{ old('motivo_rechazo') }}</textarea>
                                 </div>
                                 <div class="flex justify-end">
                                     <button type="button" onclick="confirmarRechazo({{ $solicitud->id }})" class="px-6 py-2 bg-red-800 text-white font-bold rounded shadow hover:bg-red-900 transition">Confirmar y Enviar a Institución</button>
@@ -161,6 +178,8 @@
         }
 
         function confirmarAprobacion(id) {
+            const form = document.getElementById('form-aprobar-' + id);
+            if (!window.validarFormularioSGCJ(form)) return;
             Swal.fire({
                 title: '¿Aprobar y certificar?',
                 text: "El documento pasará a la bandeja de ensamblaje.",
@@ -171,13 +190,15 @@
                 confirmButtonText: 'Sí, aprobar',
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
-                if (result.isConfirmed) { document.getElementById('form-aprobar-' + id).submit(); }
+                if (result.isConfirmed) { form.submit(); }
             });
         }
 
         function confirmarRechazo(id) {
-            if(document.getElementById('motivo_rechazo').value.trim() === '') {
-                Swal.fire('Atención', 'Debe especificar el motivo del rechazo.', 'warning');
+            const form = document.getElementById('form-rechazar-' + id);
+            const motivo = document.getElementById('motivo_rechazo').value.trim();
+            if (motivo.length < 5 || !window.validarFormularioSGCJ(form)) {
+                Swal.fire('Atención', 'Debe especificar un motivo del rechazo de al menos 5 caracteres.', 'warning');
                 return;
             }
             Swal.fire({
@@ -190,7 +211,7 @@
                 confirmButtonText: 'Sí, rechazar',
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
-                if (result.isConfirmed) { document.getElementById('form-rechazar-' + id).submit(); }
+                if (result.isConfirmed) { form.submit(); }
             });
         }
     </script>

@@ -10,6 +10,8 @@ class Replanificacion extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'replanificacions';
+
     protected $fillable = [
         'actividad_poa_id',
         'trimestre_origen',

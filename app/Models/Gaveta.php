@@ -9,6 +9,8 @@ class Gaveta extends Model
 {
     use SoftDeletes;
 
+    protected $table = 'gavetas';
+
     protected $fillable = ['estante_id', 'nombre'];
 
     public function estante()

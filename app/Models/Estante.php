@@ -9,6 +9,8 @@ class Estante extends Model
 {
     use SoftDeletes;
 
+    protected $table = 'estantes';
+
     protected $fillable = ['sede_id', 'nombre'];
 
     public function sede()

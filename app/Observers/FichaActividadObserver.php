@@ -14,7 +14,12 @@ class FichaActividadObserver
         $meta = $fichaActividad->metaTrimestral;
         if ($meta) {
             $meta->increment('ejecutada');
-            
+
+            $meta->loadMissing('actividadPoa.poa');
+            if ($meta->actividadPoa && $meta->actividadPoa->poa) {
+                \App\Models\Poa::checkAndClose($meta->actividadPoa->poa);
+            }
+
             $userName = auth()->user() ? auth()->user()->name : 'Sistema';
             activity()
                 ->performedOn($fichaActividad)

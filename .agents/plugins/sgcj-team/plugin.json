@@ -1,0 +1,6 @@
+{
+  "name": "sgcj-team",
+  "displayName": "Equipo de Agentes SGCJ (Consultoría Jurídica)",
+  "description": "Escuadrón de agentes especializados para desarrollo Laravel 12, PostgreSQL, Validación Dual en Formularios Blade, RBAC con Spatie, Chatbot Gemini con lectura de PDF y QA automatizado en SGCJ.",
+  "version": "1.0.0"
+}

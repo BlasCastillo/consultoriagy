@@ -32,7 +32,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700">Número de Gaceta <span class="text-red-500">*</span></label>
-                                    <input type="text" name="numero" value="{{ old('numero') }}" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                    <input type="text" inputmode="numeric" name="numero" value="{{ old('numero') }}" maxlength="10" required class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700">Tipo <span class="text-red-500">*</span></label>
@@ -58,11 +58,11 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700">Año Político <span class="text-red-500">*</span></label>
-                                    <input type="text" name="ano_politico" value="{{ old('ano_politico') }}" required placeholder="Ej: 164°" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                    <input type="text" name="ano_politico" value="{{ old('ano_politico') }}" maxlength="100" required placeholder="Ej: 164°" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700">Mes Político <span class="text-red-500">*</span></label>
-                                    <input type="text" name="mes_politico" value="{{ old('mes_politico') }}" required placeholder="Ej: 164°" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                    <input type="text" name="mes_politico" value="{{ old('mes_politico') }}" maxlength="100" required placeholder="Ej: 164°" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                 </div>
                                 <div class="md:col-span-3">
                                     <label class="block text-sm font-medium text-slate-700">Archivo PDF Escaneado (Max 20MB) <span class="text-red-500">*</span></label>
@@ -111,7 +111,7 @@
                                         </div>
                                         <div class="md:col-span-4">
                                             <label class="block text-xs font-semibold text-slate-600 uppercase">Número de Acto</label>
-                                            <input type="text" name="actos[0][numero]" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                            <input type="text" name="actos[0][numero]" maxlength="100" required class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                         </div>
                                         <div class="md:col-span-1 flex items-end justify-center pb-1">
                                             <!-- Botón eliminar (oculto en el primero) -->
@@ -121,7 +121,7 @@
                                         </div>
                                         <div class="md:col-span-12">
                                             <label class="block text-xs font-semibold text-slate-600 uppercase">Sumario / Extracto</label>
-                                            <textarea name="actos[0][sumario]" rows="2" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm"></textarea>
+                                            <textarea name="actos[0][sumario]" rows="2" required class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm"></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -132,8 +132,7 @@
                             <a href="{{ route('archivo.index') }}" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded shadow-sm hover:bg-slate-50 font-medium mr-3 transition">
                                 Cancelar
                             </a>
-                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded shadow-sm font-medium transition"
-                                onclick="event.preventDefault(); const form = this.closest('form'); if (!form.reportValidity()) return; Swal.fire({ title: '¿Procesar Gaceta Histórica?', text: 'La indexación será permanente y la gaceta quedará registrada en el archivo.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, procesar e indexar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
+                            <button type="button" onclick="confirmarGuardado()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded shadow-sm font-medium transition">
                                 <i class="fa-solid fa-floppy-disk mr-2"></i> Procesar e Indexar
                             </button>
                         </div>
@@ -147,7 +146,7 @@
     <script>
         let actoIndex = 1; // Contador para los índices de los arrays
 
-        function agregarActo() {
+        function agregarActo(actoData = null) {
             const container = document.getElementById('actosContainer');
             
             // Crear el nuevo div
@@ -179,7 +178,7 @@
                     </div>
                     <div class="md:col-span-4">
                         <label class="block text-xs font-semibold text-slate-600 uppercase">Número de Acto</label>
-                        <input type="text" name="actos[${actoIndex}][numero]" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                        <input type="text" name="actos[${actoIndex}][numero]" maxlength="100" required class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                     </div>
                     <div class="md:col-span-1 flex items-end justify-center pb-1">
                         <button type="button" onclick="eliminarActo(this)" class="text-red-500 hover:text-red-700 transition" title="Eliminar Acto">
@@ -188,12 +187,20 @@
                     </div>
                     <div class="md:col-span-12">
                         <label class="block text-xs font-semibold text-slate-600 uppercase">Sumario / Extracto</label>
-                        <textarea name="actos[${actoIndex}][sumario]" rows="2" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm"></textarea>
+                        <textarea name="actos[${actoIndex}][sumario]" rows="2" required class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm"></textarea>
                     </div>
                 </div>
             `;
             
             container.appendChild(newRow);
+
+            if (actoData) {
+                newRow.querySelector(`[name="actos[${actoIndex}][institucion_id]"]`).value = actoData.institucion_id || '';
+                newRow.querySelector(`[name="actos[${actoIndex}][tipo_acto]"]`).value = actoData.tipo_acto || '';
+                newRow.querySelector(`[name="actos[${actoIndex}][numero]"]`).value = actoData.numero || '';
+                newRow.querySelector(`[name="actos[${actoIndex}][sumario]"]`).value = actoData.sumario || '';
+            }
+
             actoIndex++;
         }
 
@@ -203,5 +210,40 @@
                 row.remove();
             }
         }
+
+        function confirmarGuardado() {
+            const form = document.getElementById('historicoForm');
+            if (window.validarFormularioSGCJ && !window.validarFormularioSGCJ(form)) return;
+            Swal.fire({
+                title: '¿Procesar Gaceta Histórica?',
+                text: 'La indexación será permanente y la gaceta quedará registrada en el archivo.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#059669',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, procesar e indexar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const oldActos = Object.values(@json(old('actos', [])));
+            if (oldActos.length > 0) {
+                const firstRow = document.querySelector('#actosContainer .acto-row');
+                if (firstRow && oldActos[0]) {
+                    firstRow.querySelector('[name="actos[0][institucion_id]"]').value = oldActos[0].institucion_id || '';
+                    firstRow.querySelector('[name="actos[0][tipo_acto]"]').value = oldActos[0].tipo_acto || '';
+                    firstRow.querySelector('[name="actos[0][numero]"]').value = oldActos[0].numero || '';
+                    firstRow.querySelector('[name="actos[0][sumario]"]').value = oldActos[0].sumario || '';
+                }
+                for (let i = 1; i < oldActos.length; i++) {
+                    agregarActo(oldActos[i]);
+                }
+            }
+        });
     </script>
 </x-app-layout>

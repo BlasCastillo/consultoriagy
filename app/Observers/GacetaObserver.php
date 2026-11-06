@@ -24,16 +24,23 @@ class GacetaObserver
      */
     public function updated(Gaceta $gaceta): void
     {
-        if ($gaceta->wasChanged('estado') && $gaceta->estado === 'Publicada') {
-            $jefatura = Jefatura::where('nombre', 'Jefatura de Publicaciones')->first();
+        if ($gaceta->wasChanged('estado') && $gaceta->estado === 'Publicada' && !$gaceta->es_retroactiva) {
+            $jefatura = Jefatura::where('nombre', 'Coordinación de Publicaciones Oficiales')
+                ->orWhere('nombre', 'ILIKE', '%Publicaciones%')
+                ->first();
             if ($jefatura) {
-                $poa = Poa::where('jefatura_id', $jefatura->id)
+                $poa = Poa::withoutGlobalScopes()
+                    ->where('jefatura_id', $jefatura->id)
                     ->where('anio', Carbon::now()->year)
+                    ->where('estado', '!=', 'Cerrado')
                     ->first();
                 
                 if ($poa) {
                     $actividad = ActividadPoa::where('poa_id', $poa->id)
-                        ->where('descripcion', 'LIKE', '%Publicar%')
+                        ->where(function ($q) {
+                            $q->where('descripcion', 'ILIKE', '%Publicar%')
+                              ->orWhere('descripcion', 'ILIKE', '%gacetas%');
+                        })
                         ->first();
                         
                     if ($actividad) {
@@ -44,11 +51,12 @@ class GacetaObserver
                             
                         if ($meta) {
                             $meta->increment('ejecutada');
+                            Poa::checkAndClose($poa);
                             
                             activity()
                                 ->performedOn($gaceta)
                                 ->causedBy(auth()->user())
-                                ->log('Gaceta ' . $gaceta->numero . ' publicada. Se sumó 1 a la meta trimestral de la Jefatura de Publicaciones.');
+                                ->log('Gaceta ' . $gaceta->numero . ' publicada. Se sumó 1 a la meta trimestral de la Coordinación de Publicaciones Oficiales.');
                         }
                     }
                 }

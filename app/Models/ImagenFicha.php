@@ -10,6 +10,8 @@ class ImagenFicha extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'imagen_fichas';
+
     protected $fillable = [
         'ficha_actividad_id',
         'ruta_imagen',

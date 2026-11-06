@@ -11,10 +11,14 @@ class Jefatura extends Model
 {
     use SoftDeletes, LogsActivity;
 
+    protected $table = 'jefaturas';
+
     protected $fillable = [
         'nombre',
         'nivel',
+        'nivel_jerarquico',
         'parent_id',
+        'dependencia_id',
     ];
 
     public function getActivitylogOptions(): LogOptions

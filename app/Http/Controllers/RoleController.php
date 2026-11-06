@@ -10,7 +10,7 @@ use App\Services\ModelPermissionAuditor;
 class RoleController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Muestra el listado de roles registrados.
      */
     public function index(Request $request)
     {
@@ -25,7 +25,7 @@ class RoleController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Muestra el formulario para crear un nuevo rol.
      */
     public function create()
     {
@@ -34,13 +34,14 @@ class RoleController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Almacena un nuevo rol en la base de datos.
      */
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|unique:roles,name',
+            'name' => 'required|string|max:255|unique:roles,name',
             'permissions' => 'nullable|array',
+            'permissions.*' => 'string',
         ]);
 
         $role = Role::create(['name' => $request->name]);
@@ -48,7 +49,6 @@ class RoleController extends Controller
         if ($request->has('permissions')) {
             $permissions = [];
             foreach ($request->permissions as $permName) {
-                // Ensure the permission exists in the database
                 $permission = Permission::firstOrCreate(['name' => $permName]);
                 $permissions[] = $permission;
             }
@@ -60,7 +60,7 @@ class RoleController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Muestra el formulario para editar el rol especificado.
      */
     public function edit(Role $role)
     {
@@ -71,13 +71,14 @@ class RoleController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Actualiza el rol especificado en la base de datos.
      */
     public function update(Request $request, Role $role)
     {
         $request->validate([
-            'name' => 'required|string|unique:roles,name,' . $role->id,
+            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
             'permissions' => 'nullable|array',
+            'permissions.*' => 'string',
         ]);
 
         $role->update(['name' => $request->name]);
@@ -97,11 +98,11 @@ class RoleController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Elimina el rol especificado de la base de datos.
      */
     public function destroy(Role $role)
     {
-        if (in_array($role->name, ['Super Admin', 'Super Administrador'])) {
+        if (in_array($role->name, ['Super Admin', 'Super Administrador', 'Súper Administrador'])) {
             return redirect()->route('roles.index')->with('error', 'El rol de administración del sistema no puede ser eliminado.');
         }
 
@@ -111,7 +112,7 @@ class RoleController extends Controller
     }
 
     /**
-     * Restore the specified resource from storage.
+     * Restaura un rol eliminado lógicamente.
      */
     public function restore($id)
     {

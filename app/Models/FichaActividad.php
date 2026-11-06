@@ -10,6 +10,8 @@ class FichaActividad extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'ficha_actividads';
+
     protected $fillable = [
         'meta_trimestral_id',
         'fecha',

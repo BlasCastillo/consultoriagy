@@ -17,11 +17,11 @@
                         <form method="GET" action="{{ route('bitacora.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Fecha Inicio</label>
-                                <input type="date" name="fecha_inicio" value="{{ request('fecha_inicio') }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-sm">
+                                <input type="date" name="fecha_inicio" value="{{ request('fecha_inicio') }}" data-target="#fecha_fin" class="val-fecha-rango w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Fecha Fin</label>
-                                <input type="date" name="fecha_fin" value="{{ request('fecha_fin') }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-sm">
+                                <input type="date" name="fecha_fin" id="fecha_fin" value="{{ request('fecha_fin') }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Usuario</label>
@@ -34,7 +34,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Módulo / Modelo</label>
-                                <input type="text" name="modulo" value="{{ request('modulo') }}" placeholder="Ej: Gaceta, Ficha" class="w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-sm">
+                                <input type="text" name="modulo" value="{{ request('modulo') }}" maxlength="100" placeholder="Ej: Gaceta, Ficha" class="val-texto-limpio w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Evento</label>

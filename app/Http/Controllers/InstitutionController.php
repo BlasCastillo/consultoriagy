@@ -26,9 +26,9 @@ class InstitutionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre' => ['required', 'string', 'max:255'],
+            'nombre' => ['required', 'string', 'max:255', \Illuminate\Validation\Rule::unique('instituciones', 'nombre')],
             'siglas' => ['nullable', 'string', 'max:50'],
-            'tipo_institucion_id' => ['nullable', 'exists:tipo_instituciones,id'],
+            'tipo_institucion_id' => ['required', 'exists:tipo_instituciones,id'],
             'estatus' => ['boolean'],
         ]);
 
@@ -46,9 +46,9 @@ class InstitutionController extends Controller
     public function update(Request $request, Institucion $institution)
     {
         $request->validate([
-            'nombre' => ['required', 'string', 'max:255'],
+            'nombre' => ['required', 'string', 'max:255', \Illuminate\Validation\Rule::unique('instituciones', 'nombre')->ignore($institution->id)],
             'siglas' => ['nullable', 'string', 'max:50'],
-            'tipo_institucion_id' => ['nullable', 'exists:tipo_instituciones,id'],
+            'tipo_institucion_id' => ['required', 'exists:tipo_instituciones,id'],
             'estatus' => ['boolean'],
         ]);
 

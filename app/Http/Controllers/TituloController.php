@@ -21,18 +21,18 @@ class TituloController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'abreviatura' => 'required|string|max:255',
+            'abreviatura' => 'required|string|max:50|unique:titulos,abreviatura',
             'descripcion' => 'nullable|string|max:255',
         ]);
 
-        Titulo::create($request->all());
+        Titulo::create($request->only(['abreviatura', 'descripcion']));
 
         return redirect()->route('titulos.index')->with('success', 'Título creado correctamente.');
     }
 
     public function show(Titulo $titulo)
     {
-        //
+        return redirect()->route('titulos.index');
     }
 
     public function edit(Titulo $titulo)
@@ -43,17 +43,20 @@ class TituloController extends Controller
     public function update(Request $request, Titulo $titulo)
     {
         $request->validate([
-            'abreviatura' => 'required|string|max:255',
+            'abreviatura' => 'required|string|max:50|unique:titulos,abreviatura,' . $titulo->id,
             'descripcion' => 'nullable|string|max:255',
         ]);
 
-        $titulo->update($request->all());
+        $titulo->update($request->only(['abreviatura', 'descripcion']));
 
         return redirect()->route('titulos.index')->with('success', 'Título actualizado correctamente.');
     }
 
     public function destroy(Titulo $titulo)
     {
+        if ($titulo->gobernadores()->exists()) {
+            return redirect()->route('titulos.index')->with('error', 'No se puede eliminar un título asignado a un gobernador.');
+        }
         $titulo->delete();
         return redirect()->route('titulos.index')->with('success', 'Título eliminado correctamente.');
     }

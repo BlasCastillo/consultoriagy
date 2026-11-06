@@ -12,7 +12,7 @@
                     @csrf
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-slate-700">Nombre de la Sede</label>
-                        <input type="text" name="nombre" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                        <input type="text" name="nombre" value="{{ old('nombre', $sede->nombre ?? '') }}" maxlength="255" required class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                         @error('nombre') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div class="flex justify-end mt-4">

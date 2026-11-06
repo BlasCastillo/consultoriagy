@@ -19,20 +19,9 @@ class FichaActividadController extends Controller
             });
 
         $user = auth()->user();
-        if (!$user->hasPermissionTo('read Poa')) {
-            $rolesUsuario = $user->roles->pluck('name')->toArray();
-            
-            $jefaturaIds = [];
-            foreach ($rolesUsuario as $roleName) {
-                if ($roleName === 'Jefe de Publicaciones') {
-                    $j = \App\Models\Jefatura::where('nombre', 'like', '%Publicaciones%')->first();
-                    if($j) $jefaturaIds[] = $j->id;
-                } elseif ($roleName === 'Jefe de Legislacion y Asuntos Juridicos') {
-                    $j = \App\Models\Jefatura::where('nombre', 'like', '%Legislación y Asuntos Jurídicos%')->first();
-                    if($j) $jefaturaIds[] = $j->id;
-                }
-            }
-            
+        if (!\App\Models\Poa::usuarioTieneAccesoGlobal($user)) {
+            $jefaturaIds = \App\Models\Poa::obtenerJefaturasPermitidas($user);
+
             $query->whereHas('actividadPoa.poa', function ($q) use ($jefaturaIds) {
                 if (empty($jefaturaIds)) {
                     $q->whereIn('jefatura_id', [0]);

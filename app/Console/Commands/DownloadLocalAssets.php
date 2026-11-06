@@ -102,6 +102,36 @@ class DownloadLocalAssets extends Command
             $this->error('- Fallo al descargar Figtree CSS');
         }
 
+        // 4. SortableJS 1.15.3
+        $this->info('Descargando SortableJS 1.15.3...');
+        $sortableUrl = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js';
+        $sortableContent = @file_get_contents($sortableUrl, false, $context);
+        if ($sortableContent) {
+            File::put($dirs['js'] . '/Sortable.min.js', $sortableContent);
+            $this->line('- Sortable.min.js guardado.');
+        } else {
+            $this->error('- Fallo al descargar Sortable.min.js');
+        }
+
+        // 5. Tom Select 2.2.2 (CSS + JS)
+        $this->info('Descargando Tom Select 2.2.2...');
+        $tomCssUrl = 'https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css';
+        $tomJsUrl = 'https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js';
+        $tomCssContent = @file_get_contents($tomCssUrl, false, $context);
+        if ($tomCssContent) {
+            File::put($dirs['css'] . '/tom-select.css', $tomCssContent);
+            $this->line('- tom-select.css guardado.');
+        } else {
+            $this->error('- Fallo al descargar tom-select.css');
+        }
+        $tomJsContent = @file_get_contents($tomJsUrl, false, $context);
+        if ($tomJsContent) {
+            File::put($dirs['js'] . '/tom-select.complete.min.js', $tomJsContent);
+            $this->line('- tom-select.complete.min.js guardado.');
+        } else {
+            $this->error('- Fallo al descargar tom-select.complete.min.js');
+        }
+
         $this->info('Descarga de recursos completada con éxito.');
     }
 }

@@ -34,7 +34,7 @@
                             <tbody>
                                 @foreach($estantes as $estante)
                                     <tr>
-                                        <td>{{ $estante->sede->nombre }}</td>
+                                        <td>{{ $estante->sede?->nombre ?? 'Sede inhabilitada' }}</td>
                                         <td class="font-medium text-slate-800">{{ $estante->nombre }}</td>
                                         <td>
                                             <div class="flex items-center justify-center gap-2">

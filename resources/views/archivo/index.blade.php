@@ -5,14 +5,14 @@
                 {{ __('Kardex de Archivo: Inventario y Préstamos') }}
             </h2>
             <div class="space-x-2">
-                @can('read PrestamoArchivo')
+                @can('leer PrestamoArchivo')
                     <x-action-button onclick="abrirModalReporte()" action="Reporte de Inventario Físico"
                         icon="fa-solid fa-download"
                         tone="export">
                         Imprimir Inventario
                     </x-action-button>
                 @endcan
-                @can('create PrestamoArchivo')
+                @can('crear PrestamoArchivo')
                     <x-action-button :href=" route('archivo.retroactiva.create')"
                         action="Subir Gaceta Histórica"
                         icon="fa-solid fa-file-arrow-up"
@@ -27,8 +27,11 @@
     <div class="py-12" x-data="{ tab: 'inventario' }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            {{-- SweetAlert2 Toasts --}}
+            {{-- Bloques de Alerta y SweetAlert2 Toasts --}}
             @if(session('success'))
+                <div class="p-4 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-md text-sm font-medium">
+                    <i class="fa-solid fa-circle-check mr-2"></i> {{ session('success') }}
+                </div>
                 <script>
                     document.addEventListener('DOMContentLoaded', function () {
                         Swal.fire({
@@ -39,6 +42,9 @@
                 </script>
             @endif
             @if(session('error'))
+                <div class="p-4 bg-red-50 border border-red-300 text-red-800 rounded-md text-sm font-medium">
+                    <i class="fa-solid fa-circle-exclamation mr-2"></i> {{ session('error') }}
+                </div>
                 <script>
                     document.addEventListener('DOMContentLoaded', function () {
                         Swal.fire({
@@ -47,6 +53,15 @@
                         });
                     });
                 </script>
+            @endif
+            @if($errors->any())
+                <div class="p-4 bg-red-50 border border-red-300 text-red-700 rounded-md">
+                    <ul class="list-disc list-inside text-sm">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
 
             <div class="card overflow-hidden">
@@ -103,7 +118,7 @@
                                         @else
                                             Sin asignar
                                         @endif
-                                        @can('update PrestamoArchivo')
+                                        @can('actualizar PrestamoArchivo')
                                             <x-action-button type="button" action="Editar ubicación y stock"
                                                 icon="fa-solid fa-pen-to-square" tone="edit" size="sm"
                                                 onclick="abrirModalUbicacion({{ $gaceta->id }}, '{{ $gaceta->inventario?->sede_id ?? '' }}', '{{ $gaceta->inventario?->estante_id ?? '' }}', '{{ $gaceta->inventario?->gaveta_id ?? '' }}', {{ $gaceta->inventario?->stock ?? 0 }})" />
@@ -116,8 +131,8 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                        @can('update PrestamoArchivo')
-                                            @if($gaceta->ejemplares_fisicos > 0)
+                                        @can('actualizar PrestamoArchivo')
+                                            @if(($gaceta->inventario->stock ?? $gaceta->ejemplares_fisicos) > 0)
                                                 <div class="flex items-center justify-center">
                                                     <x-action-button type="button" action="Registrar préstamo"
                                                         icon="fa-solid fa-hand-holding-hand" tone="create"
@@ -175,16 +190,20 @@
                                         <div><span class="font-semibold">S:</span>
                                             {{ $prestamo->fecha_salida->format('d/m/Y') }}</div>
                                         <div
-                                            class="{{ $prestamo->fecha_devolucion_estimada < now() ? 'text-red-600 font-bold' : '' }}">
+                                            class="{{ ($prestamo->estado_prestamo === 'Vencido' || $prestamo->fecha_devolucion_estimada < now()) ? 'text-red-600 font-bold' : '' }}">
                                             <span class="font-semibold text-slate-700">E:</span>
-                                            {{ $prestamo->fecha_devolucion_estimada->format('d/m/Y') }}</div>
+                                            {{ $prestamo->fecha_devolucion_estimada->format('d/m/Y') }}
+                                            @if($prestamo->estado_prestamo === 'Vencido')
+                                                <span class="ml-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">Vencido</span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
                                         {{ $prestamo->telefono ?? 'N/A' }}
                                         <div class="text-xs text-slate-400">{{ $prestamo->correo ?? '' }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                        @can('update PrestamoArchivo')
+                                        @can('actualizar PrestamoArchivo')
                                             <div class="flex items-center justify-center gap-2">
                                                 <form action="{{ route('archivo.devolver', $prestamo->id) }}" method="POST"
                                                     class="inline-flex">
@@ -295,8 +314,13 @@
                         </div>
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-slate-700">Ejemplares Físicos (Stock)</label>
-                            <input type="number" name="ejemplares_fisicos" id="inputStock" min="0" required
-                                class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                            <input type="number" name="ejemplares_fisicos" id="inputStock" min="0" max="9999" required
+                                class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-slate-700">Observación (Opcional)</label>
+                            <textarea name="observacion" id="inputObservacion" rows="2" maxlength="500"
+                                class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm"></textarea>
                         </div>
                     </div>
                     <div class="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
@@ -328,27 +352,27 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div class="col-span-2 sm:col-span-1 mb-3">
                                 <label class="block text-sm font-medium text-slate-700">Cédula del Solicitante *</label>
-                                <input type="text" name="solicitante_cedula" required
+                                <input type="text" name="solicitante_cedula" maxlength="20" required
                                     class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                             </div>
                             <div class="col-span-2 sm:col-span-1 mb-3">
                                 <label class="block text-sm font-medium text-slate-700">Nombres *</label>
-                                <input type="text" name="solicitante_nombres" required
-                                    class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                <input type="text" name="solicitante_nombres" maxlength="255" required
+                                    class="val-solo-letras mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                             </div>
                             <div class="col-span-2 sm:col-span-1 mb-3">
                                 <label class="block text-sm font-medium text-slate-700">Teléfono</label>
-                                <input type="text" name="telefono"
+                                <input type="text" name="telefono" maxlength="50"
                                     class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                             </div>
                             <div class="col-span-2 sm:col-span-1 mb-3">
                                 <label class="block text-sm font-medium text-slate-700">Correo Electrónico</label>
-                                <input type="email" name="correo"
+                                <input type="email" name="correo" maxlength="150"
                                     class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                             </div>
                             <div class="col-span-2 mb-3">
                                 <label class="block text-sm font-medium text-slate-700">Motivo del Uso *</label>
-                                <textarea name="motivo_uso" required rows="2"
+                                <textarea name="motivo_uso" required rows="2" maxlength="1000"
                                     class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm"></textarea>
                             </div>
                             <div class="col-span-2 sm:col-span-1 mb-3">

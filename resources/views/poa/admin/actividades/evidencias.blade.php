@@ -106,9 +106,9 @@
                                             <div>
                                                 <label class="block text-xs font-medium text-slate-700">Tipo</label>
                                                 <select name="tipo" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 text-sm">
-                                                    <option value="Informe">Informe</option>
-                                                    <option value="Ficha">Ficha</option>
-                                                    <option value="Foto">Foto</option>
+                                                    <option value="Informe" {{ old('tipo') == 'Informe' ? 'selected' : '' }}>Informe</option>
+                                                    <option value="Ficha" {{ old('tipo') == 'Ficha' ? 'selected' : '' }}>Ficha</option>
+                                                    <option value="Foto" {{ old('tipo') == 'Foto' ? 'selected' : '' }}>Foto</option>
                                                 </select>
                                             </div>
                                             <div>
@@ -118,7 +118,7 @@
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-slate-700">Descripción (Opcional)</label>
-                                            <textarea name="descripcion" rows="1" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 text-sm placeholder-slate-400" placeholder="Breve detalle del archivo..."></textarea>
+                                            <textarea name="descripcion" rows="1" maxlength="1000" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 text-sm placeholder-slate-400" placeholder="Breve detalle del archivo...">{{ old('descripcion') }}</textarea>
                                         </div>
                                         <div class="text-right">
                                             <button type="submit" class="btn btn-primary btn-sm">
@@ -128,13 +128,35 @@
                                     </form>
                                 </div>
 
-                                <!-- Listado de Evidencias -->
-                                <h5 class="text-sm font-bold text-slate-700 mb-3 border-b pb-2">Archivos Subidos</h5>
+                                <!-- Listado de Evidencias y Fichas de Actividad -->
+                                <h5 class="text-sm font-bold text-slate-700 mb-3 border-b pb-2">Archivos y Fichas Registradas</h5>
                                 
-                                @if($meta->evidencias->isEmpty())
-                                    <p class="text-slate-500 text-sm italic text-center py-2">No hay evidencias subidas.</p>
+                                @if($meta->evidencias->isEmpty() && $meta->fichasActividades->isEmpty())
+                                    <p class="text-slate-500 text-sm italic text-center py-2">No hay evidencias ni fichas registradas.</p>
                                 @else
                                     <ul class="space-y-3">
+                                        @foreach($meta->fichasActividades as $ficha)
+                                            <li class="flex items-center justify-between p-3 bg-emerald-50/40 border border-emerald-200 rounded-md hover:bg-emerald-50 transition">
+                                                <div class="flex items-start space-x-3 overflow-hidden">
+                                                    <div class="mt-1">
+                                                        <i class="fa-solid fa-clipboard-check text-emerald-600 text-xl"></i>
+                                                    </div>
+                                                    <div class="truncate">
+                                                        <span class="text-sm font-semibold text-emerald-700 block">Ficha de Actividad: {{ $ficha->titulo_actividad }}</span>
+                                                        <p class="text-xs text-slate-600 truncate">Desarrollada por: {{ $ficha->desarrollada_por }} | Beneficiados: {{ $ficha->cantidad_beneficiados }}</p>
+                                                        <span class="text-[10px] text-slate-400 block mb-1">{{ optional($ficha->fecha)->format('d/m/Y') ?? $ficha->created_at->format('d/m/Y') }}</span>
+                                                        <div class="flex items-center gap-2">
+                                                            <x-action-button :href="route('fichas.pdf', $ficha->id)"
+                                                                action="Generar reporte de ficha (PDF)"
+                                                                icon="fa-solid fa-file-pdf"
+                                                                tone="export"
+                                                                size="sm"
+                                                                target="_blank" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        @endforeach
                                         @foreach($meta->evidencias as $evidencia)
                                             <li class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-md hover:bg-slate-50 transition">
                                                 <div class="flex items-start space-x-3 overflow-hidden">

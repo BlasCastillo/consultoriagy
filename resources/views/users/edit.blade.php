@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+        <link href="{{ asset('assets/vendor/css/tom-select.css') }}" rel="stylesheet">
         <h2 class="font-semibold text-xl text-slate-800 leading-tight">
             {{ __('Editar Usuario') }}: {{ $user->name }}
         </h2>
@@ -20,13 +20,13 @@
 
                         <div class="mb-4">
                             <label for="name" class="block font-medium text-sm text-slate-700">Nombre Completo</label>
-                            <input id="name" class="block mt-1 w-full border-slate-300 focus:border-slate-800 focus:ring-slate-800 rounded-md shadow-sm" type="text" name="name" value="{{ old('name', $user->name) }}" required autofocus autocomplete="off" />
+                            <input id="name" class="val-texto-limpio block mt-1 w-full border-slate-300 focus:border-slate-800 focus:ring-slate-800 rounded-md shadow-sm" type="text" name="name" value="{{ old('name', $user->name) }}" maxlength="255" required autofocus autocomplete="off" />
                             @error('name') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="mb-4">
                             <label for="email" class="block font-medium text-sm text-slate-700">Correo Electrónico</label>
-                            <input id="email" class="block mt-1 w-full border-slate-300 focus:border-slate-800 focus:ring-slate-800 rounded-md shadow-sm" type="email" name="email" value="{{ old('email', $user->email) }}" required autocomplete="off" />
+                            <input id="email" class="val-texto-limpio block mt-1 w-full border-slate-300 focus:border-slate-800 focus:ring-slate-800 rounded-md shadow-sm" type="email" name="email" value="{{ old('email', $user->email) }}" maxlength="255" required autocomplete="off" />
                             @error('email') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
@@ -45,7 +45,7 @@
                                 Contraseña <span class="text-blue-600 hover:text-blue-800 transition-colors text-xs ml-2 underline">(Clic para cambiar)</span>
                             </label>
                             
-                            <div id="password_fields" class="mt-2 hidden p-4 border border-slate-200 bg-slate-50 rounded-lg">
+                            <div id="password_fields" class="mt-2 {{ $errors->has('password') ? '' : 'hidden' }} p-4 border border-slate-200 bg-slate-50 rounded-lg">
                                 <p class="text-xs text-slate-500 mb-3 font-medium">Deja esto en blanco si no deseas cambiar la contraseña actual del usuario.</p>
                                 
                                 <label for="password_input" class="block font-medium text-sm text-slate-700">Nueva Contraseña</label>
@@ -87,6 +87,7 @@
                                         </option>
                                     @endforeach
                                 </select>
+                                @error('institucion_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
 
                             <!-- Select de Jefatura -->
@@ -100,6 +101,7 @@
                                         </option>
                                     @endforeach
                                 </select>
+                                @error('jefatura_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
                         </div>
 
@@ -109,7 +111,7 @@
                         
                         <div class="mb-6">
                             <label for="roles" class="block font-medium text-sm text-slate-700 mb-2">Selecciona uno o más roles <span class="text-slate-400 font-normal">(Ctrl+Click para selección múltiple)</span></label>
-                            <select id="roles" name="roles[]" multiple class="block w-full border-slate-300 focus:border-slate-800 focus:ring-slate-800 rounded-md shadow-sm min-h-[120px]">
+                            <select id="roles" name="roles[]" multiple required class="block w-full border-slate-300 focus:border-slate-800 focus:ring-slate-800 rounded-md shadow-sm min-h-[120px]">
                                 @forelse($roles as $role)
                                     <option value="{{ $role->name }}" {{ in_array($role->name, old('roles', $user->roles->pluck('name')->toArray())) ? 'selected' : '' }}>
                                         {{ $role->name }}
@@ -135,7 +137,7 @@
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js" defer></script>
+    <script src="{{ asset('assets/vendor/js/tom-select.complete.min.js') }}" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             let tsInstitucion = new TomSelect("#institucion_id", { create: false, placeholder: "Escriba para buscar..." });

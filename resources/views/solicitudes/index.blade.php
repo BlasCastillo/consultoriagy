@@ -23,7 +23,7 @@
             <div class="card p-6">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                     <h3 class="text-lg font-bold text-slate-800">Listado Global de Apartados de Publicación</h3>
-                    @if(auth()->user()->can('crear solicitud'))
+                    @if(auth()->user()->can('crear Solicitud'))
                         <a href="{{ route('solicitudes.create') }}" class="btn btn-primary">
                             Nuevo Apartado
                         </a>

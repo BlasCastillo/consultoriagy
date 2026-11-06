@@ -77,9 +77,17 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        @if($solicitud->estado == 'Aprobada')
+                                        @if($solicitud->estado == 'Publicada')
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-100 text-emerald-800">
+                                                Publicada
+                                            </span>
+                                        @elseif($solicitud->estado == 'Aprobada')
                                             <span class="badge badge-success">
                                                 Aprobada
+                                            </span>
+                                        @elseif($solicitud->estado == 'En Digitalización')
+                                            <span class="badge badge-info">
+                                                En Digitalización
                                             </span>
                                         @elseif($solicitud->estado == 'Rechazada')
                                             <span class="badge badge-danger">
@@ -87,7 +95,7 @@
                                             </span>
                                         @else
                                             <span class="badge badge-warning">
-                                                Pendiente
+                                                {{ $solicitud->estado ?? 'Pendiente' }}
                                             </span>
                                         @endif
                                     </td>

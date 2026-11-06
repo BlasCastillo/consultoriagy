@@ -25,7 +25,10 @@
                         
                         <div class="mb-6">
                             <label for="name" class="block text-sm font-medium text-slate-700 mb-2">Nombre del Rol <span class="text-red-500">*</span></label>
-                            <input type="text" name="name" id="name" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm" value="{{ old('name') }}" required autofocus placeholder="Ej: Administrador, Editor, Lector...">
+                            <input type="text" name="name" id="name" maxlength="255" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-800 focus:ring-slate-800 sm:text-sm" value="{{ old('name') }}" required autofocus placeholder="Ej: Administrador, Editor, Lector...">
+                            @error('name')
+                                <p class="mt-1 text-xs text-red-600 font-semibold">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div class="mb-6">
@@ -42,24 +45,31 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        @php
+                                            $oldPermissions = old('permissions', []);
+                                        @endphp
                                         @foreach($matrix as $model => $permissions)
                                             <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                                                <td class="py-3 px-4 font-bold text-sm text-slate-800 capitalize">{{ $model }}</td>
+                                                <td class="py-3 px-4 font-bold text-sm text-slate-800">
+                                                    {{ \App\Services\ModelPermissionAuditor::getModuleLabel($model) }}
+                                                    <span class="block text-xs font-normal text-slate-400">{{ $model }}</span>
+                                                </td>
                                                 
                                                 @php
-                                                    // Map the order: create, read, update, delete
                                                     $orderedPerms = [
-                                                        "create {$model}",
-                                                        "read {$model}",
-                                                        "update {$model}",
-                                                        "delete {$model}"
+                                                        "crear {$model}",
+                                                        "leer {$model}",
+                                                        "actualizar {$model}",
+                                                        "eliminar {$model}"
                                                     ];
                                                 @endphp
 
                                                 @foreach($orderedPerms as $perm)
                                                     <td class="py-3 px-4 text-center">
                                                         <label class="inline-flex items-center cursor-pointer">
-                                                            <input type="checkbox" name="permissions[]" value="{{ $perm }}" class="rounded border-slate-300 text-slate-800 shadow-sm focus:ring-slate-800 w-5 h-5 cursor-pointer transition-colors">
+                                                            <input type="checkbox" name="permissions[]" value="{{ $perm }}" 
+                                                                {{ in_array($perm, $oldPermissions) ? 'checked' : '' }}
+                                                                class="rounded border-slate-300 text-slate-800 shadow-sm focus:ring-slate-800 w-5 h-5 cursor-pointer transition-colors">
                                                         </label>
                                                     </td>
                                                 @endforeach

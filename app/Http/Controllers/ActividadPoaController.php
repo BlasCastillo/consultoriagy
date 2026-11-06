@@ -22,11 +22,12 @@ class ActividadPoaController extends Controller
 
         $request->validate([
             'descripcion' => 'required|string',
-            'partida_presupuestaria' => 'nullable|string',
-            'indicador_nombre' => 'nullable|string',
-            'unidad_medida' => 'nullable|string',
+            'partida_presupuestaria' => 'nullable|string|max:255',
+            'monto_asignado' => 'nullable|numeric|min:0',
+            'indicador_nombre' => 'nullable|string|max:255',
+            'unidad_medida' => 'nullable|string|max:100',
             'medios_verificacion' => 'nullable|string',
-            'frecuencia_lectura' => 'nullable|string',
+            'frecuencia_lectura' => 'nullable|string|max:100',
             'formulacion' => 'nullable|string',
             'q1' => 'required|integer|min:0',
             'q2' => 'required|integer|min:0',
@@ -39,6 +40,7 @@ class ActividadPoaController extends Controller
                 'poa_id' => $poa->id,
                 'descripcion' => $request->descripcion,
                 'partida_presupuestaria' => $request->partida_presupuestaria,
+                'monto_asignado' => $request->monto_asignado ?? 0,
                 'indicador_nombre' => $request->indicador_nombre,
                 'unidad_medida' => $request->unidad_medida,
                 'medios_verificacion' => $request->medios_verificacion,
@@ -46,14 +48,24 @@ class ActividadPoaController extends Controller
                 'formulacion' => $request->formulacion,
             ]);
 
+            $tieneProgramado = \Illuminate\Support\Facades\Schema::hasColumn('meta_trimestrals', 'programado');
+            $tieneMetaInicial = \Illuminate\Support\Facades\Schema::hasColumn('meta_trimestrals', 'meta_inicial');
+
             for ($i = 1; $i <= 4; $i++) {
-                $metaValue = $request->input('q' . $i);
-                MetaTrimestral::create([
+                $metaProgramada = (int) $request->input('q' . $i);
+                $datosMeta = [
                     'actividad_poa_id' => $actividad->id,
                     'trimestre' => $i,
-                    'meta_actual' => $metaValue,
+                    'meta_actual' => $metaProgramada,
                     'ejecutada' => 0,
-                ]);
+                ];
+                if ($tieneProgramado) {
+                    $datosMeta['programado'] = $metaProgramada;
+                }
+                if ($tieneMetaInicial) {
+                    $datosMeta['meta_inicial'] = $metaProgramada;
+                }
+                MetaTrimestral::create($datosMeta);
             }
         });
 
@@ -109,7 +121,6 @@ class ActividadPoaController extends Controller
                 'trimestre_destino' => $request->trimestre_destino,
                 'cantidad_movida' => $request->cantidad_movida,
                 'justificacion' => $request->justificacion,
-                'fecha_solicitud' => \Carbon\Carbon::now(),
             ]);
 
             activity()

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Atencion extends Model
 {
+    protected $table = 'atencions';
+
     protected $fillable = [
         'cedula', 
         'nombre', 

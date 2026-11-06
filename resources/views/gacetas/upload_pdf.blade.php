@@ -194,7 +194,7 @@
                                 </div>
 
                                 <button type="submit"
-                                    onclick="event.preventDefault(); const form = this.closest('form'); if (!form.reportValidity()) return; Swal.fire({ title: '¿Enviar a revisión final?', text: 'Confirme que el escaneo es correcto. La gaceta pasará a la bandeja de la Jefatura.', icon: 'question', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, enviar a revisión', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
+                                    onclick="event.preventDefault(); const form = this.closest('form'); if (!window.validarFormularioSGCJ(form)) return; Swal.fire({ title: '¿Enviar a revisión final?', text: 'Confirme que el escaneo es correcto. La gaceta pasará a la bandeja de la Jefatura.', icon: 'question', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, enviar a revisión', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
                                     class="btn btn-primary w-full">
                                     Enviar a Jefatura para Revisión
                                 </button>
@@ -211,12 +211,12 @@
                                         @csrf
                                         @method('PATCH')
                                         <label class="mb-1 block text-xs font-bold text-red-900">Motivo de la Devolución *</label>
-                                        <textarea name="motivo_devolucion" rows="3" required
-                                            class="w-full rounded-lg border-red-300 text-sm shadow-sm focus:border-red-500 focus:ring-red-500"
-                                            placeholder="Ej: Faltan firmas, escaneo ilegible..."></textarea>
+                                        <textarea name="motivo_devolucion" rows="3" minlength="5" maxlength="1000" required
+                                            class="val-texto-limpio w-full rounded-lg border-red-300 text-sm shadow-sm focus:border-red-500 focus:ring-red-500"
+                                            placeholder="Ej: Faltan firmas, escaneo ilegible...">{{ old('motivo_devolucion') }}</textarea>
                                         <div class="mt-2 flex justify-end">
                                             <button type="submit"
-                                                onclick="event.preventDefault(); const form = this.closest('form'); if (!form.reportValidity()) return; Swal.fire({ title: '¿Devolver esta Gaceta?', text: 'La gaceta volverá a la Jefatura con el motivo indicado.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, confirmar devolución', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
+                                                onclick="event.preventDefault(); const form = this.closest('form'); const motivo = form.querySelector('[name=motivo_devolucion]').value.trim(); if (!window.validarFormularioSGCJ(form) || motivo.length < 5) { if (motivo.length < 5) Swal.fire('Atención', 'El motivo de devolución debe tener al menos 5 caracteres.', 'warning'); return; } Swal.fire({ title: '¿Devolver esta Gaceta?', text: 'La gaceta volverá a la Jefatura con el motivo indicado.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, confirmar devolución', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
                                                 class="btn btn-danger btn-sm">
                                                 Confirmar Devolución
                                             </button>

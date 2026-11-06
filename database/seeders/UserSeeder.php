@@ -86,7 +86,7 @@ class UserSeeder extends Seeder
             'status' => true,
             'institucion' => null,
             'jefatura' => null,
-            'roles' => [],
+            'roles' => ['Super Admin'],
         ],
         [
             'email' => 'jefed@example.com',

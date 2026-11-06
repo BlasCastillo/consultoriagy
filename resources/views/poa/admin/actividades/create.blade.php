@@ -25,13 +25,13 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Descripción de la Actividad</label>
-                            <select name="descripcion" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
+                            <select name="descripcion" required class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
                                 <option value="" disabled selected>Seleccione una actividad...</option>
                                 <option value="Asesorar jurídicamente a la Gobernación del Estado..." {{ old('descripcion') == 'Asesorar jurídicamente a la Gobernación del Estado...' ? 'selected' : '' }}>Asesorar jurídicamente...</option>
                                 <option value="Investigar y redactar los proyectos de ley, decretos..." {{ old('descripcion') == 'Investigar y redactar los proyectos de ley, decretos...' ? 'selected' : '' }}>Investigar y redactar proyectos normativos</option>
                                 <option value="Elaborar, revisar, anunciar y publicar las Gacetas Oficiales..." {{ old('descripcion') == 'Elaborar, revisar, anunciar y publicar las Gacetas Oficiales...' ? 'selected' : '' }}>Publicación de Gacetas</option>
                                 <option value="Analizar y redactar los convenios, contratos..." {{ old('descripcion') == 'Analizar y redactar los convenios, contratos...' ? 'selected' : '' }}>Redacción de Convenios y Contratos</option>
-                                <option value="Digitalización y Carga de Gacetas Históricas">Digitalización y Carga de Gacetas Históricas</option>
+                                <option value="Digitalización y Carga de Gacetas Históricas" {{ old('descripcion') == 'Digitalización y Carga de Gacetas Históricas' ? 'selected' : '' }}>Digitalización y Carga de Gacetas Históricas</option>
                             </select>
                         </div>
 
@@ -50,7 +50,7 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Monto Asignado</label>
-                                <input type="number" step="0.01" name="monto_asignado" value="{{ old('monto_asignado', '0.00') }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
+                                <input type="number" step="0.01" min="0" name="monto_asignado" value="{{ old('monto_asignado', '0.00') }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
                             </div>
 
                             <div>
@@ -116,22 +116,22 @@
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700 text-center">Trim. 1</label>
-                                    <input type="number" name="q1" required min="0" value="{{ old('q1', 0) }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-center text-lg font-semibold text-slate-800">
+                                    <input type="number" name="q1" required min="0" value="{{ old('q1', 0) }}" class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-center text-lg font-semibold text-slate-800">
                                     <p class="text-xs text-slate-500 mt-1 text-center font-medium">Ene - Feb - Mar</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700 text-center">Trim. 2</label>
-                                    <input type="number" name="q2" required min="0" value="{{ old('q2', 0) }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-center text-lg font-semibold text-slate-800">
+                                    <input type="number" name="q2" required min="0" value="{{ old('q2', 0) }}" class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-center text-lg font-semibold text-slate-800">
                                     <p class="text-xs text-slate-500 mt-1 text-center font-medium">Abr - May - Jun</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700 text-center">Trim. 3</label>
-                                    <input type="number" name="q3" required min="0" value="{{ old('q3', 0) }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-center text-lg font-semibold text-slate-800">
+                                    <input type="number" name="q3" required min="0" value="{{ old('q3', 0) }}" class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-center text-lg font-semibold text-slate-800">
                                     <p class="text-xs text-slate-500 mt-1 text-center font-medium">Jul - Ago - Sep</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700 text-center">Trim. 4</label>
-                                    <input type="number" name="q4" required min="0" value="{{ old('q4', 0) }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-center text-lg font-semibold text-slate-800">
+                                    <input type="number" name="q4" required min="0" value="{{ old('q4', 0) }}" class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-center text-lg font-semibold text-slate-800">
                                     <p class="text-xs text-slate-500 mt-1 text-center font-medium">Oct - Nov - Dic</p>
                                 </div>
                             </div>

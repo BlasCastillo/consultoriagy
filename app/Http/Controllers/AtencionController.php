@@ -22,7 +22,7 @@ class AtencionController extends Controller
     {
         $atencion = \App\Models\Atencion::create($request->validated());
 
-        \App\Services\PoaService::registrarEjecucion('atencion', $request->jefatura_destino_id, now());
+        // La meta del POA se incrementa automáticamente una sola vez a través de AtencionObserver@created
 
         $usuariosDestino = \App\Models\User::where('jefatura_id', $atencion->jefatura_destino_id)->get();
         if ($usuariosDestino->isNotEmpty()) {

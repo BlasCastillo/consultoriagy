@@ -11,26 +11,79 @@ class Poa extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'poas';
+
+    public static function usuarioTieneAccesoGlobal($usuario): bool
+    {
+        if (!$usuario) {
+            return false;
+        }
+
+        return $usuario->hasAnyRole([
+            'Super Admin',
+            'Super Administrador',
+            'Súper Administrador',
+            'Director de Consultoría Jurídica',
+            'Coordinador General',
+            'Coordinador de Seguimiento y Control de Políticas Públicas',
+        ]);
+    }
+
+    public static function obtenerJefaturasPermitidas($usuario): array
+    {
+        if (!$usuario) {
+            return [];
+        }
+
+        $idsPermitidos = [];
+        $jefatura = $usuario->jefatura;
+
+        if ($jefatura) {
+            $idsPermitidos = array_merge($idsPermitidos, $jefatura->getDescendantsIds());
+        } elseif ($usuario->jefatura_id) {
+            $idsPermitidos[] = (int) $usuario->jefatura_id;
+        }
+
+        $rolesUsuario = $usuario->roles->pluck('name')->toArray();
+        foreach ($rolesUsuario as $roleName) {
+            if ($roleName === 'Coordinador de Publicaciones Oficiales') {
+                $ids = Jefatura::where('nombre', 'ILIKE', '%Publicaciones%')->pluck('id')->toArray();
+                $idsPermitidos = array_merge($idsPermitidos, $ids);
+            } elseif ($roleName === 'Coordinador de Archivo') {
+                $ids = Jefatura::where('nombre', 'ILIKE', '%Archivo%')->pluck('id')->toArray();
+                $idsPermitidos = array_merge($idsPermitidos, $ids);
+            } elseif ($roleName === 'Coordinador de Atención al Ciudadano') {
+                $ids = Jefatura::where('nombre', 'ILIKE', '%Atención%')->pluck('id')->toArray();
+                $idsPermitidos = array_merge($idsPermitidos, $ids);
+            } elseif (in_array($roleName, [
+                'Coordinador de Legislación y Asuntos Jurídicos',
+                'Jefe de Legislación',
+                'Jefe de Asuntos Jurídicos',
+            ], true)) {
+                $ids = Jefatura::where('nombre', 'ILIKE', '%Legislación%')
+                    ->orWhere('nombre', 'ILIKE', '%Asuntos Jurídicos%')
+                    ->pluck('id')
+                    ->toArray();
+                $idsPermitidos = array_merge($idsPermitidos, $ids);
+            }
+        }
+
+        return array_values(array_unique(array_map('intval', $idsPermitidos)));
+    }
+
     protected static function booted()
     {
         static::addGlobalScope('aislamiento_departamental', function (Builder $builder) {
             if (auth()->check()) {
                 $usuario = auth()->user();
-                
-                if (!$usuario->hasAnyRole([
-                    'Super Admin', 
-                    'Director de Consultoría Jurídica', 
-                    'Coordinador General', 
-                    'Coordinador de Seguimiento y Control de Políticas Públicas'
-                ])) {
-                    $jefatura = $usuario->jefatura; // Carga la relación
-                
-                    if ($jefatura) {
-                        $idsPermitidos = $jefatura->getDescendantsIds();
+
+                if (!self::usuarioTieneAccesoGlobal($usuario)) {
+                    $idsPermitidos = self::obtenerJefaturasPermitidas($usuario);
+
+                    if (!empty($idsPermitidos)) {
                         $builder->whereIn('jefatura_id', $idsPermitidos);
                     } else {
-                        // Failsafe por si el usuario no tiene jefatura asignada
-                        $builder->where('jefatura_id', $usuario->jefatura_id);
+                        $builder->whereIn('jefatura_id', [0]);
                     }
                 }
             }
@@ -45,8 +98,8 @@ class Poa extends Model
 
     public static function checkAndClose(Poa $poa)
     {
-        $poa->loadMissing('actividades.metasTrimestrales');
-        
+        $poa->load('actividades.metasTrimestrales');
+
         $totalMeta = 0;
         $totalEjecutada = 0;
 
@@ -58,7 +111,11 @@ class Poa extends Model
         }
 
         if ($totalMeta > 0 && $totalEjecutada >= $totalMeta) {
-            $poa->update(['estado' => 'Cerrado']);
+            if ($poa->estado !== 'Cerrado') {
+                $poa->update(['estado' => 'Cerrado']);
+            }
+        } elseif ($poa->estado === 'Cerrado' && ($totalMeta === 0 || $totalEjecutada < $totalMeta)) {
+            $poa->update(['estado' => 'Ejecucion']);
         }
     }
 

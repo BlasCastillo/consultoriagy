@@ -105,7 +105,7 @@
                                                         icon="fa-solid fa-pen-to-square"
                                                         tone="edit" />
 
-                                                    @if(!in_array($role->name, ['Super Admin', 'Super Administrador']))
+                                                    @if(!in_array($role->name, ['Super Admin', 'Super Administrador', 'Súper Administrador']))
                                                         <form action="{{ route('roles.destroy', $role) }}" method="POST"
                                                             onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Estás seguro?', text: 'Se eliminará este rol del sistema.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline-flex">
                                                             @csrf

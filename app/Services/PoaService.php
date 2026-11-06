@@ -31,8 +31,9 @@ class PoaService
                 return false;
         }
 
-        // Caza del POA sin auth() para evitar fallos de Superadmin
-        $poa = Poa::where('anio', $anio)
+        // Caza del POA sin auth() ni global scope para evitar fallos entre jefaturas
+        $poa = Poa::withoutGlobalScopes()
+            ->where('anio', $anio)
             ->where('jefatura_id', $jefaturaId)
             ->whereIn('estado', ['Ejecucion', 'Aprobado'])
             ->first();

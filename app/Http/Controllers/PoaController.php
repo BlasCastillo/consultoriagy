@@ -26,23 +26,12 @@ class PoaController extends Controller
     public function index()
     {
         $user = auth()->user();
-        
+
         $query = Poa::with('jefatura')->orderBy('anio', 'desc');
 
-        if (!$user->hasPermissionTo('read Poa')) {
-            $rolesUsuario = $user->roles->pluck('name')->toArray();
-            
-            $jefaturaIds = [];
-            foreach ($rolesUsuario as $roleName) {
-                if ($roleName === 'Jefe de Publicaciones') {
-                    $j = Jefatura::where('nombre', 'like', '%Publicaciones%')->first();
-                    if($j) $jefaturaIds[] = $j->id;
-                } elseif ($roleName === 'Jefe de Legislacion y Asuntos Juridicos') {
-                    $j = Jefatura::where('nombre', 'like', '%Legislación y Asuntos Jurídicos%')->first();
-                    if($j) $jefaturaIds[] = $j->id;
-                }
-            }
-            
+        if (!Poa::usuarioTieneAccesoGlobal($user)) {
+            $jefaturaIds = Poa::obtenerJefaturasPermitidas($user);
+
             if (empty($jefaturaIds)) {
                 $query->whereIn('jefatura_id', [0]); // Ocultar si no coincide jefatura
             } else {

@@ -35,31 +35,31 @@
                             <!-- Fila 1 -->
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Cédula</label>
-                                <input type="text" name="cedula" required value="{{ old('cedula') }}" class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input type="text" name="cedula" maxlength="20" required value="{{ old('cedula') }}" class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Correo Electrónico (Opcional)</label>
-                                <input type="email" name="correo" value="{{ old('correo') }}" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input type="email" name="correo" maxlength="150" value="{{ old('correo') }}" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
                             <!-- Fila 2 -->
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Nombre</label>
-                                <input type="text" name="nombre" required value="{{ old('nombre') }}" class="val-solo-letras mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input type="text" name="nombre" maxlength="100" required value="{{ old('nombre') }}" class="val-solo-letras mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Apellido</label>
-                                <input type="text" name="apellido" required value="{{ old('apellido') }}" class="val-solo-letras mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input type="text" name="apellido" maxlength="100" required value="{{ old('apellido') }}" class="val-solo-letras mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
                             <!-- Fila 3 -->
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Teléfono (Opcional)</label>
-                                <input type="text" name="telefono" value="{{ old('telefono') }}" class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input type="text" name="telefono" maxlength="20" value="{{ old('telefono') }}" class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Institución (Opcional)</label>
-                                <input type="text" name="institucion" value="{{ old('institucion') }}" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input type="text" name="institucion" maxlength="255" value="{{ old('institucion') }}" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
                             <!-- Fila 4 -->
@@ -78,7 +78,7 @@
                             <!-- Fila 5 -->
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-slate-700">Motivo</label>
-                                <select name="motivo" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <select name="motivo" maxlength="2000" required class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <option value="">Seleccione un motivo...</option>
                                     <option value="asesoria" {{ old('motivo') == 'asesoria' ? 'selected' : '' }}>Asesoría</option>
                                     <option value="consulta" {{ old('motivo') == 'consulta' ? 'selected' : '' }}>Consulta</option>

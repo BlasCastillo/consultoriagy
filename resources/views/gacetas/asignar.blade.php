@@ -9,6 +9,16 @@
         <div class="mx-auto max-w-4xl sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body text-slate-900">
+                    @if ($errors->any())
+                        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                            <ul class="list-disc list-inside text-sm">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <h3 class="mb-4 border-b border-slate-200 pb-2 text-lg font-bold text-slate-800">Recepción Física y Asignación</h3>
 
                     <div class="mb-6 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
@@ -26,7 +36,7 @@
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
                                 <label for="fecha_recepcion_fisica" class="block text-sm font-medium text-slate-700">Fecha de Recepción Física <span class="text-red-500">*</span></label>
-                                <input type="date" name="fecha_recepcion_fisica" id="fecha_recepcion_fisica" required value="{{ date('Y-m-d') }}"
+                                <input type="date" name="fecha_recepcion_fisica" id="fecha_recepcion_fisica" required value="{{ old('fecha_recepcion_fisica', date('Y-m-d')) }}"
                                     class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                             </div>
 
@@ -36,7 +46,7 @@
                                     class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                     <option value="">-- Seleccione Digitalizador --</option>
                                     @foreach($digitalizadores as $digi)
-                                        <option value="{{ $digi->id }}">{{ $digi->name }} ({{ $digi->email }})</option>
+                                        <option value="{{ $digi->id }}" {{ old('digitalizador_id') == $digi->id ? 'selected' : '' }}>{{ $digi->name }} ({{ $digi->email }})</option>
                                     @endforeach
                                 </select>
                             </div>

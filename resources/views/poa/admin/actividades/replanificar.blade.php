@@ -49,10 +49,10 @@
                                 <label class="block text-sm font-medium text-slate-700">Trimestre de Origen (Resta)</label>
                                 <select name="trimestre_origen" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
                                     <option value="">Seleccione...</option>
-                                    <option value="1">Trimestre 1</option>
-                                    <option value="2">Trimestre 2</option>
-                                    <option value="3">Trimestre 3</option>
-                                    <option value="4">Trimestre 4</option>
+                                    <option value="1" {{ old('trimestre_origen') == '1' ? 'selected' : '' }}>Trimestre 1</option>
+                                    <option value="2" {{ old('trimestre_origen') == '2' ? 'selected' : '' }}>Trimestre 2</option>
+                                    <option value="3" {{ old('trimestre_origen') == '3' ? 'selected' : '' }}>Trimestre 3</option>
+                                    <option value="4" {{ old('trimestre_origen') == '4' ? 'selected' : '' }}>Trimestre 4</option>
                                 </select>
                             </div>
 
@@ -60,23 +60,23 @@
                                 <label class="block text-sm font-medium text-slate-700">Trimestre Destino (Suma)</label>
                                 <select name="trimestre_destino" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
                                     <option value="">Seleccione...</option>
-                                    <option value="1">Trimestre 1</option>
-                                    <option value="2">Trimestre 2</option>
-                                    <option value="3">Trimestre 3</option>
-                                    <option value="4">Trimestre 4</option>
+                                    <option value="1" {{ old('trimestre_destino') == '1' ? 'selected' : '' }}>Trimestre 1</option>
+                                    <option value="2" {{ old('trimestre_destino') == '2' ? 'selected' : '' }}>Trimestre 2</option>
+                                    <option value="3" {{ old('trimestre_destino') == '3' ? 'selected' : '' }}>Trimestre 3</option>
+                                    <option value="4" {{ old('trimestre_destino') == '4' ? 'selected' : '' }}>Trimestre 4</option>
                                 </select>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Cantidad a Mover</label>
-                                <input type="number" name="cantidad_movida" required min="1" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-center font-bold">
+                                <input type="number" name="cantidad_movida" value="{{ old('cantidad_movida') }}" required min="1" class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 text-center font-bold">
                             </div>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Justificación Técnica del Traslado</label>
-                            <textarea name="justificacion" required rows="3" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">{{ old('justificacion') }}</textarea>
-                            <p class="mt-1 text-xs text-slate-500">Debe explicar claramente por qué no se ejecutarán estas metas en su trimestre original.</p>
+                            <textarea name="justificacion" minlength="10" maxlength="1000" required rows="3" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">{{ old('justificacion') }}</textarea>
+                            <p class="mt-1 text-xs text-slate-500">Debe explicar claramente por qué no se ejecutarán estas metas en su trimestre original (mínimo 10 caracteres).</p>
                         </div>
 
                         <div class="flex flex-wrap items-center justify-end gap-3 border-t border-slate-200 pt-4">

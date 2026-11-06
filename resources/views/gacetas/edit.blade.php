@@ -7,6 +7,21 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @if (session('error'))
+                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {{ session('error') }}
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <ul class="list-disc list-inside text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form id="ensamblaje-form" action="{{ route('gacetas.subsanar', $gaceta->id) }}" method="POST">
                 @csrf
                 <div class="flex flex-col lg:flex-row gap-6">
@@ -19,7 +34,7 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700">Número de Gaceta <span class="text-red-500">*</span></label>
-                                    <input type="text" name="numero" required value="{{ old('numero', $gaceta->numero) }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                    <input type="text" inputmode="numeric" name="numero" maxlength="10" required value="{{ old('numero', $gaceta->numero) }}" class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                 </div>
                                 
                                 <div>
@@ -33,11 +48,11 @@
                                 <div class="mb-4 grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-slate-700">Año Político <span class="text-red-500">*</span></label>
-                                        <input type="text" name="ano_politico" required value="{{ old('ano_politico', $gaceta->ano_politico) }}" placeholder="Ej: 168°" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                        <input type="text" name="ano_politico" maxlength="100" required value="{{ old('ano_politico', $gaceta->ano_politico) }}" placeholder="Ej: 168°" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-slate-700">Mes Político <span class="text-red-500">*</span></label>
-                                        <input type="text" name="mes_politico" required value="{{ old('mes_politico', $gaceta->mes_politico) }}" placeholder="Ej: 120°" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                        <input type="text" name="mes_politico" maxlength="100" required value="{{ old('mes_politico', $gaceta->mes_politico) }}" placeholder="Ej: 120°" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                     </div>
                                 </div>
                                 
@@ -155,10 +170,7 @@
             }
 
             const form = document.getElementById('ensamblaje-form');
-            if(!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
+            if(!window.validarFormularioSGCJ(form)) return;
 
             Swal.fire({
                 title: '¿Confirmar Correcciones?',

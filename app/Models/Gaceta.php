@@ -11,6 +11,8 @@ class Gaceta extends Model
 {
     use HasFactory, LogsActivity;
 
+    protected $table = 'gacetas';
+
     const ESTADO_EN_PROCESO = 'En Proceso';
     const ESTADO_EN_DIGITALIZACION = 'En Digitalización';
     const ESTADO_DEVUELTA_DIGITALIZADOR = 'Devuelta a Digitalizador';
@@ -95,20 +97,22 @@ class Gaceta extends Model
 
     public static function numeroARomano($valor): string
     {
-        if (empty($valor)) return '';
-        $str = trim((string)$valor);
-        $clean = preg_replace('/^(a[ñn]o|mes)\s*/iu', '', $str);
-        $clean = trim(str_replace(['°', 'º'], '', $clean));
-        if (preg_match('/^[IVXLCDM]+$/i', $clean)) {
-            return strtoupper($clean);
+        if ($valor === null || $valor === '') {
+            return '';
         }
+
+        $str = trim((string) $valor);
+        $clean = preg_replace('/^(a[ñn]o|mes)\s*/iu', '', $str) ?? $str;
+        $clean = trim(str_replace(['°', 'º', '.', ',', '-', '_'], '', $clean));
+
+        // 1. Si tiene números arábigos, convertirlos a numeración romana
         if (preg_match('/\d+/', $clean, $matches)) {
-            $num = (int)$matches[0];
+            $num = (int) $matches[0];
             if ($num > 0 && $num < 4000) {
                 $map = [
                     'M' => 1000, 'CM' => 900, 'D' => 500, 'CD' => 400,
                     'C' => 100, 'XC' => 90, 'L' => 50, 'XL' => 40,
-                    'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1
+                    'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1,
                 ];
                 $roman = '';
                 foreach ($map as $rom => $v) {
@@ -120,7 +124,44 @@ class Gaceta extends Model
                 return $roman;
             }
         }
-        return strtoupper($str);
+
+        // 2. Si el usuario escribió el nombre del mes en español, convertirlo a romano (I - XII)
+        $mesesTexto = [
+            'enero' => 'I',
+            'febrero' => 'II',
+            'marzo' => 'III',
+            'abril' => 'IV',
+            'mayo' => 'V',
+            'junio' => 'VI',
+            'julio' => 'VII',
+            'agosto' => 'VIII',
+            'septiembre' => 'IX',
+            'setiembre' => 'IX',
+            'octubre' => 'X',
+            'noviembre' => 'XI',
+            'diciembre' => 'XII',
+        ];
+        $cleanLower = mb_strtolower($clean, 'UTF-8');
+        if (isset($mesesTexto[$cleanLower])) {
+            return $mesesTexto[$cleanLower];
+        }
+
+        // 3. Validar si ya es un número romano canónico estricto (1 a 3999)
+        if ($clean !== '' && preg_match('/^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i', $clean)) {
+            return strtoupper($clean);
+        }
+
+        return strtoupper($clean);
+    }
+
+    public function setAnoPoliticoAttribute($value): void
+    {
+        $this->attributes['ano_politico'] = $value !== null ? self::numeroARomano($value) : null;
+    }
+
+    public function setMesPoliticoAttribute($value): void
+    {
+        $this->attributes['mes_politico'] = $value !== null ? self::numeroARomano($value) : null;
     }
 
     public function getAnioPoliticoAttribute()
@@ -128,14 +169,14 @@ class Gaceta extends Model
         return $this->attributes['ano_politico'] ?? null;
     }
 
-    public function setAnioPoliticoAttribute($value)
+    public function setAnioPoliticoAttribute($value): void
     {
-        $this->attributes['ano_politico'] = $value;
+        $this->setAnoPoliticoAttribute($value);
     }
 
     public function getAnoPoliticoRomanoAttribute(): string
     {
-        return self::numeroARomano($this->ano_politico);
+        return self::numeroARomano($this->attributes['ano_politico'] ?? '');
     }
 
     public function getAnioPoliticoRomanoAttribute(): string
@@ -145,14 +186,14 @@ class Gaceta extends Model
 
     public function getMesPoliticoRomanoAttribute(): string
     {
-        return self::numeroARomano($this->mes_politico);
+        return self::numeroARomano($this->attributes['mes_politico'] ?? '');
     }
 
     public function getTextoPoliticoAttribute(): string
     {
-        $ano = $this->ano_politico_romano ?: 'CXIV';
-        $mes = $this->mes_politico_romano ?: 'IV';
-        return "AÑO {$ano} – MES {$mes}";
+        $ano = $this->ano_politico_romano ?: 'CXVII';
+        $mes = $this->mes_politico_romano ?: 'I';
+        return "AÑO {$ano} - MES {$mes}";
     }
 
     public function getFechaParaMostrarAttribute()

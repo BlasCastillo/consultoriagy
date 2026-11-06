@@ -35,7 +35,7 @@
                                 @foreach($gavetas as $gaveta)
                                     <tr>
                                         <td>
-                                            {{ $gaveta->estante->sede->nombre }} &rsaquo; {{ $gaveta->estante->nombre }}
+                                            {{ $gaveta->estante?->sede?->nombre ?? 'Sede inhabilitada' }} &rsaquo; {{ $gaveta->estante?->nombre ?? 'Estante inhabilitado' }}
                                         </td>
                                         <td class="font-medium text-slate-800">{{ $gaveta->nombre }}</td>
                                         <td>

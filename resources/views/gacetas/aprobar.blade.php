@@ -9,6 +9,21 @@
         <div class="mx-auto max-w-5xl sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body text-slate-900">
+                    @if (session('error'))
+                        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+                    @if ($errors->any())
+                        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                            <ul class="list-disc list-inside text-sm">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <h3 class="mb-6 border-b border-slate-200 pb-2 text-lg font-bold text-slate-800">Revisión Final</h3>
 
                     <div class="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">

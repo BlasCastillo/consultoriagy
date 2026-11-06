@@ -7,6 +7,21 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @if (session('error'))
+                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {{ session('error') }}
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <ul class="list-disc list-inside text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form id="ensamblaje-form" action="{{ route('gacetas.store') }}" method="POST">
                 @csrf
                 <div class="flex flex-col lg:flex-row gap-6">
@@ -19,31 +34,31 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700">Número de Gaceta <span class="text-red-500">*</span></label>
-                                    <input type="text" name="numero" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                    <input type="text" inputmode="numeric" name="numero" value="{{ old('numero') }}" maxlength="10" required class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                 </div>
                                 
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700">Tipo de Edición <span class="text-red-500">*</span></label>
                                     <select name="tipo" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
-                                        <option value="Ordinaria">Ordinaria</option>
-                                        <option value="Extraordinaria">Extraordinaria</option>
+                                        <option value="Ordinaria" {{ old('tipo') == 'Ordinaria' ? 'selected' : '' }}>Ordinaria</option>
+                                        <option value="Extraordinaria" {{ old('tipo') == 'Extraordinaria' ? 'selected' : '' }}>Extraordinaria</option>
                                     </select>
                                 </div>
 
                                 <div class="mb-4 grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-slate-700">Año Político <span class="text-red-500">*</span></label>
-                                        <input type="text" name="ano_politico" required placeholder="Ej: 168°" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                        <input type="text" name="ano_politico" value="{{ old('ano_politico') }}" maxlength="100" required placeholder="Ej: 168°" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-slate-700">Mes Político <span class="text-red-500">*</span></label>
-                                        <input type="text" name="mes_politico" required placeholder="Ej: 120°" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                        <input type="text" name="mes_politico" value="{{ old('mes_politico') }}" maxlength="100" required placeholder="Ej: 120°" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                     </div>
                                 </div>
                                 
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700">Fecha de Publicación <span class="text-red-500">*</span></label>
-                                    <input type="date" name="fecha_publicacion" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                    <input type="date" name="fecha_publicacion" value="{{ old('fecha_publicacion') }}" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                 </div>
                                 
                                 <div>
@@ -51,7 +66,7 @@
                                     <select name="gobernador_id" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                         <option value="">Seleccione...</option>
                                         @foreach($gobernadores as $gob)
-                                            <option value="{{ $gob->id }}">{{ $gob->nombres ?? 'Sin Nombre' }} {{ $gob->apellidos ?? '' }}</option>
+                                            <option value="{{ $gob->id }}" {{ old('gobernador_id') == $gob->id ? 'selected' : '' }}>{{ $gob->nombres ?? 'Sin Nombre' }} {{ $gob->apellidos ?? '' }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -61,7 +76,7 @@
                                     <select name="digitalizador_id" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                         <option value="">Seleccione...</option>
                                         @foreach($digitalizadores as $digitalizador)
-                                            <option value="{{ $digitalizador->id }}">{{ $digitalizador->name }}</option>
+                                            <option value="{{ $digitalizador->id }}" {{ old('digitalizador_id') == $digitalizador->id ? 'selected' : '' }}>{{ $digitalizador->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -106,9 +121,10 @@
                                                 </div>
                                                 {{-- Checkbox --}}
                                                 <div class="flex-shrink-0 pt-1">
-                                                    <input type="checkbox"
+                                                    <input type="checkbox" name="apartados[]" value="{{ $apartado->id }}"
                                                            class="apartado-checkbox h-5 w-5 rounded border-slate-300 text-blue-900 focus:ring-blue-800"
-                                                           data-id="{{ $apartado->id }}">
+                                                           data-id="{{ $apartado->id }}"
+                                                           {{ in_array($apartado->id, old('apartados_ordenados', old('apartados', []))) ? 'checked' : '' }}>
                                                 </div>
                                                 {{-- Contenido --}}
                                                 <div class="min-w-0 flex-1">
@@ -137,7 +153,7 @@
     </div>
 
     {{-- SortableJS para drag & drop de apartados (defer: no bloquea el parseo) --}}
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js" defer></script>
+    <script src="{{ asset('assets/vendor/js/Sortable.min.js') }}" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const lista = document.getElementById('lista-apartados');
@@ -221,10 +237,7 @@
             }
 
             const form = document.getElementById('ensamblaje-form');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
+            if (!window.validarFormularioSGCJ(form)) return;
 
             Swal.fire({
                 title: '¿Confirmar Ensamblaje?',

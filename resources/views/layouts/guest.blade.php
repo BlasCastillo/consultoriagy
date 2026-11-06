@@ -128,6 +128,7 @@
 
 <body class="font-sans text-slate-900 antialiased">
     {{ $slot }}
+    <script src="{{ asset('js/global-validation.js') }}"></script>
 </body>
 
 </html>

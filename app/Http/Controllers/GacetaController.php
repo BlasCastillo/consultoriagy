@@ -3,18 +3,24 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Models\Gaceta;
-use App\Models\SumarioGaceta;
 use App\Models\Institucion;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Notifications\NuevaSolicitudNotification;
 use App\Notifications\GacetaAsignadaNotification;
 use App\Notifications\GacetaPorAprobarNotification;
+use App\Services\GacetaPdfService;
 use Illuminate\Support\Facades\Notification;
 
 class GacetaController extends Controller
 {
+    public function __construct(
+        private readonly GacetaPdfService $pdfService
+    ) {
+    }
+
     public function index(Request $request)
     {
         $gacetas = \App\Models\Gaceta::with(['digitalizador', 'solicitudes'])->latest()->get();
@@ -28,14 +34,14 @@ class GacetaController extends Controller
         // Cargamos relaciones para evitar N+1
         $query = \App\Models\Gaceta::with(['solicitudes.institucion', 'solicitudes.actos'])->where('estado', Gaceta::ESTADO_PUBLICADA);
 
-        if ($request->filled('numero')) { $query->where('numero', 'LIKE', "%{$request->numero}%"); }
-        if ($request->filled('anio')) { $query->whereYear('fecha_publicacion', $request->anio); }
+        if ($request->filled('numero')) { $query->where('numero', 'ILIKE', "%{$request->numero}%"); }
+        if ($request->filled('anio') && is_numeric($request->anio)) { $query->whereYear('fecha_publicacion', (int) $request->anio); }
         if ($request->filled('tipo')) { $query->where('tipo', $request->tipo); }
 
         // Búsqueda profunda en la relación Solicitudes (Institución)
-        if ($request->filled('institucion_id')) {
+        if ($request->filled('institucion_id') && is_numeric($request->institucion_id)) {
             $query->whereHas('solicitudes', function($q) use ($request) {
-                $q->where('institucion_id', $request->institucion_id);
+                $q->where('institucion_id', (int) $request->institucion_id);
             });
         }
 
@@ -47,8 +53,8 @@ class GacetaController extends Controller
         }
         if ($request->filled('keyword')) {
             $query->whereHas('solicitudes.actos', function($q) use ($request) {
-                $q->where('sumario', 'LIKE', "%{$request->keyword}%")
-                  ->orWhere('numero_acto', 'LIKE', "%{$request->keyword}%");
+                $q->where('sumario', 'ILIKE', "%{$request->keyword}%")
+                  ->orWhere('numero', 'ILIKE', "%{$request->keyword}%");
             });
         }
 
@@ -71,11 +77,15 @@ class GacetaController extends Controller
 
     public function store(Request $request)
     {
+        $uniqueRule = \Illuminate\Support\Facades\Schema::hasColumn('gacetas', 'deleted_at')
+            ? Rule::unique('gacetas', 'numero')->whereNull('deleted_at')
+            : Rule::unique('gacetas', 'numero');
+
         $request->validate([
-            'numero'                => 'required|string|max:255',
+            'numero'                => ['required', 'integer', 'min:1', $uniqueRule],
             'tipo'                  => 'required|in:Ordinaria,Extraordinaria',
-            'ano_politico'          => 'required|string',
-            'mes_politico'          => 'required|string',
+            'ano_politico'          => 'required|string|max:100',
+            'mes_politico'          => 'required|string|max:100',
             'fecha_publicacion'     => 'required|date',
             'gobernador_id'         => 'required|exists:gobernadores,id',
             'digitalizador_id'      => 'required|exists:users,id',
@@ -132,11 +142,11 @@ class GacetaController extends Controller
             'checklist' => 'required|array',
             'checklist.*' => 'boolean',
             'tipo' => 'required|in:Ordinaria,Extraordinaria',
-            'anio' => 'required|integer',
+            'anio' => 'required|integer|min:1900|max:2100',
             'gobernador_id' => 'required|exists:gobernadores,id',
-            'anio_politico' => 'nullable|string',
-            'ano_politico' => 'nullable|string',
-            'mes_politico' => 'required|string',
+            'anio_politico' => 'required|string|max:100',
+            'ano_politico' => 'nullable|string|max:100',
+            'mes_politico' => 'required|string|max:100',
             'fecha_recepcion_fisica' => 'required|date',
         ]);
 
@@ -192,6 +202,7 @@ class GacetaController extends Controller
     {
         $request->validate([
             'digitalizador_id' => 'required|exists:users,id',
+            'fecha_recepcion_fisica' => 'nullable|date',
         ]);
 
         $gaceta = Gaceta::findOrFail($id);
@@ -298,144 +309,6 @@ class GacetaController extends Controller
         return back()->with('success', "PDF del acto {$acto->tipo_acto} N° {$acto->numero} eliminado.");
     }
 
-    /**
-     * Une los PDFs de todos los actos (en el orden del sumario) en un solo archivo,
-     * estampando el título institucional en la primera página de cada acto.
-     */
-    private function mergeActPdfs(Gaceta $gaceta): string
-    {
-        $gaceta->load(['gobernador.titulo', 'solicitudes.institucion', 'solicitudes.actos']);
-
-        $items = $gaceta->solicitudes->flatMap(function ($solicitud) {
-            return $solicitud->actos
-                ->filter(fn($acto) => !empty($acto->archivo_pdf))
-                ->map(fn($acto) => [
-                    'acto' => $acto,
-                    'institucion' => $solicitud->institucion,
-                ]);
-        })->values();
-
-        if ($items->isEmpty()) {
-            throw new \Exception('No hay PDFs de actos para consolidar.');
-        }
-
-        $fpdi = new \setasign\Fpdi\Fpdi();
-        $paginasAgregadas = 0;
-
-        foreach ($items as $item) {
-            $acto = $item['acto'];
-            $institucion = $item['institucion'];
-            $absolutePath = \Illuminate\Support\Facades\Storage::disk('public')->path($acto->archivo_pdf);
-
-            if (!file_exists($absolutePath)) {
-                continue;
-            }
-
-            $titulo = $institucion ? $institucion->tituloActo($gaceta->gobernador) : [];
-
-            $pageCount = $fpdi->setSourceFile($absolutePath);
-            for ($i = 1; $i <= $pageCount; $i++) {
-                $tplId = $fpdi->importPage($i);
-                $size = $fpdi->getTemplateSize($tplId);
-                $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
-                $fpdi->useTemplate($tplId);
-
-                if ($i === 1 && !empty($titulo)) {
-                    $this->estamparTituloActo($fpdi, $titulo);
-                }
-
-                $paginasAgregadas++;
-            }
-        }
-
-        if ($paginasAgregadas === 0) {
-            throw new \Exception('Los PDFs de los actos no pudieron leerse.');
-        }
-
-        $relativePath = 'gacetas/revision/gaceta_' . $gaceta->id . '_' . time() . '.pdf';
-        $absoluteOutput = \Illuminate\Support\Facades\Storage::disk('public')->path($relativePath);
-
-        if (!is_dir(dirname($absoluteOutput))) {
-            mkdir(dirname($absoluteOutput), 0775, true);
-        }
-
-        $fpdi->Output($absoluteOutput, 'F');
-
-        return $relativePath;
-    }
-
-    /**
-     * Dibuja el título institucional en la parte superior de la página actual.
-     *
-     * @param array<int, string> $lineas
-     */
-    private function estamparTituloActo(\setasign\Fpdi\Fpdi $pdf, array $lineas): void
-    {
-        $anchoPagina = $pdf->GetPageWidth();
-        $altoBanda = count($lineas) > 1 ? 26.0 : 20.0;
-
-        // Aprovecha el margen superior en blanco del escaneo y deja espacio
-        // para el encabezado de página que se dibuja en el PDF final.
-        $pdf->SetFillColor(255, 255, 255);
-        $pdf->Rect(0, 0, $anchoPagina, $altoBanda, 'F');
-
-        $pdf->SetTextColor(0, 0, 0);
-
-        $pdf->SetFont('Helvetica', 'B', 12);
-        $pdf->SetXY(15, 14);
-        $pdf->Cell($anchoPagina - 30, 6, $this->textoPdf($lineas[0]), 0, 1, 'C');
-
-        if (isset($lineas[1])) {
-            $pdf->SetFont('Helvetica', 'B', 10);
-            $pdf->SetX(15);
-            $pdf->Cell($anchoPagina - 30, 5, $this->textoPdf($lineas[1]), 0, 1, 'C');
-        }
-    }
-
-    /**
-     * Dibuja el encabezado de las páginas de actos en el PDF final:
-     * "PAGINA N° X" a un lado y "GACETA OFICIAL DEL ESTADO YARACUY" centrado.
-     */
-    private function estamparEncabezadoPagina(\setasign\Fpdi\Fpdi $pdf, int $numeroPagina): void
-    {
-        $anchoPagina = $pdf->GetPageWidth();
-
-        // Banda blanca para que el encabezado no se mezcle con el escaneo.
-        $pdf->SetFillColor(255, 255, 255);
-        $pdf->Rect(0, 0, $anchoPagina, 12, 'F');
-
-        $pdf->SetTextColor(0, 0, 0);
-        $pdf->SetDrawColor(0, 0, 0);
-        $pdf->SetFont('Helvetica', 'B', 9);
-
-        $pdf->SetXY(15, 5);
-        $pdf->Cell($anchoPagina - 30, 4, $this->textoPdf('GACETA OFICIAL DEL ESTADO YARACUY'), 0, 0, 'C');
-
-        $textoPagina = 'PAGINA N° ' . $numeroPagina;
-
-        if ($numeroPagina % 2 === 0) {
-            $pdf->SetXY(15, 5);
-            $pdf->Cell(60, 4, $this->textoPdf($textoPagina), 0, 0, 'L');
-        } else {
-            $pdf->SetXY($anchoPagina - 75, 5);
-            $pdf->Cell(60, 4, $this->textoPdf($textoPagina), 0, 0, 'R');
-        }
-
-        $pdf->SetLineWidth(0.5);
-        $pdf->Line(15, 10, $anchoPagina - 15, 10);
-    }
-
-    /**
-     * Convierte UTF-8 a Windows-1252 (codificación de las fuentes core de FPDF).
-     */
-    private function textoPdf(string $texto): string
-    {
-        $convertido = @mb_convert_encoding($texto, 'Windows-1252', 'UTF-8');
-
-        return $convertido === false ? $texto : $convertido;
-    }
-
-
     public function savePdf(Request $request, string $id)
     {
         $request->validate([
@@ -483,150 +356,15 @@ class GacetaController extends Controller
         return view('gacetas.aprobar', compact('gaceta'));
     }
 
-    // 1. Método nuevo para previsualizar (sin guardar el archivo final)
-public function preview(string $id)
-{
-    $gaceta = Gaceta::findOrFail($id);
-    // Usamos nuestra lógica compartida para generar el PDF fusionado temporal
-    $tempPath = $this->mergePdfs($gaceta, false); // false = no guardar permanentemente
-
-    return response()->file($tempPath, [
-        'Content-Type' => 'application/pdf',
-        'Content-Disposition' => 'inline; filename="previsualizacion_gaceta_'.$gaceta->numero.'.pdf"'
-    ]);
-}
-
-// 2. Extraemos la lógica de Fusión en un método privado
-private function mergePdfs(Gaceta $gaceta, $isFinal = false)
-{
-    $gaceta->load(['gobernador.titulo', 'solicitudes.institucion', 'solicitudes.actos']);
-
-    $pdfSumarioPath = storage_path('app/SGCJ/temp_sumario_' . $gaceta->id . '.pdf');
-    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('gacetas.pdf_sumario', compact('gaceta'))->setPaper('letter', 'portrait');
-    $pdf->save($pdfSumarioPath);
-
-    $uploadedPdfPath = storage_path('app/SGCJ/' . $gaceta->ruta_archivo);
-
-    if (!file_exists($uploadedPdfPath)) {
-        throw new \Exception('El archivo físico no se encuentra.');
-    }
-
-    $fpdi = new \setasign\Fpdi\Fpdi();
-
-    // Añadir sumario
-    $pageCountSummary = $fpdi->setSourceFile($pdfSumarioPath);
-    for ($i = 1; $i <= $pageCountSummary; $i++) {
-        $tplId = $fpdi->importPage($i);
-        $size = $fpdi->getTemplateSize($tplId);
-        $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
-        $fpdi->useTemplate($tplId);
-    }
-
-    // Añadir físico
-    $pageCountUploaded = $fpdi->setSourceFile($uploadedPdfPath);
-    for ($i = 1; $i <= $pageCountUploaded; $i++) {
-        $tplId = $fpdi->importPage($i);
-        $size = $fpdi->getTemplateSize($tplId);
-        $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
-        $fpdi->useTemplate($tplId);
-    }
-
-    $tempOutputPath = storage_path('app/SGCJ/preview_' . $gaceta->id . '.pdf');
-    $fpdi->Output($tempOutputPath, 'F');
-
-    // Limpiamos el sumario temporal, pero el preview lo dejamos para que el navegador lo lea
-    if (file_exists($pdfSumarioPath)) unlink($pdfSumarioPath);
-
-    return $tempOutputPath;
-}
-
-    /**
-     * Genera el PDF final de la Gaceta (sumario DomPDF + PDF de los actos)
-     * y devuelve su ruta relativa dentro del disco público.
-     */
-    private function generarPdfFinal(Gaceta $gaceta): string
+    public function preview(string $id)
     {
-        $gaceta->load(['gobernador.titulo', 'solicitudes.institucion', 'solicitudes.actos']);
+        $gaceta = Gaceta::findOrFail($id);
+        $tempPath = $this->pdfService->generarPreviewTemporal($gaceta);
 
-        $sourceRelative = $gaceta->archivo_pdf_completo;
-
-        if (!$sourceRelative || !\Illuminate\Support\Facades\Storage::disk('public')->exists($sourceRelative)) {
-            $actos = $gaceta->solicitudes->flatMap(fn($solicitud) => $solicitud->actos);
-            $faltantes = $actos->filter(fn($acto) => empty($acto->archivo_pdf));
-
-            if ($actos->isNotEmpty() && $faltantes->isEmpty()) {
-                $sourceRelative = $this->mergeActPdfs($gaceta);
-            }
-        }
-
-        $sourceAbsolute = null;
-
-        if ($sourceRelative && \Illuminate\Support\Facades\Storage::disk('public')->exists($sourceRelative)) {
-            $sourceAbsolute = \Illuminate\Support\Facades\Storage::disk('public')->path($sourceRelative);
-        } elseif ($gaceta->ruta_archivo) {
-            // Flujo antiguo: un único escaneo físico.
-            $legacy = storage_path('app/SGCJ/' . $gaceta->ruta_archivo);
-            if (file_exists($legacy)) {
-                $sourceAbsolute = $legacy;
-            }
-        }
-
-        if (!$sourceAbsolute) {
-            throw new \Exception('No se encontró el PDF de los actos para generar la Gaceta.');
-        }
-
-        // Sumario en PDF (DomPDF) para incrustarlo como portada.
-        $sumarioPath = storage_path('app/SGCJ/temp_sumario_' . $gaceta->id . '.pdf');
-        if (!is_dir(dirname($sumarioPath))) {
-            mkdir(dirname($sumarioPath), 0775, true);
-        }
-
-        \Barryvdh\DomPDF\Facade\Pdf::loadView('gacetas.pdf_sumario', compact('gaceta'))
-            ->setPaper('letter', 'portrait')
-            ->save($sumarioPath);
-
-        $fpdi = new \setasign\Fpdi\Fpdi();
-
-        // Sumario: se copia tal cual (sin encabezado de página).
-        $paginasSumario = $fpdi->setSourceFile($sumarioPath);
-
-        for ($i = 1; $i <= $paginasSumario; $i++) {
-            $tplId = $fpdi->importPage($i);
-            $size = $fpdi->getTemplateSize($tplId);
-            $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
-            $fpdi->useTemplate($tplId);
-        }
-
-        // Actos: cada página lleva el encabezado con su numeración real.
-        $paginasActos = $fpdi->setSourceFile($sourceAbsolute);
-        $paginaGlobal = $paginasSumario + 1;
-
-        for ($i = 1; $i <= $paginasActos; $i++) {
-            $tplId = $fpdi->importPage($i);
-            $size = $fpdi->getTemplateSize($tplId);
-            $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
-            $fpdi->useTemplate($tplId);
-
-            $this->estamparEncabezadoPagina($fpdi, $paginaGlobal);
-
-            $paginaGlobal++;
-        }
-
-        $relativePath = 'gacetas/publicadas/gaceta_' . $gaceta->id . '_'
-            . $this->slugArchivo((string) $gaceta->numero) . '_' . $gaceta->anio . '.pdf';
-        $absoluteOutput = \Illuminate\Support\Facades\Storage::disk('public')->path($relativePath);
-
-        if (!is_dir(dirname($absoluteOutput))) {
-            mkdir(dirname($absoluteOutput), 0775, true);
-        }
-
-        $fpdi->Output($absoluteOutput, 'F');
-
-        if (file_exists($sumarioPath)) {
-            unlink($sumarioPath);
-        }
-
-        return $relativePath;
+        return response()->file($tempPath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="previsualizacion_gaceta_' . $gaceta->numero . '.pdf"',
+        ]);
     }
 
     /**
@@ -637,130 +375,108 @@ private function mergePdfs(Gaceta $gaceta, $isFinal = false)
         $gaceta = Gaceta::with(['gobernador.titulo', 'solicitudes.institucion', 'solicitudes.actos'])
             ->findOrFail($id);
 
-        $storage = \Illuminate\Support\Facades\Storage::disk('public');
-        $rutaDescarga = null;
-
-        if ($gaceta->pdf_final && $storage->exists($gaceta->pdf_final)) {
-            $rutaDescarga = $storage->path($gaceta->pdf_final);
-        } else {
-            // Gacetas publicadas antes de existir `pdf_final`: se genera al vuelo
-            // para que la descarga siempre incluya el sumario + los actos.
-            try {
-                $gaceta->pdf_final = $this->generarPdfFinal($gaceta);
-                $gaceta->save();
-                $rutaDescarga = $storage->path($gaceta->pdf_final);
-            } catch (\Throwable $e) {
-                if ($gaceta->archivo_pdf_completo && $storage->exists($gaceta->archivo_pdf_completo)) {
-                    $rutaDescarga = $storage->path($gaceta->archivo_pdf_completo);
-                } elseif ($gaceta->ruta_archivo && file_exists(public_path('gacetas_pdf/' . $gaceta->ruta_archivo))) {
-                    $rutaDescarga = public_path('gacetas_pdf/' . $gaceta->ruta_archivo);
-                }
-            }
-        }
+        $rutaDescarga = $this->pdfService->obtenerRutaDescarga($gaceta);
 
         if (!$rutaDescarga) {
             abort(404, 'El PDF final de esta Gaceta no está disponible.');
         }
 
-        $nombre = 'Gaceta_Oficial_' . $this->slugArchivo((string) $gaceta->numero) . '_' . $gaceta->anio . '.pdf';
+        $nombre = 'Gaceta_Oficial_' . $this->pdfService->slugArchivo((string) $gaceta->numero) . '_' . $gaceta->anio . '.pdf';
 
         return response()->download($rutaDescarga, $nombre);
     }
 
-    private function slugArchivo(string $valor): string
+    public function enviarARevision(Request $request, string $id)
     {
-        $limpio = preg_replace('/[^A-Za-z0-9_-]+/', '_', $valor) ?? '';
+        $gaceta = Gaceta::with(['solicitudes.actos'])->findOrFail($id);
 
-        return trim($limpio, '_') ?: 'gaceta';
-    }
+        $request->validate([
+            'archivo_pdf_completo' => 'nullable|mimes:pdf|max:20480' // Máximo 20MB
+        ]);
 
-public function enviarARevision(Request $request, string $id)
-{
-    $gaceta = Gaceta::with(['solicitudes.actos'])->findOrFail($id);
-
-    $request->validate([
-        'archivo_pdf_completo' => 'nullable|mimes:pdf|max:20480' // Máximo 20MB
-    ]);
-
-    $actos = $gaceta->solicitudes->flatMap(fn($solicitud) => $solicitud->actos);
-    $actosSinPdf = $actos->filter(fn($acto) => empty($acto->archivo_pdf));
-
-    // Si ya existía un PDF maestro de un intento anterior, se descarta.
-    if ($gaceta->archivo_pdf_completo && \Illuminate\Support\Facades\Storage::disk('public')->exists($gaceta->archivo_pdf_completo)) {
-        \Illuminate\Support\Facades\Storage::disk('public')->delete($gaceta->archivo_pdf_completo);
-    }
-
-    // 1. Si el digitalizador sube el PDF maestro, se usa ese archivo.
-    if ($request->hasFile('archivo_pdf_completo')) {
-        $path = $request->file('archivo_pdf_completo')->store('gacetas/revision', 'public');
-    }
-    // 2. Si no hay PDF maestro pero todos los actos tienen su PDF, se consolidan.
-    elseif ($actos->isNotEmpty() && $actosSinPdf->isEmpty()) {
-        try {
-            $path = $this->mergeActPdfs($gaceta);
-        } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'No se pudieron consolidar los PDFs de los actos: ' . $e->getMessage());
-        }
-    }
-    // 3. Faltan archivos: no se puede enviar a revisión.
-    else {
-        $faltantes = $actosSinPdf
-            ->map(fn($acto) => trim(($acto->tipo_acto ?? 'Acto') . ' ' . ($acto->numero ?? '')))
-            ->filter()
-            ->values();
-
-        $mensaje = $faltantes->isNotEmpty()
-            ? 'Asigne un PDF a cada acto o suba el PDF maestro. Faltan: ' . $faltantes->implode(', ')
-            : 'Debe subir el PDF maestro de la Gaceta.';
-
-        return back()->withInput()->with('error', $mensaje);
-    }
-
-    // Actualizar la Gaceta a estado de revisión
-    $gaceta->update([
-        'archivo_pdf_completo' => $path,
-        'estado' => Gaceta::ESTADO_REVISION_FINAL
-    ]);
-
-    return redirect()->route('gacetas.digitalizador')->with('success', '¡Gaceta enviada a Jefatura para revisión final!');
-}
-
-public function revisarPdfFinal(string $id)
-{
-    $gaceta = Gaceta::with([
-        'gobernador.titulo',
-        'solicitudes.institucion',
-        'solicitudes.actos',
-    ])->findOrFail($id);
-    return view('gacetas.revision', compact('gaceta'));
-}
-
-public function publicarGaceta(Request $request, string $id)
-{
-    $gaceta = Gaceta::with(['gobernador.titulo', 'solicitudes.institucion', 'solicitudes.actos'])->findOrFail($id);
-
-    $storage = \Illuminate\Support\Facades\Storage::disk('public');
-
-    // 1. Asegurar el PDF de los actos (consolidado o escaneo físico).
-    $actsPath = $gaceta->archivo_pdf_completo;
-
-    if (!$actsPath || !$storage->exists($actsPath)) {
         $actos = $gaceta->solicitudes->flatMap(fn($solicitud) => $solicitud->actos);
+        $actosSinPdf = $actos->filter(fn($acto) => empty($acto->archivo_pdf));
 
-        if ($actos->isNotEmpty() && $actos->every(fn($acto) => !empty($acto->archivo_pdf))) {
-            $actsPath = $this->mergeActPdfs($gaceta);
+        // Si ya existía un PDF maestro de un intento anterior, se descarta.
+        if ($gaceta->archivo_pdf_completo && \Illuminate\Support\Facades\Storage::disk('public')->exists($gaceta->archivo_pdf_completo)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($gaceta->archivo_pdf_completo);
         }
+
+        // 1. Si el digitalizador sube el PDF maestro, se usa ese archivo.
+        if ($request->hasFile('archivo_pdf_completo')) {
+            $path = $request->file('archivo_pdf_completo')->store('gacetas/revision', 'public');
+        }
+        // 2. Si no hay PDF maestro pero todos los actos tienen su PDF, se consolidan.
+        elseif ($actos->isNotEmpty() && $actosSinPdf->isEmpty()) {
+            try {
+                $path = $this->pdfService->mergeActPdfs($gaceta);
+            } catch (\Exception $e) {
+                return back()->withInput()->with('error', 'No se pudieron consolidar los PDFs de los actos: ' . $e->getMessage());
+            }
+        }
+        // 3. Faltan archivos: no se puede enviar a revisión.
+        else {
+            $faltantes = $actosSinPdf
+                ->map(fn($acto) => trim(($acto->tipo_acto ?? 'Acto') . ' ' . ($acto->numero ?? '')))
+                ->filter()
+                ->values();
+
+            $mensaje = $faltantes->isNotEmpty()
+                ? 'Asigne un PDF a cada acto o suba el PDF maestro. Faltan: ' . $faltantes->implode(', ')
+                : 'Debe subir el PDF maestro de la Gaceta.';
+
+            return back()->withInput()->with('error', $mensaje);
+        }
+
+        // Actualizar la Gaceta a estado de revisión
+        $gaceta->update([
+            'archivo_pdf_completo' => $path,
+            'estado' => Gaceta::ESTADO_REVISION_FINAL
+        ]);
+
+        return redirect()->route('gacetas.digitalizador')->with('success', '¡Gaceta enviada a Jefatura para revisión final!');
     }
 
-    // 2. Generar el PDF final (sumario + actos) antes de mover nada,
-    //    para no dejar archivos huérfanos si algo falla.
-    $gaceta->archivo_pdf_completo = $actsPath;
-
-    try {
-        $pdfFinal = $this->generarPdfFinal($gaceta);
-    } catch (\Exception $e) {
-        return back()->with('error', 'No se pudo generar el PDF final: ' . $e->getMessage());
+    public function revisarPdfFinal(string $id)
+    {
+        $gaceta = Gaceta::with([
+            'gobernador.titulo',
+            'solicitudes.institucion',
+            'solicitudes.actos',
+        ])->findOrFail($id);
+        return view('gacetas.revision', compact('gaceta'));
     }
+
+    public function publicarGaceta(Request $request, string $id)
+    {
+        if ($request->input('accion') === 'rechazar') {
+            return $this->rechazarEscaneo($request, $id);
+        }
+
+        $gaceta = Gaceta::with(['gobernador.titulo', 'solicitudes.institucion', 'solicitudes.actos'])->findOrFail($id);
+
+        $storage = \Illuminate\Support\Facades\Storage::disk('public');
+
+        // 1. Asegurar el PDF de los actos (consolidado o escaneo físico).
+        $actsPath = $gaceta->archivo_pdf_completo;
+
+        if (!$actsPath || !$storage->exists($actsPath)) {
+            $actos = $gaceta->solicitudes->flatMap(fn($solicitud) => $solicitud->actos);
+
+            if ($actos->isNotEmpty() && $actos->every(fn($acto) => !empty($acto->archivo_pdf))) {
+                $actsPath = $this->pdfService->mergeActPdfs($gaceta);
+            }
+        }
+
+        // 2. Generar el PDF final (sumario + actos) antes de mover nada,
+        //    para no dejar archivos huérfanos si algo falla.
+        $gaceta->archivo_pdf_completo = $actsPath;
+
+        try {
+            $pdfFinal = $this->pdfService->generarPdfFinal($gaceta);
+        } catch (\Exception $e) {
+            return back()->with('error', 'No se pudo generar el PDF final: ' . $e->getMessage());
+        }
 
     // 3. Mover el PDF de los actos a la carpeta de publicadas.
     if ($actsPath && str_starts_with($actsPath, 'gacetas/revision/') && $storage->exists($actsPath)) {
@@ -778,11 +494,7 @@ public function publicarGaceta(Request $request, string $id)
     // CASCADA DE ESTADOS ATÓMICA
     $gaceta->solicitudes()->update(['estado' => 'Publicada']);
 
-    // DISPARO SERVICIO CENTRAL POA (Evita bug de contexto de Superadmin)
-    $jefatura = \App\Models\Jefatura::where('nombre', 'ILIKE', '%Publicaciones%')->first();
-    if ($jefatura) {
-        \App\Services\PoaService::registrarEjecucion('gaceta_corriente', $jefatura->id, now());
-    }
+    // La meta del POA se incrementa automáticamente una sola vez mediante GacetaObserver@updated
 
     // Notificar a las instituciones
     $institucionesIds = $gaceta->solicitudes->pluck('institucion_id')->unique();
@@ -826,21 +538,27 @@ public function rechazarEscaneo(Request $request, string $id)
 
 public function subsanarGaceta(Request $request, string $id)
 {
+    $gaceta = Gaceta::findOrFail($id);
+
+    $uniqueRule = \Illuminate\Support\Facades\Schema::hasColumn('gacetas', 'deleted_at')
+        ? Rule::unique('gacetas', 'numero')->ignore($gaceta->id)->whereNull('deleted_at')
+        : Rule::unique('gacetas', 'numero')->ignore($gaceta->id);
+
     $request->validate([
-        'numero' => 'required|string|max:255',
+        'numero' => ['required', 'integer', 'min:1', $uniqueRule],
         'tipo' => 'required|in:Ordinaria,Extraordinaria',
-        'ano_politico' => 'required|string',
-        'mes_politico' => 'required|string',
+        'ano_politico' => 'required|string|max:100',
+        'mes_politico' => 'required|string|max:100',
         'fecha_publicacion' => 'required|date',
         'gobernador_id' => 'required|exists:gobernadores,id',
         'digitalizador_id' => 'required|exists:users,id',
         'apartados' => 'required|array|min:1',
+        'apartados.*' => 'integer|exists:solicitudes,id',
     ]);
-
-    $gaceta = Gaceta::findOrFail($id);
     
     $gaceta->update([
         'numero' => $request->numero,
+        'anio' => \Carbon\Carbon::parse($request->fecha_publicacion)->year,
         'tipo' => $request->tipo,
         'ano_politico' => $request->ano_politico,
         'mes_politico' => $request->mes_politico,

@@ -65,7 +65,7 @@
             </div>
 
             <!-- Importación de Chart.js (defer: no bloquea el parseo) -->
-            <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+            <script src="{{ asset('assets/vendor/js/chart.min.js') }}" defer></script>
 
             <script>
             document.addEventListener('DOMContentLoaded', function () {

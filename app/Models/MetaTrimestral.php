@@ -10,6 +10,8 @@ class MetaTrimestral extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'meta_trimestrals';
+
     protected $fillable = [
         'actividad_poa_id',
         'trimestre',
@@ -21,11 +23,6 @@ class MetaTrimestral extends Model
     public function actividadPoa()
     {
         return $this->belongsTo(ActividadPoa::class);
-    }
-
-    public function replanificaciones()
-    {
-        return $this->hasMany(Replanificacion::class);
     }
 
     public function fichasActividades()

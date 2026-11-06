@@ -26,8 +26,8 @@ class GobernadorController extends Controller
     {
         $request->validate([
             'titulo_id' => 'required|exists:titulos,id',
-            'nombres' => 'required|string|max:255',
-            'apellidos' => 'required|string|max:255',
+            'nombres' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\.]+$/'],
+            'apellidos' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\.]+$/'],
             'estado' => 'nullable'
         ]);
 
@@ -66,8 +66,8 @@ class GobernadorController extends Controller
         $gobernador = Gobernador::findOrFail($id);
         $request->validate([
             'titulo_id' => 'required|exists:titulos,id',
-            'nombres' => 'required|string|max:255',
-            'apellidos' => 'required|string|max:255',
+            'nombres' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\.]+$/'],
+            'apellidos' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\.]+$/'],
             'estado' => 'nullable'
         ]);
 

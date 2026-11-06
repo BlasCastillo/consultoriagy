@@ -38,11 +38,15 @@ class SolicitudController extends Controller
     {
         $request->validate([
             'titulo_acto' => 'required|string|max:255',
-            'archivo_pdf' => 'required|mimes:pdf|max:100000', //100mb modificación
-            'institucion_id' => 'nullable|exists:instituciones,id',
+            'archivo_pdf' => 'required|mimes:pdf|max:51200', // 50MB unificado
+            'institucion_id' => [
+                \Illuminate\Validation\Rule::requiredIf(fn() => !auth()->user()->institucion_id),
+                'nullable',
+                'exists:instituciones,id',
+            ],
             'actos' => 'required|array|min:1',
-            'actos.*.tipo_acto' => 'required|string',
-            'actos.*.numero' => 'required|string',
+            'actos.*.tipo_acto' => 'required|string|max:255',
+            'actos.*.numero' => 'required|string|max:255',
             'actos.*.sumario' => 'required|string',
         ]);
 
@@ -66,7 +70,7 @@ class SolicitudController extends Controller
             ]);
         }
 
-        $evaluadores = \App\Models\User::permission('update Solicitud')->get();
+        $evaluadores = \App\Models\User::permission('actualizar Solicitud')->get();
         \Illuminate\Support\Facades\Notification::send($evaluadores, new \App\Notifications\NuevaSolicitudNotification($solicitud));
 
         return redirect()->route('solicitudes.index')->with('success', 'Solicitud creada exitosamente.');
@@ -88,6 +92,11 @@ class SolicitudController extends Controller
 
     public function aprobar(Request $request, Solicitud $solicitud)
     {
+        $request->validate([
+            'fecha_recepcion_fisica' => 'required|date',
+            'checklist' => 'nullable|array',
+        ]);
+
         $solicitud->update([
             'estado' => 'Aprobada',
             'checklist' => $request->checklist ?? [],
@@ -154,11 +163,15 @@ class SolicitudController extends Controller
 
         $request->validate([
             'titulo_acto' => 'required|string|max:255',
-            'archivo_pdf' => 'nullable|mimes:pdf|max:10240', // opcional en el update
-            'institucion_id' => 'nullable|exists:instituciones,id',
+            'archivo_pdf' => 'nullable|mimes:pdf|max:51200', // 50MB unificado
+            'institucion_id' => [
+                \Illuminate\Validation\Rule::requiredIf(fn() => !auth()->user()->institucion_id),
+                'nullable',
+                'exists:instituciones,id',
+            ],
             'actos' => 'required|array|min:1',
-            'actos.*.tipo_acto' => 'required|string',
-            'actos.*.numero' => 'required|string',
+            'actos.*.tipo_acto' => 'required|string|max:255',
+            'actos.*.numero' => 'required|string|max:255',
             'actos.*.sumario' => 'required|string',
         ]);
 
@@ -191,7 +204,7 @@ class SolicitudController extends Controller
             ]);
         }
 
-        $evaluadores = \App\Models\User::permission('update Solicitud')->get();
+        $evaluadores = \App\Models\User::permission('actualizar Solicitud')->get();
         \Illuminate\Support\Facades\Notification::send($evaluadores, new \App\Notifications\NuevaSolicitudNotification($solicitud));
 
         return redirect()->route('solicitudes.show', $solicitud->id)->with('success', 'Apartado corregido y re-enviado exitosamente a Jefatura.');

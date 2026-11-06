@@ -11,29 +11,27 @@ class EvidenciaController extends Controller
 {
     private function validarAccesoPOA($poa)
     {
+        if (!$poa) {
+            return false;
+        }
+
         $user = auth()->user();
-        if ($user->hasPermissionTo('read Poa')) {
+        if (\App\Models\Poa::usuarioTieneAccesoGlobal($user)) {
             return true;
         }
 
-        $rolesUsuario = $user->roles->pluck('name')->toArray();
-        $jefaturaIds = [];
-        foreach ($rolesUsuario as $roleName) {
-            if ($roleName === 'Jefe de Publicaciones') {
-                $j = \App\Models\Jefatura::where('nombre', 'like', '%Publicaciones%')->first();
-                if($j) $jefaturaIds[] = $j->id;
-            } elseif ($roleName === 'Jefe de Legislacion y Asuntos Juridicos') {
-                $j = \App\Models\Jefatura::where('nombre', 'like', '%Legislación y Asuntos Jurídicos%')->first();
-                if($j) $jefaturaIds[] = $j->id;
-            }
-        }
+        $jefaturaIds = \App\Models\Poa::obtenerJefaturasPermitidas($user);
 
-        return in_array($poa->jefatura_id, $jefaturaIds);
+        return in_array((int) $poa->jefatura_id, $jefaturaIds, true);
     }
 
     public function manage($actividad_id)
     {
-        $actividad = \App\Models\ActividadPoa::with(['poa', 'metasTrimestrales.evidencias'])->findOrFail($actividad_id);
+        $actividad = \App\Models\ActividadPoa::with([
+            'poa',
+            'metasTrimestrales.evidencias',
+            'metasTrimestrales.fichasActividades.imagenes',
+        ])->findOrFail($actividad_id);
 
         if (!$this->validarAccesoPOA($actividad->poa)) {
             abort(403, 'No tienes permiso para gestionar evidencias de este POA.');
@@ -51,9 +49,9 @@ class EvidenciaController extends Controller
         }
 
         $request->validate([
-            'archivo' => 'required|mimes:pdf|max:5120',
+            'archivo' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'descripcion' => 'nullable|string|max:1000',
-            'tipo' => 'nullable|string',
+            'tipo' => 'required|string|in:Informe,Ficha,Foto',
         ]);
 
         if ($request->hasFile('archivo')) {
@@ -63,7 +61,7 @@ class EvidenciaController extends Controller
                 $meta->evidencias()->create([
                     'archivo_path' => $path,
                     'descripcion' => $request->descripcion,
-                    'tipo' => $request->tipo ?? 'Documento Legal'
+                    'tipo' => $request->tipo
                 ]);
 
                 $meta->increment('ejecutada');
@@ -93,6 +91,10 @@ class EvidenciaController extends Controller
 
         if ($meta->ejecutada > 0) {
             $meta->decrement('ejecutada');
+        }
+
+        if ($meta->actividadPoa && $meta->actividadPoa->poa) {
+            \App\Models\Poa::checkAndClose($meta->actividadPoa->poa);
         }
 
         return back()->with('success', 'Evidencia eliminada permanentemente.');

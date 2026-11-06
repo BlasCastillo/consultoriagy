@@ -16,13 +16,13 @@
 
                         <div class="mb-4">
                             <label for="nombre" class="block font-medium text-sm text-slate-700">Nombre de la Institución</label>
-                            <input id="nombre" class="block mt-1 w-full border-slate-300 rounded-md shadow-sm" type="text" name="nombre" value="{{ old('nombre', $institution->nombre) }}" required autofocus autocomplete="off" />
+                            <input id="nombre" class="val-texto-limpio block mt-1 w-full border-slate-300 rounded-md shadow-sm" type="text" name="nombre" value="{{ old('nombre', $institution->nombre) }}" maxlength="255" required autofocus autocomplete="off" />
                             @error('nombre') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="mb-4">
                             <label for="siglas" class="block font-medium text-sm text-slate-700">Siglas (Opcional)</label>
-                            <input id="siglas" class="block mt-1 w-full border-slate-300 rounded-md shadow-sm" type="text" name="siglas" value="{{ old('siglas', $institution->siglas) }}" autocomplete="off" />
+                            <input id="siglas" class="val-texto-limpio block mt-1 w-full border-slate-300 rounded-md shadow-sm" type="text" name="siglas" value="{{ old('siglas', $institution->siglas) }}" maxlength="50" autocomplete="off" />
                             @error('siglas') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 

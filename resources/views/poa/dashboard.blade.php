@@ -19,11 +19,11 @@
 
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-lg font-medium text-slate-800">Estado General de los POAs</h3>
-                        @can('create ActividadPoa')
+                        @canany(['crear FichaActividad', 'leer FichaActividad', 'crear ActividadPoa'])
                             <a href="{{ route('fichas.create') }}" class="btn btn-primary">
                                 <i class="fa-solid fa-plus" aria-hidden="true"></i> Registrar Actividad
                             </a>
-                        @endcan
+                        @endcanany
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -38,11 +38,11 @@
                                 <div class="flex justify-between items-start mb-4">
                                     <div>
                                         <h4 class="text-md font-bold text-slate-800">{{ $poa->jefatura ? $poa->jefatura->nombre : 'POA General' }}</h4>
-                                        <p class="text-sm text-slate-500">Año: {{ $poa->anio }} | Tipo: {{ $poa->tipo }}</p>
+                                        <p class="text-sm text-slate-500">Año: {{ $poa->anio }}</p>
                                     </div>
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full
                                         @if($poa->estado == 'Aprobado') bg-blue-100 text-blue-800
-                                        @elseif($poa->estado == 'En Ejecución') bg-green-100 text-green-800
+                                        @elseif($poa->estado == 'Ejecucion' || $poa->estado == 'En Ejecución') bg-green-100 text-green-800
                                         @elseif($poa->estado == 'Cerrado') bg-red-100 text-red-800
                                         @elseif($poa->estado == 'Borrador') bg-slate-100 text-slate-800
                                         @else bg-slate-100 text-slate-800 @endif">

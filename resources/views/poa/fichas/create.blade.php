@@ -28,7 +28,7 @@
                             <select name="meta_trimestral_id" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
                                 <option value="">Seleccione una meta...</option>
                                 @foreach($metas as $meta)
-                                    <option value="{{ $meta->id }}">
+                                    <option value="{{ $meta->id }}" {{ old('meta_trimestral_id') == $meta->id ? 'selected' : '' }}>
                                         Trimestre {{ $meta->trimestre }} | {{ $meta->actividadPoa->poa->jefatura->nombre ?? 'General' }} - {{ $meta->actividadPoa->descripcion }}
                                     </option>
                                 @endforeach
@@ -43,30 +43,30 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Título de la Actividad</label>
-                                <input type="text" name="titulo_actividad" required value="{{ old('titulo_actividad') }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
+                                <input type="text" name="titulo_actividad" maxlength="255" required value="{{ old('titulo_actividad') }}" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Desarrollada por</label>
-                                <input type="text" name="desarrollada_por" required value="{{ old('desarrollada_por') }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
+                                <input type="text" name="desarrollada_por" maxlength="255" required value="{{ old('desarrollada_por') }}" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-slate-700">Cantidad de Beneficiados</label>
-                                <input type="number" name="cantidad_beneficiados" required min="0" value="{{ old('cantidad_beneficiados', 0) }}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
+                                <input type="number" name="cantidad_beneficiados" required min="0" value="{{ old('cantidad_beneficiados', 0) }}" class="val-numerico mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
                             </div>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Instituciones Involucradas</label>
-                            <textarea name="instituciones_involucradas" rows="2" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">{{ old('instituciones_involucradas') }}</textarea>
+                            <textarea name="instituciones_involucradas" rows="2" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">{{ old('instituciones_involucradas') }}</textarea>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Objetivo Logrado</label>
-                            <textarea name="objetivo_logrado" rows="3" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">{{ old('objetivo_logrado') }}</textarea>
+                            <textarea name="objetivo_logrado" rows="3" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">{{ old('objetivo_logrado') }}</textarea>
                         </div>
 
                         <div>

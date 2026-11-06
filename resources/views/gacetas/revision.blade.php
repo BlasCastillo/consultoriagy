@@ -14,6 +14,21 @@
 
     <div class="py-8">
         <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+            @if (session('error'))
+                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {{ session('error') }}
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <ul class="list-disc list-inside text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <div class="flex flex-col xl:flex-row gap-6 items-start">
 
                 {{-- ══════════════════════════════════════════════════════
@@ -136,12 +151,12 @@
                                             <label class="mb-1 block text-sm font-bold text-slate-700">
                                                 Motivo de Rechazo <span class="text-red-500">*</span>
                                             </label>
-                                            <textarea name="motivo_rechazo_escaneo" rows="4" required
-                                                class="w-full rounded-lg border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
-                                                placeholder="Indique claramente los errores (ej. página 3 borrosa, falta firma final, orden incorrecto...)"></textarea>
+                                            <textarea name="motivo_rechazo_escaneo" rows="4" minlength="5" maxlength="1000" required
+                                                class="val-texto-limpio w-full rounded-lg border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                                                placeholder="Indique claramente los errores (ej. página 3 borrosa, falta firma final, orden incorrecto...)">{{ old('motivo_rechazo_escaneo') }}</textarea>
                                         </div>
                                         <button type="submit"
-                                            onclick="event.preventDefault(); const form = this.closest('form'); if (!form.reportValidity()) return; Swal.fire({ title: '¿Devolver al digitalizador?', text: 'El archivo PDF actual será descartado y el motivo se enviará al digitalizador.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, devolver', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
+                                            onclick="event.preventDefault(); const form = this.closest('form'); const motivo = form.querySelector('[name=motivo_rechazo_escaneo]').value.trim(); if (!window.validarFormularioSGCJ(form) || motivo.length < 5) { if (motivo.length < 5) Swal.fire('Atención', 'El motivo de rechazo debe tener al menos 5 caracteres.', 'warning'); return; } Swal.fire({ title: '¿Devolver al digitalizador?', text: 'El archivo PDF actual será descartado y el motivo se enviará al digitalizador.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, devolver', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
                                             class="btn btn-danger w-full">
                                             Devolver a Digitalizador
                                         </button>

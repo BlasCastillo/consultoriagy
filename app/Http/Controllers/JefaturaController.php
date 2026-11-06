@@ -71,7 +71,13 @@ class JefaturaController extends Controller
             ],
         ]);
 
-        Jefatura::create($request->all());
+        Jefatura::create([
+            'nombre' => $request->nombre,
+            'nivel' => $request->nivel,
+            'nivel_jerarquico' => $request->nivel,
+            'parent_id' => $request->parent_id,
+            'dependencia_id' => $request->parent_id,
+        ]);
 
         return redirect()->route('jefaturas.index')->with('success', 'Unidad interna creada exitosamente.');
     }
@@ -81,7 +87,7 @@ class JefaturaController extends Controller
      */
     public function show(Jefatura $jefatura)
     {
-        return view('jefaturas.show', compact('jefatura'));
+        return redirect()->route('jefaturas.index');
     }
 
     /**
@@ -122,7 +128,13 @@ class JefaturaController extends Controller
             ],
         ]);
 
-        $jefatura->update($request->all());
+        $jefatura->update([
+            'nombre' => $request->nombre,
+            'nivel' => $request->nivel,
+            'nivel_jerarquico' => $request->nivel,
+            'parent_id' => $request->parent_id,
+            'dependencia_id' => $request->parent_id,
+        ]);
 
         return redirect()->route('jefaturas.index')->with('success', 'Unidad interna actualizada exitosamente.');
     }

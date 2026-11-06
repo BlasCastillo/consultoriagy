@@ -15,14 +15,14 @@
                         <label class="block text-sm font-medium text-slate-700">Estante (Nivel Superior)</label>
                         <select name="estante_id" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                             @foreach($estantes as $estante)
-                                <option value="{{ $estante->id }}" {{ $gaveta->estante_id == $estante->id ? 'selected' : '' }}>{{ $estante->sede->nombre }} &rsaquo; {{ $estante->nombre }}</option>
+                                <option value="{{ $estante->id }}" {{ old('estante_id', $gaveta->estante_id) == $estante->id ? 'selected' : '' }}>{{ $estante->sede?->nombre ?? 'Sede inhabilitada' }} &rsaquo; {{ $estante->nombre }}</option>
                             @endforeach
                         </select>
                         @error('estante_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-slate-700">Nombre de la Gaveta</label>
-                        <input type="text" name="nombre" value="{{ $gaveta->nombre }}" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                        <input type="text" name="nombre" value="{{ old('nombre', $gaveta->nombre) }}" maxlength="255" required class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                         @error('nombre') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div class="flex justify-end mt-4">

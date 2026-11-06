@@ -9,13 +9,23 @@
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="card overflow-hidden">
                 <div class="p-6 text-slate-900">
+                    @if ($errors->any())
+                        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                            <ul class="list-disc list-inside text-sm">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <form action="{{ route('solicitudes.update', $solicitud->id) }}" method="POST" enctype="multipart/form-data" id="solicitudForm">
                         @csrf
                         @method('PUT')
                         
                         <div class="mb-6">
                             <label for="titulo_acto" class="block font-medium text-sm text-slate-700 mb-2">Asunto / Número de Oficio de Remisión <span class="text-red-500">*</span></label>
-                            <input type="text" name="titulo_acto" id="titulo_acto" required class="block w-full border-slate-300 focus:border-blue-800 focus:ring-blue-800 rounded-md shadow-sm sm:text-sm" placeholder="Ej. Oficio de Remisión Nro 001-2026..." value="{{ old('titulo_acto', $solicitud->titulo_acto) }}">
+                            <input type="text" name="titulo_acto" id="titulo_acto" maxlength="255" required class="val-texto-limpio block w-full border-slate-300 focus:border-blue-800 focus:ring-blue-800 rounded-md shadow-sm sm:text-sm" placeholder="Ej. Oficio de Remisión Nro 001-2026..." value="{{ old('titulo_acto', $solicitud->titulo_acto) }}">
                             @error('titulo_acto') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
@@ -77,7 +87,7 @@
 
             function addActoRow(acto = {tipo_acto: '', numero: '', sumario: ''}) {
                 const row = document.createElement('div');
-                row.className = 'flex gap-3 items-start bg-white p-3 border border-slate-200 rounded shadow-sm relative';
+                row.className = 'acto-row flex gap-3 items-start bg-white p-3 border border-slate-200 rounded shadow-sm relative';
                 row.innerHTML = `
                     <div class="w-1/4">
                         <label class="block text-xs font-medium text-slate-700 mb-1">Tipo de Acto <span class="text-red-500">*</span></label>
@@ -94,11 +104,11 @@
                     </div>
                     <div class="w-1/4">
                         <label class="block text-xs font-medium text-slate-700 mb-1">Número <span class="text-red-500">*</span></label>
-                        <input type="text" name="actos[${actoIndex}][numero]" value="${acto.numero.replace(/"/g, '&quot;')}" placeholder="Ej. 001-2026" required class="block w-full border-slate-300 focus:border-blue-800 focus:ring-blue-800 rounded-md shadow-sm sm:text-sm">
+                        <input type="text" name="actos[${actoIndex}][numero]" value="${(acto.numero || '').replace(/"/g, '&quot;')}" maxlength="100" placeholder="Ej. 001-2026" required class="val-texto-limpio block w-full border-slate-300 focus:border-blue-800 focus:ring-blue-800 rounded-md shadow-sm sm:text-sm">
                     </div>
                     <div class="w-2/4">
                         <label class="block text-xs font-medium text-slate-700 mb-1">Sumario <span class="text-red-500">*</span></label>
-                        <textarea name="actos[${actoIndex}][sumario]" placeholder="Descripción para la gaceta..." required class="block w-full border-slate-300 focus:border-blue-800 focus:ring-blue-800 rounded-md shadow-sm sm:text-sm resize-none h-10">${acto.sumario}</textarea>
+                        <textarea name="actos[${actoIndex}][sumario]" placeholder="Descripción para la gaceta..." required class="val-texto-limpio block w-full border-slate-300 focus:border-blue-800 focus:ring-blue-800 rounded-md shadow-sm sm:text-sm resize-none h-10">${acto.sumario || ''}</textarea>
                     </div>
                     <div class="pt-6">
                         <button type="button" class="btn-remove-acto text-red-500 hover:text-red-700 p-1 bg-red-50 rounded" title="Eliminar Fila">
@@ -109,7 +119,9 @@
                 
                 // Boton eliminar
                 row.querySelector('.btn-remove-acto').addEventListener('click', function() {
-                    row.remove();
+                    if (container.querySelectorAll('.acto-row').length > 1) {
+                        row.remove();
+                    }
                 });
 
                 container.appendChild(row);
@@ -119,7 +131,7 @@
             btnAdd.addEventListener('click', () => addActoRow());
 
             // Agregar actos iniciales
-            const initialActos = @json(old('actos', $solicitud->actos));
+            const initialActos = Object.values(@json(old('actos', $solicitud->actos)));
             if (initialActos && initialActos.length > 0) {
                 initialActos.forEach(acto => addActoRow(acto));
             } else {

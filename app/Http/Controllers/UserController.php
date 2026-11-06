@@ -47,18 +47,28 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'roles' => ['required', 'array'],
+            'roles' => ['required', 'array', 'min:1'],
+            'roles.*' => ['string', 'exists:roles,name'],
             'institucion_id' => ['nullable', 'exists:instituciones,id'],
             'jefatura_id' => ['nullable', 'exists:jefaturas,id'],
         ]);
+
+        $institucionId = $request->institucion_id;
+        $jefaturaId = $request->jefatura_id;
+
+        if (!empty($institucionId)) {
+            $jefaturaId = null;
+        } elseif (!empty($jefaturaId)) {
+            $institucionId = null;
+        }
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'status' => true,
-            'institucion_id' => $request->institucion_id,
-            'jefatura_id' => $request->jefatura_id,
+            'institucion_id' => $institucionId,
+            'jefatura_id' => $jefaturaId,
         ]);
 
         $user->syncRoles($request->roles);
@@ -85,7 +95,8 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
-            'roles' => ['required', 'array'],
+            'roles' => ['required', 'array', 'min:1'],
+            'roles.*' => ['string', 'exists:roles,name'],
             'status' => ['required', 'boolean'],
             'institucion_id' => ['nullable', 'exists:instituciones,id'],
             'jefatura_id' => ['nullable', 'exists:jefaturas,id'],
