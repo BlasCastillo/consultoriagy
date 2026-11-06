@@ -7,7 +7,7 @@
             <x-action-button :href="route('gacetas.index')"
                 action="Volver a Mesa de Control"
                 icon="fa-solid fa-arrow-left"
-                tone="neutral"
+                tone="back"
                 align="end" />
         </div>
     </x-slot>
@@ -141,7 +141,7 @@
                                                 placeholder="Indique claramente los errores (ej. página 3 borrosa, falta firma final, orden incorrecto...)"></textarea>
                                         </div>
                                         <button type="submit"
-                                            onclick="event.preventDefault(); const form = this.closest('form'); if (!form.reportValidity()) return; Swal.fire({ title: '¿Devolver al digitalizador?', text: 'El archivo PDF actual será descartado y el motivo se enviará al digitalizador.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, devolver', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
+                                            onclick="event.preventDefault(); const form = this.closest('form'); if (!form.reportValidity()) return; Swal.fire({ title: '¿Devolver al digitalizador?', text: 'El archivo PDF actual será descartado y el motivo se enviará al digitalizador.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, devolver', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
                                             class="btn btn-danger w-full">
                                             Devolver a Digitalizador
                                         </button>

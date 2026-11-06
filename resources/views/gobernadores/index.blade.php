@@ -56,7 +56,10 @@
                                         </td>
                                         <td>
                                             <div class="flex items-center justify-center">
-                                                <a href="{{ route('gobernadores.edit', $gobernador->id) }}" class="btn btn-warning btn-sm">Editar</a>
+                                                <x-action-button :href="route('gobernadores.edit', $gobernador->id)"
+                                                    action="Editar gobernador"
+                                                    icon="fa-solid fa-pen-to-square"
+                                                    tone="edit" />
                                             </div>
                                         </td>
                                     </tr>

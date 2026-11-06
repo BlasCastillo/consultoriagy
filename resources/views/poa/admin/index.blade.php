@@ -5,13 +5,13 @@
                 {{ __('Gestión de Planes Operativos Anuales (POA)') }}
             </h2>
             @hasanyrole(['Super Admin', 'Coordinador de Seguimiento y Control de Políticas Públicas'])
-            <a href="{{ route('poa.create') }}" class="px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 shadow-sm">
-                Nuevo POA
+            <a href="{{ route('poa.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo POA
             </a>
             @else
             @can('crear_poa')
-            <a href="{{ route('poa.create') }}" class="px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 shadow-sm">
-                Nuevo POA
+            <a href="{{ route('poa.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo POA
             </a>
             @endcan
             @endhasanyrole
@@ -57,7 +57,12 @@
                                             </span>
                                         </td>
                                         <td class="py-3 px-4 text-center">
-                                            <a href="{{ route('poa.show', $poa->id) }}" class="px-3 py-1.5 bg-slate-800 text-white rounded text-xs hover:bg-slate-700 transition font-medium">Ver Detalle</a>
+                                            <div class="flex items-center justify-center">
+                                                <x-action-button :href="route('poa.show', $poa->id)"
+                                                    action="Ver detalle del POA"
+                                                    icon="fa-solid fa-eye"
+                                                    tone="view" />
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty

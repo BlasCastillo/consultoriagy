@@ -51,12 +51,18 @@
                                         <td>{{ $tipo->nombre }}</td>
                                         <td>
                                             <div class="flex items-center gap-2">
-                                                <a href="{{ route('tipo-instituciones.edit', $tipo) }}" class="btn btn-warning btn-sm">Editar</a>
+                                                <x-action-button :href="route('tipo-instituciones.edit', $tipo)"
+                                                    action="Editar tipo de institución"
+                                                    icon="fa-solid fa-pen-to-square"
+                                                    tone="edit" />
                                                 <form action="{{ route('tipo-instituciones.destroy', $tipo) }}" method="POST"
-                                                    onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Estás seguro?', text: 'Acción irreversible.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline">
+                                                    onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Estás seguro?', text: 'Acción irreversible.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline-flex">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                                    <x-action-button type="submit"
+                                                        action="Eliminar tipo de institución"
+                                                        icon="fa-solid fa-trash-can"
+                                                        tone="delete" />
                                                 </form>
                                             </div>
                                         </td>

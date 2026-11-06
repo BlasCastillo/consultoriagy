@@ -93,9 +93,10 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="flex items-center justify-center gap-2">
-                                            <a href="{{ route('solicitudes.show', $solicitud->id) }}" class="btn btn-primary btn-sm">
-                                                Ver Detalles
-                                            </a>
+                                            <x-action-button :href="route('solicitudes.show', $solicitud->id)"
+                                                action="Ver detalles"
+                                                icon="fa-solid fa-eye"
+                                                tone="view" />
                                         </div>
                                     </td>
                                 </tr>

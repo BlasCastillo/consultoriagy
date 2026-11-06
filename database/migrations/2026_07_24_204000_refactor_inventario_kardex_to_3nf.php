@@ -8,13 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('inventarios_archivos', function (Blueprint $table) {
-            $table->dropForeign(['ubicacion_fisica_id']);
-            $table->dropColumn('ubicacion_fisica_id');
-        });
-
-        Schema::dropIfExists('ubicaciones_fisicas');
-
         Schema::create('sedes', function (Blueprint $table) {
             $table->id();
             $table->string('nombre')->unique();
@@ -52,7 +45,6 @@ return new class extends Migration
             $table->dropForeign(['estante_id']);
             $table->dropForeign(['sede_id']);
             $table->dropColumn(['gaveta_id', 'estante_id', 'sede_id']);
-            $table->foreignId('ubicacion_fisica_id')->nullable();
         });
 
         Schema::dropIfExists('gavetas');

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Institucion;
+use Illuminate\Database\Seeder;
 
 class InstitucionesAdicionalesSeeder extends Seeder
 {
@@ -18,7 +18,7 @@ class InstitucionesAdicionalesSeeder extends Seeder
             // Institutos
             ['nombre' => 'Instituto de Hábitat y Vivienda del Edo. Yaracuy', 'siglas' => 'IHAVEY'],
             ['nombre' => 'Instituto Autónomo de Ayuda a los Func. de Seguridad del Edo. Yaracuy', 'siglas' => 'IAA'],
-            ['nombre' => 'Instituto Autónomo Cuerpo de Bomberos del Edo. Yaracuy', 'siglas' => null],
+            ['nombre' => 'Instituto Autónomo Cuerpo de Bomberos del Edo. Yaracuy', 'siglas' => 'IABOY'],
             ['nombre' => 'Instituto Autónomo del Deporte del Edo. Yaracuy', 'siglas' => 'FUNDEY'],
             ['nombre' => 'Instituto Autónomo de Desarrollo Económico del Edo. Yaracuy', 'siglas' => 'IADEY'],
             ['nombre' => 'Instituto de Cultura del Edo. Yaracuy', 'siglas' => 'ICEY'],
@@ -31,8 +31,8 @@ class InstitucionesAdicionalesSeeder extends Seeder
             ['nombre' => 'Servicio Desconcentrado Socialista Gas Yaracuy', 'siglas' => null],
             ['nombre' => 'Servicio Autónomo de la Infraestructura Deportiva, Cultural y Turística del Edo. Yaracuy', 'siglas' => 'SAIEY'],
             ['nombre' => 'Servicio Socialista de Saneamiento y Disposición de Desechos Sólidos del Edo. Yaracuy', 'siglas' => 'SANEAMIENTO'],
-            // Corporación
-            ['nombre' => 'Prosalud', 'siglas' => null],
+            // Corporaciones
+            ['nombre' => 'Instituto Autónomo de la Salud  del Estado Yaracuy', 'siglas' => 'PROSALUD'],
             ['nombre' => 'Corporación Yaracuyana de Turismo', 'siglas' => 'CORYATUR'],
             // Empresas y Liquidación
             ['nombre' => 'Aguas de Yaracuy C.A.', 'siglas' => null],
@@ -41,10 +41,8 @@ class InstitucionesAdicionalesSeeder extends Seeder
             ['nombre' => 'Empresa Socialista Asfalto', 'siglas' => null],
         ];
 
-        foreach ($instituciones as $inst) {
-            Institucion::firstOrCreate(['nombre' => $inst['nombre']], $inst);
+        foreach ($instituciones as $institucion) {
+            Institucion::updateOrCreate(['nombre' => $institucion['nombre']], $institucion);
         }
-        
-        $this->command->info('Organigrama de instituciones adicionales cargado con éxito.');
     }
 }

@@ -51,10 +51,10 @@
                         </div>
 
                         <div class="flex items-center justify-end mt-8 pt-4 border-t border-slate-200">
-                            <a href="{{ route('institutions.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('institutions.index') }}" class="btn btn-back">
                                 Volver
                             </a>
-                            <button type="submit" class="btn btn-neutral ml-3">
+                            <button type="submit" class="btn btn-primary ml-3">
                                 Guardar Cambios
                             </button>
                         </div>

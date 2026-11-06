@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\TipoInstitucion;
 use App\Models\Institucion;
+use App\Models\TipoInstitucion;
+use Illuminate\Database\Seeder;
 
 class ClasificarInstitucionesSeeder extends Seeder
 {
@@ -17,40 +17,40 @@ class ClasificarInstitucionesSeeder extends Seeder
             'Servicio',
             'Corporación',
             'Empresa',
-            'Proceso de Liquidación'
+            'Proceso de Liquidación',
         ];
 
         foreach ($tiposBase as $tipo) {
             TipoInstitucion::firstOrCreate(['nombre' => $tipo]);
         }
 
-        $enteAdscritoId = TipoInstitucion::where('nombre', 'Ente Adscrito')->value('id');
+        $tipo = fn (string $nombre): ?int => TipoInstitucion::where('nombre', $nombre)->value('id');
+
+        // Entes adscritos (en la base real el CLEY quedó sin clasificar).
         Institucion::whereIn('nombre', [
             'Gobernación del estado Yaracuy',
-            'Consejo Legislativo del estado Yaracuy (CLEY)',
             'Procuraduría General del estado Yaracuy',
-            'Contraloría del estado Yaracuy'
-        ])->update(['tipo_institucion_id' => $enteAdscritoId]);
+            'Contraloría del estado Yaracuy',
+        ])->update(['tipo_institucion_id' => $tipo('Ente Adscrito')]);
 
-        $fundacionId = TipoInstitucion::where('nombre', 'Fundación')->value('id');
-        Institucion::where('nombre', 'LIKE', '%Fundación%')->update(['tipo_institucion_id' => $fundacionId]);
+        Institucion::where('nombre', 'LIKE', '%Fundación%')
+            ->update(['tipo_institucion_id' => $tipo('Fundación')]);
 
-        $institutoId = TipoInstitucion::where('nombre', 'Instituto')->value('id');
-        Institucion::where('nombre', 'LIKE', '%Instituto%')->update(['tipo_institucion_id' => $institutoId]);
+        Institucion::where('nombre', 'LIKE', '%Instituto%')
+            ->update(['tipo_institucion_id' => $tipo('Instituto')]);
 
-        $servicioId = TipoInstitucion::where('nombre', 'Servicio')->value('id');
-        Institucion::where('nombre', 'LIKE', '%Servicio%')->update(['tipo_institucion_id' => $servicioId]);
+        Institucion::where('nombre', 'LIKE', '%Servicio%')
+            ->update(['tipo_institucion_id' => $tipo('Servicio')]);
 
-        $corporacionId = TipoInstitucion::where('nombre', 'Corporación')->value('id');
-        Institucion::where('nombre', 'LIKE', '%Corporación%')
-            ->orWhere('nombre', 'LIKE', '%Prosalud%')
-            ->update(['tipo_institucion_id' => $corporacionId]);
+        // Corporaciones: la segunda contiene "Instituto" en el nombre, por eso
+        // se reclasifica explícitamente después del bloque de institutos.
+        Institucion::whereIn('nombre', [
+            'Instituto Autónomo de la Salud  del Estado Yaracuy',
+            'Corporación Yaracuyana de Turismo',
+        ])->update(['tipo_institucion_id' => $tipo('Corporación')]);
 
-        $empresaId = TipoInstitucion::where('nombre', 'Empresa')->value('id');
         Institucion::where('nombre', 'LIKE', '%Empresa%')
-            ->orWhere('nombre', 'LIKE', '%Aguas%')
-            ->update(['tipo_institucion_id' => $empresaId]);
-            
-        $this->command->info('Instituciones clasificadas con éxito.');
+            ->orWhere('nombre', 'Aguas de Yaracuy C.A.')
+            ->update(['tipo_institucion_id' => $tipo('Empresa')]);
     }
 }

@@ -100,8 +100,12 @@
                         </div>
 
                         <div class="mt-8 flex justify-end gap-2">
-                            <a href="{{ route('gacetas.index') }}" class="btn btn-secondary">Cancelar</a>
-                            <button type="submit" class="btn btn-brand">Guardar y Validar</button>
+                            <a href="{{ route('gacetas.index') }}" class="btn btn-back">
+                                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-check" aria-hidden="true"></i> Guardar y Validar
+                            </button>
                         </div>
                     </form>
                 </div>

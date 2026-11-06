@@ -137,10 +137,12 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-end pt-4 border-t border-slate-200">
-                            <a href="{{ route('poa.show', $poa->id) }}" class="mr-4 text-sm font-medium text-slate-600 hover:text-slate-500">Cancelar</a>
-                            <button type="submit" class="px-6 py-2.5 bg-emerald-600 border border-transparent rounded-md font-bold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 shadow-sm">
-                                Guardar Actividad y Metas
+                        <div class="flex flex-wrap items-center justify-end gap-3 border-t border-slate-200 pt-4">
+                            <a href="{{ route('poa.show', $poa->id) }}" class="btn btn-back">
+                                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Guardar Actividad y Metas
                             </button>
                         </div>
                     </form>

@@ -40,11 +40,17 @@
                                         <td class="font-medium text-slate-800">{{ $gaveta->nombre }}</td>
                                         <td>
                                             <div class="flex items-center justify-center gap-2">
-                                                <a href="{{ route('gavetas.edit', $gaveta) }}" class="btn btn-warning btn-sm">Editar</a>
-                                                <form action="{{ route('gavetas.destroy', $gaveta) }}" method="POST" class="inline-block"
-                                                    onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Inhabilitar gaveta?', text: 'La gaveta dejará de estar disponible para ubicar gacetas.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, inhabilitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
+                                                <x-action-button :href="route('gavetas.edit', $gaveta)"
+                                                    action="Editar gaveta"
+                                                    icon="fa-solid fa-pen-to-square"
+                                                    tone="edit" />
+                                                <form action="{{ route('gavetas.destroy', $gaveta) }}" method="POST" class="inline-flex"
+                                                    onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Inhabilitar gaveta?', text: 'La gaveta dejará de estar disponible para ubicar gacetas.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, inhabilitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
                                                     @csrf @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                                    <x-action-button type="submit"
+                                                        action="Inhabilitar gaveta"
+                                                        icon="fa-solid fa-trash-can"
+                                                        tone="delete" />
                                                 </form>
                                             </div>
                                         </td>

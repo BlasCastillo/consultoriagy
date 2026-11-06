@@ -87,10 +87,12 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-end pt-4 border-t border-slate-200">
-                            <a href="{{ route('poa.dashboard') }}" class="mr-4 text-sm font-medium text-slate-600 hover:text-slate-500">Cancelar</a>
-                            <button type="submit" class="btn btn-neutral">
-                                Guardar Ficha
+                        <div class="flex flex-wrap items-center justify-end gap-3 border-t border-slate-200 pt-4">
+                            <a href="{{ route('poa.dashboard') }}" class="btn btn-back">
+                                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Guardar Ficha
                             </button>
                         </div>
                     </form>

@@ -34,10 +34,10 @@
 
                     <div class="mb-6 flex justify-between items-center flex-wrap gap-4">
                         <p class="text-slate-600">Archivos ZIP generados por Spatie Backup (Base de datos y archivos públicos).</p>
-                        <form action="{{ route('backups.create') }}" method="POST" onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Generar backup?', text: 'Esto puede tardar unos momentos.', icon: 'question', showCancelButton: true, confirmButtonColor: '#1e293b', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, generar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
+                        <form action="{{ route('backups.create') }}" method="POST" onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Generar backup?', text: 'Esto puede tardar unos momentos.', icon: 'question', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, generar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
                             @csrf
-                            <button type="submit" class="btn btn-neutral">
-                                Generar Ahora
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-database" aria-hidden="true"></i> Generar Ahora
                             </button>
                         </form>
                     </div>
@@ -70,15 +70,15 @@
                                                 <x-action-button :href="route('backups.download', $backup['file_name'])"
                                                     action="Descargar respaldo"
                                                     icon="fa-solid fa-download"
-                                                    tone="neutral" />
+                                                    tone="export" />
 
-                                                <form action="{{ route('backups.destroy', $backup['file_name']) }}" method="POST" onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Estás seguro?', text: 'Acción irreversible.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline">
+                                                <form action="{{ route('backups.destroy', $backup['file_name']) }}" method="POST" onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Estás seguro?', text: 'Acción irreversible.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline-flex">
                                                     @csrf
                                                     @method('DELETE')
                                                     <x-action-button type="submit"
                                                         action="Eliminar respaldo"
                                                         icon="fa-solid fa-trash-can"
-                                                        tone="danger" />
+                                                        tone="delete" />
                                                 </form>
                                             </div>
                                         </td>

@@ -7,7 +7,7 @@
             <x-action-button :href="route('gacetas.digitalizador')"
                 action="Cancelar y volver"
                 icon="fa-solid fa-arrow-left"
-                tone="neutral"
+                tone="back"
                 align="end" />
         </div>
     </x-slot>
@@ -216,7 +216,7 @@
                                             placeholder="Ej: Faltan firmas, escaneo ilegible..."></textarea>
                                         <div class="mt-2 flex justify-end">
                                             <button type="submit"
-                                                onclick="event.preventDefault(); const form = this.closest('form'); if (!form.reportValidity()) return; Swal.fire({ title: '¿Devolver esta Gaceta?', text: 'La gaceta volverá a la Jefatura con el motivo indicado.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, confirmar devolución', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
+                                                onclick="event.preventDefault(); const form = this.closest('form'); if (!form.reportValidity()) return; Swal.fire({ title: '¿Devolver esta Gaceta?', text: 'La gaceta volverá a la Jefatura con el motivo indicado.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, confirmar devolución', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
                                                 class="btn btn-danger btn-sm">
                                                 Confirmar Devolución
                                             </button>
@@ -280,16 +280,16 @@
                                                     <x-action-button :href="asset('storage/' . $acto->archivo_pdf)"
                                                         action="Ver PDF del acto"
                                                         icon="fa-solid fa-eye"
-                                                        tone="neutral"
+                                                        tone="view"
                                                         target="_blank" />
                                                     <form method="POST" action="{{ route('gacetas.actos.pdf.delete', [$gaceta->id, $acto->id]) }}"
-                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Quitar el PDF de este acto?', text: 'El archivo se desvinculará del acto administrativo.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, quitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
+                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Quitar el PDF de este acto?', text: 'El archivo se desvinculará del acto administrativo.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, quitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
                                                         @csrf
                                                         @method('DELETE')
                                                         <x-action-button type="submit"
                                                             action="Quitar PDF del acto"
                                                             icon="fa-solid fa-trash-can"
-                                                            tone="danger" />
+                                                            tone="delete" />
                                                     </form>
                                                 </div>
                                             @endif

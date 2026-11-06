@@ -59,7 +59,7 @@
                                                 <x-action-button :href="route('gacetas.show', $gaceta->id)"
                                                     action="Ver detalles de la gaceta"
                                                     icon="fa-solid fa-eye"
-                                                    tone="neutral" />
+                                                    tone="view" />
 
                                                 @if($gaceta->estado === 'En Revisión Final')
                                                     <x-action-button :href="route('gacetas.revision', $gaceta->id)"
@@ -72,7 +72,7 @@
                                                     <x-action-button :href="route('gacetas.edit', $gaceta->id)"
                                                         action="Subsanar / editar gaceta"
                                                         icon="fa-solid fa-pen-to-square"
-                                                        tone="warning" />
+                                                        tone="edit" />
                                                 @endif
 
                                                 @if($gaceta->estado !== 'Publicada')

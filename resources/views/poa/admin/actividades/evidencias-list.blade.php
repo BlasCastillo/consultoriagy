@@ -10,9 +10,12 @@
                     <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">
                         <i class="fa-solid fa-tag mr-1 text-slate-400"></i> {{ $evidencia->tipo }}
                     </span>
-                    <button onclick="eliminarEvidencia({{ $evidencia->id }})" class="text-red-400 hover:text-red-600 transition opacity-0 group-hover:opacity-100" title="Eliminar Evidencia">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
+                    <x-action-button type="button"
+                        action="Eliminar evidencia"
+                        icon="fa-solid fa-trash-can"
+                        tone="delete"
+                        size="sm"
+                        onclick="eliminarEvidencia({{ $evidencia->id }})" />
                 </div>
                 <div class="p-4 flex-grow">
                     <div class="flex items-start">
@@ -33,10 +36,13 @@
                         </div>
                     </div>
                 </div>
-                <div class="p-3 border-t border-slate-100 bg-slate-50 text-center">
-                    <a href="{{ Storage::url($evidencia->archivo_path) }}" target="_blank" class="text-xs font-bold text-blue-600 hover:text-blue-800 tracking-wide uppercase transition">
-                        <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Abrir Archivo
-                    </a>
+                <div class="p-3 border-t border-slate-100 bg-slate-50 flex justify-center">
+                    <x-action-button :href="Storage::url($evidencia->archivo_path)"
+                        action="Abrir archivo"
+                        icon="fa-solid fa-arrow-up-right-from-square"
+                        tone="view"
+                        size="sm"
+                        target="_blank" />
                 </div>
             </div>
         @endforeach

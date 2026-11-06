@@ -68,7 +68,10 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="flex items-center justify-center gap-2">
-                                            <a href="{{ route('solicitudes.show', $solicitud->id) }}" class="btn btn-neutral btn-sm">Evaluar Documento</a>
+                                            <x-action-button :href="route('solicitudes.show', $solicitud->id)"
+                                                action="Evaluar documento"
+                                                icon="fa-solid fa-magnifying-glass-chart"
+                                                tone="view" />
                                         </div>
                                     </td>
                                 </tr>

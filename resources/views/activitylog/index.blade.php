@@ -94,9 +94,12 @@
                                             @endif
                                         </td>
                                         <td class="text-center text-slate-600" x-data="{ open: false }">
-                                            <button @click="open = true" class="btn btn-neutral btn-sm">
-                                                Ver Detalles
-                                            </button>
+                                            <x-action-button type="button"
+                                                action="Ver detalles de auditoría"
+                                                icon="fa-solid fa-eye"
+                                                tone="view"
+                                                size="sm"
+                                                x-on:click="open = true" />
                                             
                                             <!-- Modal Alpine -->
                                             <div x-show="open" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0 bg-slate-900/50 backdrop-blur-sm">

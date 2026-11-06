@@ -9,13 +9,13 @@
                     <x-action-button :href="route('gacetas.descargar', $gaceta->id)"
                         action="Descargar PDF oficial"
                         icon="fa-solid fa-download"
-                        tone="brand"
+                        tone="export"
                         align="end" />
                 @endif
                 <x-action-button :href="route('gacetas.index')"
                     action="Volver al listado"
                     icon="fa-solid fa-arrow-left"
-                    tone="neutral"
+                    tone="back"
                     align="end" />
             </div>
         </div>

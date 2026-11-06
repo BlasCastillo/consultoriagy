@@ -26,7 +26,7 @@
                         @error('nombre') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div class="flex justify-end mt-4">
-                        <a href="{{ route('estantes.index') }}" class="btn btn-secondary mr-3">Cancelar</a>
+                        <a href="{{ route('estantes.index') }}" class="btn btn-back mr-3">Cancelar</a>
                         <button type="submit" class="btn btn-primary">Guardar</button>
                     </div>
                 </form>

@@ -130,14 +130,14 @@
                                                 <x-action-button :href="route('gacetas.show', $g->id)"
                                                     action="Ver sumario de actos"
                                                     icon="fa-solid fa-eye"
-                                                    tone="neutral" />
+                                                    tone="view" />
 
                                                 {{-- Descargar --}}
                                                 @if($g->pdf_final || $g->archivo_pdf_completo || $g->ruta_archivo)
                                                     <x-action-button :href="route('gacetas.descargar', $g->id)"
                                                         action="Descargar PDF"
                                                         icon="fa-solid fa-download"
-                                                        tone="dark"
+                                                        tone="export"
                                                         download />
                                                 @endif
                                             </div>

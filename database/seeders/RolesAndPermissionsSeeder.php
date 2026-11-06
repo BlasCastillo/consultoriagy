@@ -2,156 +2,407 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Role;
 use App\Models\Permission;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use App\Services\ModelPermissionAuditor;
+use App\Models\Role;
+use Illuminate\Database\Seeder;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
+    /**
+     * Permisos vigentes en la base de datos real (sgc_db).
+     *
+     * @var array<int, string>
+     */
+    private array $permissions = [
+        'create ActividadPoa',
+        'create ActoAdministrativo',
+        'create Atencion',
+        'create Estante',
+        'create Estantes',
+        'create Evidencia',
+        'create FichaActividad',
+        'create Gaceta',
+        'create Gaveta',
+        'create Gavetas',
+        'create Gobernador',
+        'create ImagenFicha',
+        'create Institucion',
+        'create InventarioArchivo',
+        'create Jefatura',
+        'create MetaTrimestral',
+        'create Permission',
+        'create Poa',
+        'create PrestamoArchivo',
+        'create Replanificacion',
+        'create Role',
+        'create Sede',
+        'create Sedes',
+        'create Solicitud',
+        'create TipoInstitucion',
+        'create Titulo',
+        'create User',
+        'delete ActividadPoa',
+        'delete ActoAdministrativo',
+        'delete Atencion',
+        'delete Estante',
+        'delete Estantes',
+        'delete Evidencia',
+        'delete FichaActividad',
+        'delete Gaceta',
+        'delete Gaveta',
+        'delete Gavetas',
+        'delete Gobernador',
+        'delete ImagenFicha',
+        'delete Institucion',
+        'delete InventarioArchivo',
+        'delete Jefatura',
+        'delete MetaTrimestral',
+        'delete Permission',
+        'delete Poa',
+        'delete PrestamoArchivo',
+        'delete Replanificacion',
+        'delete Role',
+        'delete Sede',
+        'delete Sedes',
+        'delete Solicitud',
+        'delete TipoInstitucion',
+        'delete Titulo',
+        'delete User',
+        'edit Estantes',
+        'edit Gavetas',
+        'edit Sedes',
+        'read ActividadPoa',
+        'read ActoAdministrativo',
+        'read Atencion',
+        'read Estante',
+        'read Estantes',
+        'read Evidencia',
+        'read FichaActividad',
+        'read Gaceta',
+        'read Gaveta',
+        'read Gavetas',
+        'read Gobernador',
+        'read ImagenFicha',
+        'read Institucion',
+        'read InventarioArchivo',
+        'read Jefatura',
+        'read MetaTrimestral',
+        'read Permission',
+        'read Poa',
+        'read PrestamoArchivo',
+        'read Replanificacion',
+        'read Role',
+        'read Sede',
+        'read Sedes',
+        'read Solicitud',
+        'read TipoInstitucion',
+        'read Titulo',
+        'read User',
+        'registrar atencion',
+        'update ActividadPoa',
+        'update ActoAdministrativo',
+        'update Atencion',
+        'update Estante',
+        'update Evidencia',
+        'update FichaActividad',
+        'update Gaceta',
+        'update Gaveta',
+        'update Gobernador',
+        'update ImagenFicha',
+        'update Institucion',
+        'update InventarioArchivo',
+        'update Jefatura',
+        'update MetaTrimestral',
+        'update Permission',
+        'update Poa',
+        'update PrestamoArchivo',
+        'update Replanificacion',
+        'update Role',
+        'update Sede',
+        'update Solicitud',
+        'update TipoInstitucion',
+        'update Titulo',
+        'update User',
+        'ver atenciones',
+    ];
+
+    /**
+     * Matriz de permisos por rol, replicando el estado real de sgc_db.
+     *
+     * @var array<string, array<int, string>>
+     */
+    private array $rolePermissions = [
+        'Digitalizador' => [
+            'create Gaceta',
+            'read Gaceta',
+            'read Poa',
+            'read PrestamoArchivo',
+            'update Gaceta',
+        ],
+        'Representante Institucional' => [
+            'create Solicitud',
+            'read Gaceta',
+            'read Solicitud',
+        ],
+        'Coordinador General' => [
+            'create ActividadPoa',
+            'create ActoAdministrativo',
+            'create Evidencia',
+            'create FichaActividad',
+            'create ImagenFicha',
+            'create Jefatura',
+            'create MetaTrimestral',
+            'create Poa',
+            'create PrestamoArchivo',
+            'create Replanificacion',
+            'delete ActividadPoa',
+            'delete FichaActividad',
+            'delete ImagenFicha',
+            'delete PrestamoArchivo',
+            'read ActividadPoa',
+            'read ActoAdministrativo',
+            'read Evidencia',
+            'read FichaActividad',
+            'read Gaceta',
+            'read Gobernador',
+            'read ImagenFicha',
+            'read Institucion',
+            'read Jefatura',
+            'read MetaTrimestral',
+            'read Permission',
+            'read Poa',
+            'read PrestamoArchivo',
+            'read Replanificacion',
+            'read Role',
+            'read User',
+            'update ActividadPoa',
+            'update ActoAdministrativo',
+            'update Evidencia',
+            'update FichaActividad',
+            'update ImagenFicha',
+            'update Jefatura',
+            'update MetaTrimestral',
+            'update Poa',
+            'update PrestamoArchivo',
+            'update Replanificacion',
+        ],
+        'Director de Consultoría Jurídica' => [
+            'create ActividadPoa',
+            'create ActoAdministrativo',
+            'create Evidencia',
+            'create FichaActividad',
+            'create Gobernador',
+            'create ImagenFicha',
+            'create Institucion',
+            'create Jefatura',
+            'create MetaTrimestral',
+            'create Permission',
+            'create Poa',
+            'create PrestamoArchivo',
+            'create Replanificacion',
+            'create Role',
+            'create User',
+            'delete ActividadPoa',
+            'delete ActoAdministrativo',
+            'delete Evidencia',
+            'delete FichaActividad',
+            'delete Gaceta',
+            'delete ImagenFicha',
+            'delete Jefatura',
+            'delete MetaTrimestral',
+            'delete Poa',
+            'delete PrestamoArchivo',
+            'delete Replanificacion',
+            'read ActividadPoa',
+            'read ActoAdministrativo',
+            'read Evidencia',
+            'read FichaActividad',
+            'read Gaceta',
+            'read Gobernador',
+            'read ImagenFicha',
+            'read Institucion',
+            'read Jefatura',
+            'read MetaTrimestral',
+            'read Permission',
+            'read Poa',
+            'read PrestamoArchivo',
+            'read Replanificacion',
+            'read Role',
+            'read Solicitud',
+            'read Titulo',
+            'read User',
+            'update ActividadPoa',
+            'update ActoAdministrativo',
+            'update Evidencia',
+            'update FichaActividad',
+            'update Gobernador',
+            'update ImagenFicha',
+            'update Institucion',
+            'update Jefatura',
+            'update MetaTrimestral',
+            'update Permission',
+            'update Poa',
+            'update PrestamoArchivo',
+            'update Replanificacion',
+            'update Role',
+            'update Titulo',
+            'update User',
+        ],
+        'Coordinador de Archivo' => [
+            'create Estante',
+            'create FichaActividad',
+            'create Gaveta',
+            'create PrestamoArchivo',
+            'create Sede',
+            'delete Estante',
+            'delete FichaActividad',
+            'delete Gaveta',
+            'delete PrestamoArchivo',
+            'delete Sede',
+            'read Estante',
+            'read FichaActividad',
+            'read Gaveta',
+            'read Poa',
+            'read PrestamoArchivo',
+            'read Sede',
+            'update Estante',
+            'update FichaActividad',
+            'update Gaveta',
+            'update PrestamoArchivo',
+            'update Sede',
+        ],
+        'Coordinador de Atención al Ciudadano' => [
+            'registrar atencion',
+            'ver atenciones',
+        ],
+        'Coordinador de Seguimiento y Control de Políticas Públicas' => [
+            'create ActividadPoa',
+            'create FichaActividad',
+            'create ImagenFicha',
+            'create Poa',
+            'delete ActividadPoa',
+            'delete FichaActividad',
+            'delete ImagenFicha',
+            'delete Poa',
+            'read ActividadPoa',
+            'read ActoAdministrativo',
+            'read FichaActividad',
+            'read Gaceta',
+            'read ImagenFicha',
+            'read Poa',
+            'read PrestamoArchivo',
+            'update ActividadPoa',
+            'update FichaActividad',
+            'update ImagenFicha',
+            'update Poa',
+        ],
+        'Coordinador de Legislación y Asuntos Jurídicos' => [
+            'create Evidencia',
+            'create FichaActividad',
+            'create ImagenFicha',
+            'create MetaTrimestral',
+            'read ActividadPoa',
+            'read Evidencia',
+            'read FichaActividad',
+            'read Gaceta',
+            'read ImagenFicha',
+            'read MetaTrimestral',
+            'read Poa',
+            'read PrestamoArchivo',
+            'update Evidencia',
+            'update FichaActividad',
+            'update ImagenFicha',
+            'update MetaTrimestral',
+        ],
+        'Jefe de Asuntos Jurídicos' => [
+            'create ActoAdministrativo',
+            'read ActoAdministrativo',
+            'read Gaceta',
+            'read Poa',
+            'read PrestamoArchivo',
+        ],
+        'Jefe de Legislación' => [
+            'create ActoAdministrativo',
+            'read ActoAdministrativo',
+            'read Gaceta',
+            'read Poa',
+            'read PrestamoArchivo',
+        ],
+        'Coordinador de Publicaciones Oficiales' => [
+            'create Evidencia',
+            'create Gaceta',
+            'delete Gaceta',
+            'read ActividadPoa',
+            'read Evidencia',
+            'read FichaActividad',
+            'read Gaceta',
+            'read ImagenFicha',
+            'read MetaTrimestral',
+            'read Poa',
+            'read PrestamoArchivo',
+            'read Solicitud',
+            'update Evidencia',
+            'update FichaActividad',
+            'update Gaceta',
+            'update ImagenFicha',
+            'update Solicitud',
+        ],
+    ];
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        // Reset cached roles and permissions
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // 1. Crear permisos dinámicos basados en la auditoría de modelos
-        $matrix = ModelPermissionAuditor::getPermissionsMatrix();
-        
-        $allPermissions = [];
-        $readPermissions = [];
-
-        foreach ($matrix as $model => $perms) {
-            foreach ($perms as $permName) {
-                // Crear permiso si no existe
-                $permission = Permission::firstOrCreate(['name' => $permName]);
-                $allPermissions[] = $permission;
-                
-                if (str_starts_with($permName, 'read')) {
-                    $readPermissions[] = $permission;
-                }
-            }
+        // 1. Permisos vigentes
+        foreach ($this->permissions as $permissionName) {
+            Permission::firstOrCreate([
+                'name' => $permissionName,
+                'guard_name' => 'web',
+            ]);
         }
 
-        // 2. Crear permisos explícitos solicitados para el módulo de Gacetas
-        $gacetaPermissions = [
-            'ver gacetas',
-            'crear gacetas',
-            'editar gacetas',
-            'publicar gacetas',
-            'eliminar gacetas'
+        // 2. Roles vigentes (incluye Super Admin con acceso total)
+        $roles = array_keys($this->rolePermissions);
+        $roles[] = 'Super Admin';
+
+        foreach (array_unique($roles) as $roleName) {
+            Role::firstOrCreate([
+                'name' => $roleName,
+                'guard_name' => 'web',
+            ]);
+        }
+
+        // 3. Asignación de permisos (idempotente)
+        foreach ($this->rolePermissions as $roleName => $permissions) {
+            Role::findByName($roleName, 'web')->syncPermissions($permissions);
+        }
+
+        // En la base real, "Super Admin" tiene los 96 permisos generados por modelo
+        // (el resto se controla por módulos específicos), por eso se excluyen los extras.
+        $moduleOnlyPermissions = [
+            'create Estantes',
+            'create Gavetas',
+            'create Sedes',
+            'delete Estantes',
+            'delete Gavetas',
+            'delete Sedes',
+            'edit Estantes',
+            'edit Gavetas',
+            'edit Sedes',
+            'read Estantes',
+            'read Gavetas',
+            'read Sedes',
+            'registrar atencion',
+            'ver atenciones',
         ];
 
-        foreach ($gacetaPermissions as $permName) {
-            $permission = Permission::firstOrCreate(['name' => $permName]);
-            $allPermissions[] = $permission;
-            if ($permName === 'ver gacetas') {
-                $readPermissions[] = $permission;
-            }
-        }
+        Role::findByName('Super Admin', 'web')
+            ->syncPermissions(array_values(array_diff($this->permissions, $moduleOnlyPermissions)));
 
-        // 2.1 Crear permisos explícitos solicitados para el módulo POA
-        $poaPermissions = [
-            'ver poa',
-            'crear poa',
-            'editar poa',
-            'aprobar poa',
-            'eliminar poa',
-            'registrar actividad poa'
-        ];
-
-        foreach ($poaPermissions as $permName) {
-            $permission = Permission::firstOrCreate(['name' => $permName]);
-            $allPermissions[] = $permission;
-            if ($permName === 'ver poa') {
-                $readPermissions[] = $permission;
-            }
-        }
-
-        // Obtener la colección de todos los nombres de permisos para asignación rápida
-        $allPermissionNames = collect($allPermissions)->pluck('name')->toArray();
-        $readPermissionNames = collect($readPermissions)->pluck('name')->toArray();
-
-        // 3. Crear roles (tanto los antiguos como los nuevos solicitados para evitar regresiones)
-        $superAdminRole = Role::firstOrCreate(['name' => 'Super Admin']);
-        $superAdminNewRole = Role::firstOrCreate(['name' => 'Super Administrador']);
-        $directorRole = Role::firstOrCreate(['name' => 'Director']);
-        $coordinadorRole = Role::firstOrCreate(['name' => 'Coordinador']);
-        $usuarioRole = Role::firstOrCreate(['name' => 'Usuario']);
-        $institucionRole = Role::firstOrCreate(['name' => 'Institucion']);
-        $institucionalRole = Role::firstOrCreate(['name' => 'Institucional']);
-        
-        $jefeRole = Role::firstOrCreate(['name' => 'Jefe de Digitalización']);
-        $digitalizadorRole = Role::firstOrCreate(['name' => 'Digitalizador']);
-
-        // Roles POA
-        $consultorJuridicoRole = Role::firstOrCreate(['name' => 'Consultor Juridico']);
-        $coordinadorGeneralRole = Role::firstOrCreate(['name' => 'Coordinador General']);
-        $jefePublicacionesRole = Role::firstOrCreate(['name' => 'Jefe de Publicaciones']);
-        $jefeLegislacionRole = Role::firstOrCreate(['name' => 'Jefe de Legislacion y Asuntos Juridicos']);
-        $abogadoPlanificadorRole = Role::firstOrCreate(['name' => 'Abogado Planificador']);
-        $abogadoRole = Role::firstOrCreate(['name' => 'Abogado']);
-
-        // 4. Asignar permisos de forma segura e idempotente con syncPermissions()
-        // Super Administradores tienen acceso total
-        $superAdminRole->syncPermissions($allPermissionNames);
-        $superAdminNewRole->syncPermissions($allPermissionNames);
-        $directorRole->syncPermissions($allPermissionNames);
-
-        // Coordinador: todo menos eliminación
-        $coordPermissions = array_filter($allPermissionNames, fn($name) => !str_starts_with($name, 'delete') && !str_starts_with($name, 'eliminar'));
-        $coordinadorRole->syncPermissions($coordPermissions);
-
-        // Usuario e Institucionales: solo lectura/ver gacetas
-        $usuarioRole->syncPermissions($readPermissionNames);
-        $institucionRole->syncPermissions(['ver gacetas']);
-        $institucionalRole->syncPermissions(['ver gacetas']);
-
-        // Permisos para Jefe de Digitalización
-        $jefeRole->syncPermissions([
-            'ver gacetas', 'crear gacetas', 'editar gacetas', 'eliminar gacetas', 'publicar gacetas',
-            'create Gaceta', 'read Gaceta', 'update Gaceta', 'delete Gaceta',
-            'create SumarioGaceta', 'read SumarioGaceta', 'update SumarioGaceta', 'delete SumarioGaceta',
-            'read Institution', 'read Gobernador', 'read Titulo'
-        ]);
-
-        // Permisos para Digitalizador
-        $digitalizadorRole->syncPermissions([
-            'ver gacetas', 'editar gacetas',
-            'read Gaceta', 'update Gaceta',
-            'registrar actividad poa', 'ver poa'
-        ]);
-
-        // Asignaciones POA
-        $consultorJuridicoRole->syncPermissions(['ver poa', 'aprobar poa', 'ver gacetas']);
-        $coordinadorGeneralRole->syncPermissions(['ver poa', 'ver gacetas']);
-        $jefePublicacionesRole->syncPermissions(['ver poa', 'registrar actividad poa']);
-        $jefeLegislacionRole->syncPermissions(['ver poa', 'registrar actividad poa']);
-        $abogadoPlanificadorRole->syncPermissions(['ver poa', 'crear poa', 'editar poa', 'eliminar poa']);
-        $abogadoRole->syncPermissions(['ver poa', 'registrar actividad poa']);
-
-        // 5. Crear usuarios de prueba de forma completamente idempotente
-        $superAdminUser = User::firstOrCreate(
-            ['email' => 'admin@example.com'],
-            ['name' => 'Super Admin User', 'password' => Hash::make('password')]
-        );
-        $superAdminUser->assignRole($superAdminRole);
-
-        $directorUser = User::firstOrCreate(
-            ['email' => 'director@example.com'],
-            ['name' => 'Director de Área', 'password' => Hash::make('password')]
-        );
-        $directorUser->assignRole($directorRole);
-
-        $usuarioCommon = User::firstOrCreate(
-            ['email' => 'usuario@example.com'],
-            ['name' => 'Usuario Común', 'password' => Hash::make('password')]
-        );
-        $usuarioCommon->assignRole($usuarioRole);
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }
-

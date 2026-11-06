@@ -89,8 +89,8 @@
                         </div>
 
                         <div class="flex justify-end mt-6">
-                            <button type="submit" class="btn btn-neutral">
-                                Guardar Atención
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Guardar Atención
                             </button>
                         </div>
                     </form>

@@ -46,7 +46,10 @@
                                         <td>{{ $titulo->descripcion ?? 'N/A' }}</td>
                                         <td class="text-center">
                                             <div class="flex items-center justify-center">
-                                                <a href="{{ route('titulos.edit', $titulo->id) }}" class="btn btn-warning btn-sm">Editar</a>
+                                                <x-action-button :href="route('titulos.edit', $titulo->id)"
+                                                    action="Editar título"
+                                                    icon="fa-solid fa-pen-to-square"
+                                                    tone="edit" />
                                             </div>
                                         </td>
                                     </tr>

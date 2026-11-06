@@ -2,7 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Gobernador;
+use App\Models\Titulo;
 use Illuminate\Database\Seeder;
 
 class GobernadorSeeder extends Seeder
@@ -12,19 +13,33 @@ class GobernadorSeeder extends Seeder
      */
     public function run(): void
     {
-        $titulos = ['Lcdo.', 'Ing.', 'Dr.', 'Abg.', 'Prof.'];
-        foreach ($titulos as $abreviatura) {
-            \App\Models\Titulo::firstOrCreate(['abreviatura' => $abreviatura]);
+        $titulos = [
+            ['abreviatura' => 'Lcdo.', 'descripcion' => 'Licenciado (a)'],
+            ['abreviatura' => 'Ing.', 'descripcion' => 'Ingeniero (a)'],
+            ['abreviatura' => 'Dr.', 'descripcion' => 'Doctor (a)'],
+            ['abreviatura' => 'Abg.', 'descripcion' => 'Abogado (a)'],
+            ['abreviatura' => 'Prof.', 'descripcion' => 'Profesor (a)'],
+            ['abreviatura' => 'Mgs.', 'descripcion' => 'Magister'],
+        ];
+
+        foreach ($titulos as $titulo) {
+            Titulo::updateOrCreate(
+                ['abreviatura' => $titulo['abreviatura']],
+                ['descripcion' => $titulo['descripcion']]
+            );
         }
 
-        $tituloLcdo = \App\Models\Titulo::where('abreviatura', 'Lcdo.')->first();
+        $profesor = Titulo::where('abreviatura', 'Prof.')->value('id');
+        $licenciado = Titulo::where('abreviatura', 'Lcdo.')->value('id');
 
-        \App\Models\Gobernador::firstOrCreate(
-            ['nombres' => 'Julio César', 'apellidos' => 'León Heredia'],
-            [
-                'titulo_id' => $tituloLcdo->id,
-                'estado' => true,
-            ]
+        Gobernador::updateOrCreate(
+            ['nombres' => 'Leonardo Gabriel', 'apellidos' => 'Intoci Cipullo'],
+            ['titulo_id' => $profesor, 'estado' => false]
+        );
+
+        Gobernador::updateOrCreate(
+            ['nombres' => 'JULIO CESAR', 'apellidos' => 'LEON HEREDIA'],
+            ['titulo_id' => $licenciado, 'estado' => true]
         );
     }
 }

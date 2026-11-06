@@ -216,7 +216,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['permission:read Institucion'])->group(function () {
         Route::patch('institutions/{id}/restore', [InstitutionController::class, 'restore'])->name('institutions.restore');
         Route::resource('institutions', InstitutionController::class);
-        Route::resource('tipo-instituciones', TipoInstitucionController::class);
+        Route::resource('tipo-instituciones', TipoInstitucionController::class)
+    ->parameters(['tipo-instituciones' => 'tipoInstitucion']);
         Route::patch('jefaturas/{id}/restore', [App\Http\Controllers\JefaturaController::class, 'restore'])->name('jefaturas.restore');
         Route::get('jefaturas/exportar-organigrama', [App\Http\Controllers\JefaturaController::class, 'exportarPdf'])->name('jefaturas.pdf');
         Route::resource('jefaturas', App\Http\Controllers\JefaturaController::class);

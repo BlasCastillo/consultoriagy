@@ -23,10 +23,10 @@
                         </div>
                         
                         <div class="flex items-center justify-end mt-6 pt-4 border-t border-slate-200 gap-3">
-                            <a href="{{ route('titulos.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('titulos.index') }}" class="btn btn-back">
                                 Volver
                             </a>
-                            <button type="submit" class="btn btn-neutral">
+                            <button type="submit" class="btn btn-primary">
                                 Guardar Título
                             </button>
                         </div>

@@ -44,8 +44,8 @@
                             @endif
                         </div>
                         <div class="flex flex-col items-center gap-2 sm:flex-row">
-                            <a href="{{ route('jefaturas.pdf') }}" target="_blank" class="btn btn-secondary">
-                                Exportar Organigrama PDF
+                            <a href="{{ route('jefaturas.pdf') }}" target="_blank" class="btn btn-export">
+                                <i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Exportar Organigrama PDF
                             </a>
                             <a href="{{ route('jefaturas.create') }}" class="btn btn-primary">
                                 Registrar Nueva Unidad
@@ -83,18 +83,27 @@
                                             <div class="flex items-center justify-center gap-2">
                                                 @if($jefatura->trashed())
                                                     <form action="{{ route('jefaturas.restore', $jefatura) }}" method="POST"
-                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Restaurar unidad?', text: 'Se restaurará esta unidad interna.', icon: 'question', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Restaurar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline">
+                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Restaurar unidad?', text: 'Se restaurará esta unidad interna.', icon: 'question', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Restaurar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline-flex">
                                                         @csrf
                                                         @method('PATCH')
-                                                        <button type="submit" class="btn btn-primary btn-sm">Restaurar</button>
+                                                        <x-action-button type="submit"
+                                                            action="Restaurar unidad"
+                                                            icon="fa-solid fa-rotate-left"
+                                                            tone="create" />
                                                     </form>
                                                 @else
-                                                    <a href="{{ route('jefaturas.edit', $jefatura) }}" class="btn btn-warning btn-sm">Editar</a>
+                                                    <x-action-button :href="route('jefaturas.edit', $jefatura)"
+                                                        action="Editar unidad"
+                                                        icon="fa-solid fa-pen-to-square"
+                                                        tone="edit" />
                                                     <form action="{{ route('jefaturas.destroy', $jefatura) }}" method="POST"
-                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Estás seguro?', text: 'Acción irreversible.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline">
+                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Estás seguro?', text: 'Acción irreversible.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline-flex">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                                        <x-action-button type="submit"
+                                                            action="Eliminar unidad"
+                                                            icon="fa-solid fa-trash-can"
+                                                            tone="delete" />
                                                     </form>
                                                 @endif
                                             </div>

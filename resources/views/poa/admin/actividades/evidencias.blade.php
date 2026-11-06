@@ -4,8 +4,8 @@
             <h2 class="font-semibold text-xl text-slate-800 leading-tight">
                 {{ __('Gestión de Evidencias') }}
             </h2>
-            <a href="{{ route('poa.show', $actividad->poa_id) }}" class="px-4 py-2 bg-slate-200 border border-transparent rounded-md font-semibold text-xs text-slate-800 uppercase tracking-widest hover:bg-slate-300 transition">
-                Volver al POA
+            <a href="{{ route('poa.show', $actividad->poa_id) }}" class="btn btn-back">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Volver al POA
             </a>
         </div>
     </x-slot>
@@ -92,8 +92,8 @@
                                 @if($esActividadHistorica && $esTrimesterVencido2026)
                                     <div class="mb-4 bg-purple-50 border border-purple-200 p-3 rounded-md flex justify-between items-center">
                                         <span class="text-sm text-purple-800 font-semibold">Excepción de Trimestre Vencido</span>
-                                        <a href="{{ route('archivo.retroactiva.create', ['meta_trimestral_id' => $meta->id]) }}" class="px-3 py-1 bg-purple-600 text-white rounded shadow-sm text-xs font-bold uppercase tracking-widest hover:bg-purple-700 transition">
-                                            ⬆️ Subir Gaceta Histórica Retroactiva
+                                        <a href="{{ route('archivo.retroactiva.create', ['meta_trimestral_id' => $meta->id]) }}" class="btn btn-replan btn-sm">
+                                            <i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i> Subir Gaceta Histórica Retroactiva
                                         </a>
                                     </div>
                                 @endif
@@ -121,8 +121,8 @@
                                             <textarea name="descripcion" rows="1" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 text-sm placeholder-slate-400" placeholder="Breve detalle del archivo..."></textarea>
                                         </div>
                                         <div class="text-right">
-                                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md text-xs font-bold uppercase tracking-widest hover:bg-blue-700 transition">
-                                                Subir Evidencia
+                                            <button type="submit" class="btn btn-primary btn-sm">
+                                                <i class="fa-solid fa-upload" aria-hidden="true"></i> Subir Evidencia
                                             </button>
                                         </div>
                                     </form>
@@ -151,14 +151,24 @@
                                                             <p class="text-xs text-slate-500 truncate">{{ $evidencia->descripcion }}</p>
                                                         @endif
                                                         <span class="text-[10px] text-slate-400 block mb-1">{{ $evidencia->created_at->format('d/m/Y H:i') }}</span>
-                                                        <div class="flex items-center space-x-2">
-                                                            <a href="{{ asset('storage/' . $evidencia->archivo_path) }}" target="_blank" class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold hover:bg-emerald-200 transition">Ver Documento</a>
+                                                        <div class="flex items-center gap-2">
+                                                            <x-action-button :href="asset('storage/' . $evidencia->archivo_path)"
+                                                                action="Ver documento"
+                                                                icon="fa-solid fa-eye"
+                                                                tone="view"
+                                                                size="sm"
+                                                                target="_blank" />
                                                             @if($evidencia->tipo == 'Ficha')
                                                                 @php
                                                                     $fichaAsociada = \App\Models\FichaActividad::where('meta_trimestral_id', $meta->id)->first();
                                                                 @endphp
                                                                 @if($fichaAsociada)
-                                                                    <a href="{{ route('fichas.pdf', $fichaAsociada->id) }}" target="_blank" class="px-2 py-1 bg-red-600 text-white rounded text-[10px] font-bold hover:bg-red-700 transition">Generar Reporte Ficha (PDF)</a>
+                                                                    <x-action-button :href="route('fichas.pdf', $fichaAsociada->id)"
+                                                                        action="Generar reporte de ficha (PDF)"
+                                                                        icon="fa-solid fa-file-pdf"
+                                                                        tone="export"
+                                                                        size="sm"
+                                                                        target="_blank" />
                                                                 @endif
                                                             @endif
                                                         </div>
@@ -166,12 +176,15 @@
                                                 </div>
                                                 <div class="ml-4 flex-shrink-0">
                                                     <form action="{{ route('evidencias.destroy', $evidencia->id) }}" method="POST"
-                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Eliminar evidencia?', text: 'El archivo se eliminará permanentemente y no podrá recuperarse.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
+                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Eliminar evidencia?', text: 'El archivo se eliminará permanentemente y no podrá recuperarse.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
+                                                        class="inline-flex">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded transition" title="Eliminar archivo">
-                                                            <i class="fa-solid fa-trash-can"></i>
-                                                        </button>
+                                                        <x-action-button type="submit"
+                                                            action="Eliminar archivo"
+                                                            icon="fa-solid fa-trash-can"
+                                                            tone="delete"
+                                                            size="sm" />
                                                     </form>
                                                 </div>
                                             </li>

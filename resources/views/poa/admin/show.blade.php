@@ -4,18 +4,15 @@
             <h2 class="font-semibold text-xl text-slate-800 leading-tight">
                 {{ __('Detalle del POA') }} - {{ $poa->anio }}
             </h2>
-            <div class="space-x-2 flex">
-                <a href="{{ route('poa.index') }}"
-                    class="px-4 py-2 bg-slate-200 border border-transparent rounded-md font-semibold text-xs text-slate-800 uppercase tracking-widest hover:bg-slate-300">
-                    Volver
+            <div class="flex flex-wrap items-center justify-end gap-2">
+                <a href="{{ route('poa.index') }}" class="btn btn-back">
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Volver
                 </a>
-                <a href="{{ route('poa.matriz_pdf', $poa->id) }}" target="_blank"
-                    class="px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 shadow-sm flex items-center">
-                    <i class="fa-solid fa-file-pdf mr-2"></i> Descargar Matriz PDF
+                <a href="{{ route('poa.matriz_pdf', $poa->id) }}" target="_blank" class="btn btn-export">
+                    <i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Descargar Matriz PDF
                 </a>
-                <a href="{{ route('actividades.create', $poa->id) }}"
-                    class="px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 shadow-sm">
-                    Agregar Actividad
+                <a href="{{ route('actividades.create', $poa->id) }}" class="btn btn-primary">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Agregar Actividad
                 </a>
             </div>
         </div>
@@ -114,17 +111,15 @@
                                         @endfor
 
                                         <td class="py-4 px-4 text-center border-l border-slate-100">
-                                            <div class="flex justify-center space-x-3">
-                                                <a href="{{ route('actividades.replanificar', $actividad->id) }}"
-                                                    class="text-slate-500 hover:text-blue-600 transition"
-                                                    title="Replanificar metas">
-                                                    <i class="fa-solid fa-calendar-days text-base"></i>
-                                                </a>
-                                                <a href="{{ route('actividades.evidencias', $actividad->id) }}"
-                                                    class="text-slate-500 hover:text-emerald-600 transition"
-                                                    title="Gestionar Evidencias">
-                                                    <i class="fa-solid fa-folder-open text-base"></i>
-                                                </a>
+                                            <div class="flex items-center justify-center gap-2">
+                                                <x-action-button :href="route('actividades.replanificar', $actividad->id)"
+                                                    action="Replanificar metas"
+                                                    icon="fa-solid fa-calendar-days"
+                                                    tone="replan" />
+                                                <x-action-button :href="route('actividades.evidencias', $actividad->id)"
+                                                    action="Gestionar evidencias"
+                                                    icon="fa-solid fa-folder-open"
+                                                    tone="evidence" />
                                             </div>
                                         </td>
                                     </tr>

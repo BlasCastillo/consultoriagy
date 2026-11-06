@@ -42,9 +42,13 @@
                             </div>
                         </div>
 
-                        <div class="mt-8 flex justify-end gap-2">
-                            <a href="{{ route('gacetas.index') }}" class="btn btn-secondary">Cancelar</a>
-                            <button type="submit" class="btn btn-primary">Confirmar Recepción y Asignar</button>
+                        <div class="mt-8 flex flex-wrap justify-end gap-2">
+                            <a href="{{ route('gacetas.index') }}" class="btn btn-back">
+                                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-check" aria-hidden="true"></i> Confirmar Recepción y Asignar
+                            </button>
                         </div>
                     </form>
                 </div>

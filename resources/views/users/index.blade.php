@@ -103,20 +103,29 @@
                                             <div class="flex items-center justify-center gap-2">
                                                 @if($user->trashed())
                                                     <form action="{{ route('users.restore', $user) }}" method="POST"
-                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Restaurar Usuario?', text: 'Este usuario volverá a estar activo en el sistema.', icon: 'question', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, restaurar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline">
+                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Restaurar Usuario?', text: 'Este usuario volverá a estar activo en el sistema.', icon: 'question', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, restaurar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline-flex">
                                                         @csrf
                                                         @method('PATCH')
-                                                        <button type="submit" class="btn btn-primary btn-sm">Restaurar</button>
+                                                        <x-action-button type="submit"
+                                                            action="Restaurar usuario"
+                                                            icon="fa-solid fa-rotate-left"
+                                                            tone="create" />
                                                     </form>
                                                 @else
-                                                    <a href="{{ route('users.edit', $user) }}" class="btn btn-warning btn-sm">Editar</a>
+                                                    <x-action-button :href="route('users.edit', $user)"
+                                                        action="Editar usuario"
+                                                        icon="fa-solid fa-pen-to-square"
+                                                        tone="edit" />
 
                                                     @if($user->id !== auth()->id() && !$user->hasRole('Super Admin'))
                                                         <form action="{{ route('users.destroy', $user) }}" method="POST"
-                                                            onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Estás seguro?', text: 'Se eliminará este usuario del sistema.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline">
+                                                            onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Estás seguro?', text: 'Se eliminará este usuario del sistema.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline-flex">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                                            <x-action-button type="submit"
+                                                                action="Eliminar usuario"
+                                                                icon="fa-solid fa-trash-can"
+                                                                tone="delete" />
                                                         </form>
                                                     @endif
                                                 @endif

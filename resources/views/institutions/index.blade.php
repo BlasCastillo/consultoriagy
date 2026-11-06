@@ -82,18 +82,27 @@
                                             <div class="flex items-center gap-2">
                                                 @if($institution->trashed())
                                                     <form action="{{ route('institutions.restore', $institution) }}" method="POST"
-                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Restaurar institución?', text: 'Se restaurará esta institución.', icon: 'question', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Restaurar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline">
+                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Restaurar institución?', text: 'Se restaurará esta institución.', icon: 'question', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Restaurar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline-flex">
                                                         @csrf
                                                         @method('PATCH')
-                                                        <button type="submit" class="btn btn-primary btn-sm">Restaurar</button>
+                                                        <x-action-button type="submit"
+                                                            action="Restaurar institución"
+                                                            icon="fa-solid fa-rotate-left"
+                                                            tone="create" />
                                                     </form>
                                                 @else
-                                                    <a href="{{ route('institutions.edit', $institution) }}" class="btn btn-warning btn-sm">Editar</a>
+                                                    <x-action-button :href="route('institutions.edit', $institution)"
+                                                        action="Editar institución"
+                                                        icon="fa-solid fa-pen-to-square"
+                                                        tone="edit" />
                                                     <form action="{{ route('institutions.destroy', $institution) }}" method="POST"
-                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Estás seguro?', text: 'Acción irreversible.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline">
+                                                        onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Estás seguro?', text: 'Acción irreversible.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });" class="inline-flex">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                                        <x-action-button type="submit"
+                                                            action="Eliminar institución"
+                                                            icon="fa-solid fa-trash-can"
+                                                            tone="delete" />
                                                     </form>
                                                 @endif
                                             </div>

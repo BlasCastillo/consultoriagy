@@ -38,17 +38,17 @@
                         <input type="hidden" name="accion" id="accion-input" value="">
 
                         <div class="mt-8 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-4 sm:flex-row">
-                            <a href="{{ route('gacetas.index') }}" class="btn btn-secondary w-full sm:w-auto">
-                                Volver
+                            <a href="{{ route('gacetas.index') }}" class="btn btn-back w-full sm:w-auto">
+                                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Volver
                             </a>
 
                             <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
                                 <button type="button" onclick="confirmarRechazo()" class="btn btn-danger w-full sm:w-auto">
-                                    Rechazar y Devolver
+                                    <i class="fa-solid fa-xmark" aria-hidden="true"></i> Rechazar y Devolver
                                 </button>
 
-                                <button type="button" onclick="confirmarAprobacion()" class="btn btn-neutral w-full sm:w-auto">
-                                    Aprobar y Publicar
+                                <button type="button" onclick="confirmarAprobacion()" class="btn btn-primary w-full sm:w-auto">
+                                    <i class="fa-solid fa-check" aria-hidden="true"></i> Aprobar y Publicar
                                 </button>
                             </div>
                         </div>
@@ -65,7 +65,7 @@
                 text: 'Esta gaceta será devuelta al digitalizador.',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#dc2626',
+                confirmButtonColor: '#b91c1c',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Sí, rechazar',
                 cancelButtonText: 'Cancelar'

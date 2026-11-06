@@ -103,7 +103,7 @@
                                                         <x-action-button :href="route('solicitudes.show', $apartado->id)"
                                                             action="Ver sumario de actos"
                                                             icon="fa-solid fa-eye"
-                                                            tone="neutral"
+                                                            tone="view"
                                                             target="_blank"
                                                             onclick="event.stopPropagation();" />
                                                     </div>
