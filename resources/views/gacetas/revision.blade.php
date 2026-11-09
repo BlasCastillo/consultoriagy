@@ -50,7 +50,7 @@
                             @include('gacetas.partials.portada')
 
                             {{-- ── PDF ESCANEADO (páginas siguientes a la portada) ── --}}
-                            @if($gaceta->archivo_pdf_completo)
+                            @if($pdfDisponible)
                                 <div id="pdf-pages-container" class="flex w-full flex-col items-center space-y-8">
                                     <div id="pdf-loading" class="bg-slate-50 py-10 text-center font-bold text-slate-500">
                                         <i class="fa-solid fa-spinner fa-spin mb-3 text-3xl"></i><br>
@@ -62,9 +62,14 @@
                                     style="width: 100%; max-width: 850px; padding: 3rem 4rem;">
                                     <div
                                         class="w-full border-2 border-dashed border-amber-300 bg-amber-50 py-16 text-center text-amber-700">
-                                        <p class="font-bold">El digitalizador aún no ha subido el documento escaneado.</p>
-                                        <p class="mt-1 text-sm text-amber-600">Las páginas del acto aparecerán aquí cuando
-                                            el PDF sea subido.</p>
+                                        @if($gaceta->archivo_pdf_completo || $gaceta->pdf_final || $gaceta->ruta_archivo)
+                                            <p class="font-bold">El PDF de esta Gaceta no está disponible en el servidor.</p>
+                                            <p class="mt-1 text-sm text-amber-600">El archivo fue registrado pero no existe en el almacenamiento. Devuélvala al digitalizador para que lo suba nuevamente.</p>
+                                        @else
+                                            <p class="font-bold">El digitalizador aún no ha subido el documento escaneado.</p>
+                                            <p class="mt-1 text-sm text-amber-600">Las páginas del acto aparecerán aquí cuando
+                                                el PDF sea subido.</p>
+                                        @endif
                                     </div>
                                 </div>
                             @endif
@@ -175,8 +180,8 @@
     {{-- ══════════════════════════════════════════════════════════════════
     PDF.JS: misma vista previa que upload_pdf (páginas completas).
     ══════════════════════════════════════════════════════════════════ --}}
-    @if($gaceta->archivo_pdf_completo)
-        @include('gacetas.partials.preview-pdf', ['pdfUrl' => asset('storage/' . $gaceta->archivo_pdf_completo)])
+    @if($pdfDisponible)
+        @include('gacetas.partials.preview-pdf', ['pdfUrl' => route('gacetas.pdf', $gaceta->id, false)])
     @endif
 
 </x-app-layout>

@@ -13,6 +13,13 @@
             return;
         }
 
+        if (typeof pdfjsLib === 'undefined') {
+            if (loadingMsg) {
+                loadingMsg.innerHTML = '<span class="text-red-500 font-bold"><i class="fa-solid fa-circle-xmark mr-2"></i>No se pudo cargar el visor de PDF. Recargue la página.</span>';
+            }
+            return;
+        }
+
         pdfjsLib.GlobalWorkerOptions.workerSrc = "{{ asset('assets/vendor/js/pdf.worker.min.js') }}";
 
         // Recorta el espacio en blanco superior de cada página escaneada.
@@ -100,10 +107,10 @@
                     container.appendChild(hojaDiv);
                 }
             } catch (error) {
-                console.error("Error cargando el PDF de la Gaceta:", error);
+                console.error("Error cargando el PDF de la Gaceta:", url, error);
                 if (loadingMsg) {
                     loadingMsg.style.display = '';
-                    loadingMsg.innerHTML = '<span class="text-red-500 font-bold"><i class="fa-solid fa-circle-xmark mr-2"></i>Error al cargar el documento. Verifique el archivo.</span>';
+                    loadingMsg.innerHTML = '<span class="text-red-500 font-bold"><i class="fa-solid fa-circle-xmark mr-2"></i>No se pudo cargar el documento. El archivo no está disponible o está dañado.</span>';
                 }
             }
         }

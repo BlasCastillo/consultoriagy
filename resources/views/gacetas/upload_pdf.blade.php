@@ -49,7 +49,10 @@
         });
 
         $todosLosActos = $grupos->flatten(1);
-        $actosSinPdf = $todosLosActos->filter(fn($acto) => empty($acto->archivo_pdf));
+        $storagePublico = \Illuminate\Support\Facades\Storage::disk('public');
+        $actosSinPdf = $todosLosActos->filter(
+            fn($acto) => empty($acto->archivo_pdf) || !$storagePublico->exists($acto->archivo_pdf)
+        );
         $actosConPdfCount = $todosLosActos->count() - $actosSinPdf->count();
 
         // Lista ordenada (institución → acto) para la vista previa con PDF.js.
@@ -60,6 +63,7 @@
         });
 
         $actosConPdf = collect();
+        $actosPdfFaltantes = collect();
         foreach ($grupos as $institucion => $actos) {
             $institucionModel = $institucionesPorNombre[$institucion] ?? null;
             $tituloLineas = $institucionModel
@@ -67,17 +71,28 @@
                 : [mb_strtoupper($institucion)];
 
             foreach ($actos as $acto) {
-                if (!empty($acto->archivo_pdf)) {
-                    $actosConPdf->push([
-                        'url' => asset('storage/' . $acto->archivo_pdf),
-                        'titulo' => trim(($acto->tipo_acto ?? 'Acto') . ' ' . ($acto->numero ?? '')),
-                        'institucion' => $institucion,
-                        'titulo_lineas' => $tituloLineas,
-                    ]);
+                if (empty($acto->archivo_pdf)) {
+                    continue;
                 }
+
+                $tituloActo = trim(($acto->tipo_acto ?? 'Acto') . ' ' . ($acto->numero ?? ''));
+
+                // El archivo pudo registrarse en BD pero no existir en el disco.
+                if (!$storagePublico->exists($acto->archivo_pdf)) {
+                    $actosPdfFaltantes->push($tituloActo);
+                    continue;
+                }
+
+                $actosConPdf->push([
+                    'url' => route('gacetas.actos.pdf.ver', [$gaceta->id, $acto->id], false),
+                    'titulo' => $tituloActo,
+                    'institucion' => $institucion,
+                    'titulo_lineas' => $tituloLineas,
+                ]);
             }
         }
         $actosConPdf = $actosConPdf->values();
+        $actosPdfFaltantes = $actosPdfFaltantes->values();
     @endphp
 
     <div class="bg-slate-100 py-8">
@@ -103,6 +118,16 @@
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
+                </div>
+            @endif
+
+            @if($actosPdfFaltantes->isNotEmpty())
+                <div class="alert alert-error">
+                    <p class="mb-1 font-bold">Hay PDFs registrados que no existen en el servidor:</p>
+                    <p class="text-sm">
+                        {{ $actosPdfFaltantes->implode(', ') }}.
+                        Vuelva a subir esos archivos para restaurar la vista previa.
+                    </p>
                 </div>
             @endif
 
@@ -166,32 +191,17 @@
                                 </div>
                                 @if($actosSinPdf->isNotEmpty())
                                     <p class="text-xs text-amber-700 mt-1">
-                                        Faltan {{ $actosSinPdf->count() }} acto(s). Puede subir el PDF maestro o asignar cada PDF.
+                                        Faltan {{ $actosSinPdf->count() }} acto(s) por cargar. Asigne el PDF de cada acto para poder enviar a revisión.
                                     </p>
                                 @elseif($todosLosActos->isNotEmpty())
                                     <p class="text-xs text-emerald-700 mt-1">
-                                        Todos los actos tienen PDF. Si no sube un PDF maestro, se consolidarán automáticamente.
+                                        Todos los actos tienen PDF. Al enviar a revisión se consolidarán automáticamente.
                                     </p>
                                 @endif
                             </div>
 
-                            <form method="POST" action="{{ route('gacetas.enviar_revision', $gaceta->id) }}" enctype="multipart/form-data">
+                            <form method="POST" action="{{ route('gacetas.enviar_revision', $gaceta->id) }}">
                                 @csrf
-
-                                <div class="mb-4">
-                                    <label class="mb-2 block text-sm font-bold text-slate-700">
-                                        PDF Maestro (opcional si todos los actos tienen PDF)
-                                    </label>
-                                    <input type="file" name="archivo_pdf_completo" accept=".pdf"
-                                        @if($actosSinPdf->isNotEmpty() || $todosLosActos->isEmpty()) required @endif
-                                        class="block w-full rounded-lg border border-slate-300 p-2 text-sm text-slate-500
-                                            transition-colors file:mr-4 file:rounded-md file:border-0 file:bg-emerald-50
-                                            file:px-4 file:py-2 file:text-sm file:font-bold file:text-emerald-700
-                                            hover:file:bg-emerald-100 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                                    <p class="mt-2 text-xs text-slate-500">
-                                        Formato PDF. Límite: 20MB.
-                                    </p>
-                                </div>
 
                                 <button type="submit"
                                     onclick="event.preventDefault(); const form = this.closest('form'); if (!window.validarFormularioSGCJ(form)) return; Swal.fire({ title: '¿Enviar a revisión final?', text: 'Confirme que el escaneo es correcto. La gaceta pasará a la bandeja de la Jefatura.', icon: 'question', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, enviar a revisión', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });"
@@ -227,11 +237,20 @@
                         </div>
                     </div>
 
+                    {{-- Formulario único para subir varios PDFs de actos a la vez. --}}
+                    <form id="bulk-upload-form" method="POST"
+                        action="{{ route('gacetas.actos.pdf.bulk', $gaceta->id) }}"
+                        enctype="multipart/form-data" class="hidden">
+                        @csrf
+                    </form>
+
                     {{-- Bloque B: PDFs por acto administrativo --}}
                     <div class="card overflow-hidden">
                         <div class="bg-blue-900 px-6 py-4 text-white">
                             <h3 class="text-lg font-bold">PDF por Acto Administrativo</h3>
-                            <p class="mt-0.5 text-xs text-blue-200">Asigne un archivo a cada acto del sumario.</p>
+                            <p class="mt-0.5 text-xs text-blue-200">
+                                Seleccione uno o varios archivos y súbalos todos de una vez.
+                            </p>
                         </div>
 
                         <div class="p-4 space-y-5 max-h-[70vh] overflow-y-auto">
@@ -242,15 +261,22 @@
                                     </h4>
 
                                     @forelse($actos as $acto)
+                                        @php
+                                            $tienePdf = !empty($acto->archivo_pdf) && $storagePublico->exists($acto->archivo_pdf);
+                                        @endphp
                                         <div class="mb-3 rounded-md border border-slate-200 bg-slate-50 p-3">
                                             <div class="flex items-start justify-between gap-2">
                                                 <p class="font-bold text-sm text-slate-800 leading-tight">
                                                     {{ $acto->tipo_acto }}
                                                     {{ !preg_match('/^(n[°ºo\.]|número|numero)/iu', trim((string) $acto->numero)) ? 'N° ' : '' }}{{ $acto->numero }}
                                                 </p>
-                                                @if($acto->archivo_pdf)
+                                                @if($tienePdf)
                                                     <span class="badge badge-success flex-shrink-0">
                                                         PDF
+                                                    </span>
+                                                @elseif($acto->archivo_pdf)
+                                                    <span class="badge badge-warning flex-shrink-0">
+                                                        Falta archivo
                                                     </span>
                                                 @else
                                                     <span class="badge badge-warning flex-shrink-0">
@@ -259,29 +285,27 @@
                                                 @endif
                                             </div>
 
-                                    <p class="mb-2 mt-1 text-xs text-slate-600">{{ \Illuminate\Support\Str::limit($acto->sumario, 130) }}</p>
+                                            <p class="mb-2 mt-1 text-xs text-slate-600">{{ \Illuminate\Support\Str::limit($acto->sumario, 130) }}</p>
 
-                                            <form method="POST" action="{{ route('gacetas.actos.pdf', [$gaceta->id, $acto->id]) }}"
-                                                enctype="multipart/form-data" class="flex items-center gap-2">
-                                                @csrf
-                                                <input type="file" name="archivo_pdf" accept=".pdf" required
-                                                    class="block w-full rounded border border-slate-300 p-1 text-[11px] text-slate-500
-                                                        file:mr-2 file:rounded file:border-0 file:bg-blue-50
-                                                        file:px-2 file:py-1.5 file:text-[11px] file:font-bold
-                                                        file:text-blue-700 hover:file:bg-blue-100">
-                                                <x-action-button type="submit"
-                                                    action="Asignar PDF al acto"
-                                                    icon="fa-solid fa-upload"
-                                                    tone="brand" />
-                                            </form>
+                                            <input type="file" name="archivos[{{ $acto->id }}]" accept=".pdf"
+                                                form="bulk-upload-form" data-bulk-pdf
+                                                class="block w-full rounded border border-slate-300 p-1 text-[11px] text-slate-500
+                                                    file:mr-2 file:rounded file:border-0 file:bg-blue-50
+                                                    file:px-2 file:py-1.5 file:text-[11px] file:font-bold
+                                                    file:text-blue-700 hover:file:bg-blue-100">
+                                            <p class="mt-1 text-[11px] text-slate-500">
+                                                {{ $tienePdf ? 'Seleccione un archivo solo si desea reemplazar el PDF actual.' : 'Sin PDF asignado. Seleccione el archivo para cargarlo.' }}
+                                            </p>
 
                                             @if($acto->archivo_pdf)
                                                 <div class="mt-2 flex items-center gap-2">
-                                                    <x-action-button :href="asset('storage/' . $acto->archivo_pdf)"
-                                                        action="Ver PDF del acto"
-                                                        icon="fa-solid fa-eye"
-                                                        tone="view"
-                                                        target="_blank" />
+                                                    @if($tienePdf)
+                                                        <x-action-button :href="route('gacetas.actos.pdf.ver', [$gaceta->id, $acto->id], false)"
+                                                            action="Ver PDF del acto"
+                                                            icon="fa-solid fa-eye"
+                                                            tone="view"
+                                                            target="_blank" />
+                                                    @endif
                                                     <form method="POST" action="{{ route('gacetas.actos.pdf.delete', [$gaceta->id, $acto->id]) }}"
                                                         onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Quitar el PDF de este acto?', text: 'El archivo se desvinculará del acto administrativo.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, quitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">
                                                         @csrf
@@ -302,6 +326,15 @@
                                 <p class="text-sm italic text-slate-500">No hay actos registrados en esta Gaceta.</p>
                             @endforelse
                         </div>
+
+                        <div class="border-t border-slate-200 bg-white p-4">
+                            <p class="mb-2 text-xs text-slate-500">
+                                Seleccione los archivos y súbalos todos de una vez. Los actos sin archivo seleccionado no se modifican.
+                            </p>
+                            <button type="button" onclick="subirPdfsSeleccionados()" class="btn btn-primary w-full">
+                                <i class="fa-solid fa-upload mr-2"></i> Subir todos los PDFs seleccionados
+                            </button>
+                        </div>
                     </div>
 
                 </div>
@@ -312,6 +345,47 @@
     {{-- PDF.JS: renderiza las páginas de cada acto en el orden del sumario --}}
     <script src="{{ asset('assets/vendor/js/pdf.min.js') }}"></script>
     <script>
+        function subirPdfsSeleccionados() {
+            const form = document.getElementById('bulk-upload-form');
+            const inputs = document.querySelectorAll('input[data-bulk-pdf]');
+            const seleccionados = [];
+
+            for (const input of inputs) {
+                if (!input.files || input.files.length === 0) {
+                    continue;
+                }
+
+                const archivo = input.files[0];
+
+                if (archivo.type && archivo.type !== 'application/pdf') {
+                    Swal.fire('Archivo no válido', 'Solo se permiten archivos PDF.', 'warning');
+                    return;
+                }
+
+                seleccionados.push(input);
+            }
+
+            if (!seleccionados.length) {
+                Swal.fire('Atención', 'Seleccione al menos un archivo PDF para subir.', 'warning');
+                return;
+            }
+
+            Swal.fire({
+                title: '¿Subir los PDFs seleccionados?',
+                text: 'Se asignarán ' + seleccionados.length + ' archivo(s) a sus actos administrativos.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1e40af',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, subir',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
             const documentos = @json($actosConPdf);
             const container = document.getElementById('pdf-pages-container');
@@ -319,6 +393,11 @@
 
             if (!documentos.length) {
                 loadingMsg.innerHTML = '<span class="font-bold text-slate-500">Aún no hay PDFs asignados. Suba el primer archivo para ver la vista previa.</span>';
+                return;
+            }
+
+            if (typeof pdfjsLib === 'undefined') {
+                loadingMsg.innerHTML = '<span class="font-bold text-red-500">No se pudo cargar el visor de PDF. Recargue la página.</span>';
                 return;
             }
 
@@ -362,9 +441,10 @@
 
             async function renderizarActos() {
                 let numPaginaReal = 2; // La portada HTML es la página 1.
+                const fallidos = [];
 
-                try {
-                    for (const doc of documentos) {
+                for (const doc of documentos) {
+                    try {
                         const pdf = await pdfjsLib.getDocument(doc.url).promise;
 
                         for (let i = 1; i <= pdf.numPages; i++) {
@@ -427,12 +507,31 @@
 
                             numPaginaReal++;
                         }
+                    } catch (error) {
+                        console.error("Error cargando el PDF del acto:", doc.titulo, error);
+                        fallidos.push(doc.titulo);
                     }
+                }
 
+                if (loadingMsg) {
                     loadingMsg.style.display = 'none';
-                } catch (error) {
-                    console.error("Error cargando los PDFs de los actos:", error);
-                    loadingMsg.innerHTML = '<span class="font-bold text-red-500">Error al cargar uno de los PDFs. Verifique el archivo.</span>';
+                }
+
+                if (fallidos.length) {
+                    const aviso = document.createElement('div');
+                    aviso.className = 'w-full max-w-[850px] rounded-lg border-2 border-dashed border-red-300 bg-red-50 px-6 py-4 text-center text-red-700';
+
+                    const titulo = document.createElement('p');
+                    titulo.className = 'font-bold';
+                    titulo.textContent = 'No se pudieron cargar ' + fallidos.length + ' PDF(s):';
+
+                    const detalle = document.createElement('p');
+                    detalle.className = 'mt-1 text-sm';
+                    detalle.textContent = fallidos.join(', ') + '. Verifique que los archivos existan en el servidor o vuelva a subirlos.';
+
+                    aviso.appendChild(titulo);
+                    aviso.appendChild(detalle);
+                    container.appendChild(aviso);
                 }
             }
 

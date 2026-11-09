@@ -74,8 +74,9 @@
 
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700">Año Político <span class="text-red-500">*</span></label>
-                                    <input type="text" name="anio_politico" maxlength="100" required value="{{ old('anio_politico', $gaceta->ano_politico ?? $gaceta->anio_politico) }}" placeholder="Ej: 168°"
+                                    <input type="text" name="anio_politico" maxlength="100" required value="{{ old('anio_politico', $gaceta->ano_politico ?? $gaceta->anio_politico) }}" placeholder="Ej: 118°"
                                         class="val-texto-limpio mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                    <p class="mt-1 text-xs text-slate-500">Escriba el año en números (ej. 118); se guardará como CXVIII.</p>
                                 </div>
 
                                 <div>

@@ -257,6 +257,54 @@ class GacetaController extends Controller
     }
 
     /**
+     * Sirve el PDF de un acto administrativo para la vista previa.
+     * Se entrega vía controlador para no depender del enlace público de storage.
+     */
+    public function verPdfActo(string $id, string $actoId)
+    {
+        $gaceta = Gaceta::findOrFail($id);
+
+        $acto = \App\Models\ActoAdministrativo::whereHas('solicitud', function ($query) use ($gaceta) {
+            $query->where('gaceta_id', $gaceta->id);
+        })->findOrFail($actoId);
+
+        $storage = \Illuminate\Support\Facades\Storage::disk('public');
+
+        if (empty($acto->archivo_pdf) || !$storage->exists($acto->archivo_pdf)) {
+            abort(404, 'El PDF del acto no está disponible en el servidor.');
+        }
+
+        return response()->file($storage->path($acto->archivo_pdf), [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="acto_' . $acto->id . '.pdf"',
+        ]);
+    }
+
+    /**
+     * Sirve el PDF consolidado de la Gaceta para la vista previa incrustada.
+     * Se entrega vía controlador para no depender del enlace público de storage.
+     */
+    public function verPdf(string $id)
+    {
+        $gaceta = Gaceta::with([
+            'gobernador.titulo',
+            'solicitudes.institucion',
+            'solicitudes.actos',
+        ])->findOrFail($id);
+
+        $ruta = $this->pdfService->obtenerRutaVistaPrevia($gaceta);
+
+        if (!$ruta || !is_file($ruta)) {
+            abort(404, 'El PDF de esta Gaceta no está disponible en el servidor.');
+        }
+
+        return response()->file($ruta, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="gaceta_' . $gaceta->numero . '.pdf"',
+        ]);
+    }
+
+    /**
      * Asigna (o reemplaza) el PDF escaneado de un acto administrativo.
      */
     public function subirPdfActo(Request $request, string $id, string $actoId)
@@ -280,6 +328,8 @@ class GacetaController extends Controller
 
         $acto->update(['archivo_pdf' => $path]);
 
+        $this->invalidarPdfConsolidado($gaceta);
+
         activity()
             ->useLog('BPM_Gacetas')
             ->performedOn($gaceta)
@@ -287,6 +337,74 @@ class GacetaController extends Controller
             ->log("PDF del acto {$acto->tipo_acto} {$acto->numero} asignado por el digitalizador.");
 
         return back()->with('success', "PDF asignado al acto {$acto->tipo_acto} N° {$acto->numero}.");
+    }
+
+    /**
+     * Asigna varios PDFs de actos administrativos en una sola operación.
+     */
+    public function subirPdfsActos(Request $request, string $id)
+    {
+        $gaceta = Gaceta::findOrFail($id);
+
+        $archivos = collect($request->file('archivos', []))
+            ->filter(fn($archivo) => $archivo instanceof \Illuminate\Http\UploadedFile && $archivo->isValid());
+
+        if ($archivos->isEmpty()) {
+            return back()->with('error', 'Seleccione al menos un archivo PDF para subir.');
+        }
+
+        $validator = \Illuminate\Support\Facades\Validator::make(
+            ['archivos' => $archivos->all()],
+            [
+                'archivos' => 'required|array',
+                'archivos.*' => 'file|mimes:pdf|max:20480',
+            ],
+            [
+                'archivos.*.mimes' => 'Todos los archivos deben ser PDF.',
+                'archivos.*.max' => 'Cada PDF debe pesar como máximo 20 MB.',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $actos = \App\Models\ActoAdministrativo::whereHas('solicitud', function ($query) use ($gaceta) {
+            $query->where('gaceta_id', $gaceta->id);
+        })->get()->keyBy('id');
+
+        $storage = \Illuminate\Support\Facades\Storage::disk('public');
+        $subidos = 0;
+
+        foreach ($archivos as $actoId => $archivo) {
+            $acto = $actos->get((int) $actoId);
+
+            if (!$acto) {
+                continue;
+            }
+
+            if ($acto->archivo_pdf && $storage->exists($acto->archivo_pdf)) {
+                $storage->delete($acto->archivo_pdf);
+            }
+
+            $path = $archivo->store('gacetas/actos/' . $gaceta->id, 'public');
+            $acto->update(['archivo_pdf' => $path]);
+            $subidos++;
+        }
+
+        if ($subidos === 0) {
+            return back()->with('error', 'No se pudo asignar ningún PDF. Verifique los actos seleccionados.');
+        }
+
+        $this->invalidarPdfConsolidado($gaceta);
+
+        activity()
+            ->useLog('BPM_Gacetas')
+            ->performedOn($gaceta)
+            ->causedBy(auth()->user())
+            ->log("Se asignaron {$subidos} PDF(s) a los actos administrativos.");
+
+        return back()->with('success', "Se asignaron {$subidos} PDF(s) a los actos administrativos.");
     }
 
     /**
@@ -306,7 +424,30 @@ class GacetaController extends Controller
 
         $acto->update(['archivo_pdf' => null]);
 
+        $this->invalidarPdfConsolidado($gaceta);
+
         return back()->with('success', "PDF del acto {$acto->tipo_acto} N° {$acto->numero} eliminado.");
+    }
+
+    /**
+     * Elimina el PDF consolidado generado para que la próxima vista previa
+     * refleje los archivos de actos recién subidos o eliminados.
+     */
+    private function invalidarPdfConsolidado(Gaceta $gaceta): void
+    {
+        if ($gaceta->estado === Gaceta::ESTADO_PUBLICADA) {
+            return;
+        }
+
+        $storage = \Illuminate\Support\Facades\Storage::disk('public');
+
+        if ($gaceta->archivo_pdf_completo && $storage->exists($gaceta->archivo_pdf_completo)) {
+            $storage->delete($gaceta->archivo_pdf_completo);
+        }
+
+        if ($gaceta->archivo_pdf_completo !== null) {
+            $gaceta->forceFill(['archivo_pdf_completo' => null])->save();
+        }
     }
 
     public function savePdf(Request $request, string $id)
@@ -395,7 +536,10 @@ class GacetaController extends Controller
         ]);
 
         $actos = $gaceta->solicitudes->flatMap(fn($solicitud) => $solicitud->actos);
-        $actosSinPdf = $actos->filter(fn($acto) => empty($acto->archivo_pdf));
+        $storage = \Illuminate\Support\Facades\Storage::disk('public');
+        $actosSinPdf = $actos->filter(
+            fn($acto) => empty($acto->archivo_pdf) || !$storage->exists($acto->archivo_pdf)
+        );
 
         // Si ya existía un PDF maestro de un intento anterior, se descarta.
         if ($gaceta->archivo_pdf_completo && \Illuminate\Support\Facades\Storage::disk('public')->exists($gaceta->archivo_pdf_completo)) {
@@ -422,8 +566,8 @@ class GacetaController extends Controller
                 ->values();
 
             $mensaje = $faltantes->isNotEmpty()
-                ? 'Asigne un PDF a cada acto o suba el PDF maestro. Faltan: ' . $faltantes->implode(', ')
-                : 'Debe subir el PDF maestro de la Gaceta.';
+                ? 'Asigne el PDF a cada acto antes de enviar a revisión. Faltan: ' . $faltantes->implode(', ')
+                : 'Debe cargar el PDF de cada acto administrativo antes de enviar a revisión.';
 
             return back()->withInput()->with('error', $mensaje);
         }
@@ -444,7 +588,9 @@ class GacetaController extends Controller
             'solicitudes.institucion',
             'solicitudes.actos',
         ])->findOrFail($id);
-        return view('gacetas.revision', compact('gaceta'));
+        $pdfDisponible = $this->pdfService->tienePdfDisponible($gaceta);
+
+        return view('gacetas.revision', compact('gaceta', 'pdfDisponible'));
     }
 
     public function publicarGaceta(Request $request, string $id)
@@ -463,7 +609,7 @@ class GacetaController extends Controller
         if (!$actsPath || !$storage->exists($actsPath)) {
             $actos = $gaceta->solicitudes->flatMap(fn($solicitud) => $solicitud->actos);
 
-            if ($actos->isNotEmpty() && $actos->every(fn($acto) => !empty($acto->archivo_pdf))) {
+            if ($actos->isNotEmpty() && $actos->every(fn($acto) => !empty($acto->archivo_pdf) && $storage->exists($acto->archivo_pdf))) {
                 $actsPath = $this->pdfService->mergeActPdfs($gaceta);
             }
         }
@@ -606,7 +752,9 @@ public function subsanarGaceta(Request $request, string $id)
             'corregidaDe',
             'correcciones'
         ])->findOrFail($id);
-        return view('gacetas.show', compact('gaceta'));
+        $pdfDisponible = $this->pdfService->tienePdfDisponible($gaceta);
+
+        return view('gacetas.show', compact('gaceta', 'pdfDisponible'));
     }
 
     public function edit(string $id) 

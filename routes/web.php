@@ -136,9 +136,17 @@ Route::middleware('auth')->group(function () {
         Route::get('gacetas/{gaceta}/upload-pdf', [GacetaController::class, 'uploadPdf'])->name('gacetas.upload_pdf');
         Route::post('gacetas/{gaceta}/upload-pdf', [GacetaController::class, 'savePdf'])->name('gacetas.save_pdf');
         Route::post('gacetas/{gaceta}/enviar-revision', [GacetaController::class, 'enviarARevision'])->name('gacetas.enviar_revision');
+        Route::post('gacetas/{gaceta}/actos/pdf', [GacetaController::class, 'subirPdfsActos'])->name('gacetas.actos.pdf.bulk');
         Route::post('gacetas/{gaceta}/actos/{acto}/pdf', [GacetaController::class, 'subirPdfActo'])->name('gacetas.actos.pdf');
+        Route::get('gacetas/{gaceta}/actos/{acto}/pdf/ver', [GacetaController::class, 'verPdfActo'])->name('gacetas.actos.pdf.ver');
         Route::delete('gacetas/{gaceta}/actos/{acto}/pdf', [GacetaController::class, 'eliminarPdfActo'])->name('gacetas.actos.pdf.delete');
         Route::patch('gacetas/{gaceta}/devolver', [GacetaController::class, 'devolver'])->name('gacetas.devolver');
+    });
+
+    // Vista previa PDF de la Gaceta: se sirve vía controlador para no depender
+    // del enlace simbólico public/storage (falla en despliegues sin storage:link).
+    Route::middleware(['permission:leer Gaceta|actualizar Gaceta|crear Gaceta'])->group(function () {
+        Route::get('gacetas/{gaceta}/pdf', [GacetaController::class, 'verPdf'])->name('gacetas.pdf');
     });
 
     Route::middleware(['permission:leer Gaceta'])->group(function () {

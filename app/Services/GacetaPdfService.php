@@ -10,8 +10,16 @@ use setasign\Fpdi\Fpdi;
 class GacetaPdfService
 {
     /**
+     * Alto (mm) de la banda superior reservada para el encabezado de página.
+     */
+    private const ALTO_BANDA_ENCABEZADO = 12.0;
+
+    /**
      * Une los PDFs de todos los actos (en el orden del sumario) en un solo archivo,
      * estampando el título institucional en la primera página de cada acto.
+     *
+     * La página original se escala para reservar una banda superior donde se dibuja
+     * el título, de modo que nunca se cubra el contenido del acto administrativo.
      */
     public function mergeActPdfs(Gaceta $gaceta): string
     {
@@ -47,11 +55,13 @@ class GacetaPdfService
             $pageCount = $fpdi->setSourceFile($absolutePath);
             for ($i = 1; $i <= $pageCount; $i++) {
                 $tplId = $fpdi->importPage($i);
-                $size = $fpdi->getTemplateSize($tplId);
-                $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
-                $fpdi->useTemplate($tplId);
+                $esPrimera = ($i === 1 && !empty($titulo));
 
-                if ($i === 1 && !empty($titulo)) {
+                // Reserva espacio arriba y escala el contenido del acto para que
+                // el título institucional no tape ninguna parte del documento.
+                $this->agregarPaginaEscalada($fpdi, $tplId, $esPrimera ? $this->altoBandaTitulo($titulo) : 0.0);
+
+                if ($esPrimera) {
                     $this->estamparTituloActo($fpdi, $titulo);
                 }
 
@@ -191,10 +201,10 @@ class GacetaPdfService
 
         for ($i = 1; $i <= $paginasActos; $i++) {
             $tplId = $fpdi->importPage($i);
-            $size = $fpdi->getTemplateSize($tplId);
-            $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
-            $fpdi->useTemplate($tplId);
 
+            // Reserva la banda del encabezado antes de escalar el acto, así el
+            // "PAGINA N° X" y el nombre de la Gaceta no se superponen al contenido.
+            $this->agregarPaginaEscalada($fpdi, $tplId, self::ALTO_BANDA_ENCABEZADO);
             $this->estamparEncabezadoPagina($fpdi, $paginaGlobal);
 
             $paginaGlobal++;
@@ -215,6 +225,93 @@ class GacetaPdfService
         }
 
         return $relativePath;
+    }
+
+    /**
+     * Indica si la Gaceta tiene algún PDF realmente disponible para la vista previa.
+     * No genera archivos: solo comprueba el disco.
+     */
+    public function tienePdfDisponible(Gaceta $gaceta): bool
+    {
+        $storage = Storage::disk('public');
+
+        if ($gaceta->pdf_final && $storage->exists($gaceta->pdf_final)) {
+            return true;
+        }
+
+        if ($gaceta->archivo_pdf_completo && $storage->exists($gaceta->archivo_pdf_completo)) {
+            return true;
+        }
+
+        if ($gaceta->ruta_archivo) {
+            if (file_exists(public_path('gacetas_pdf/' . $gaceta->ruta_archivo))
+                || file_exists(storage_path('app/SGCJ/' . $gaceta->ruta_archivo))) {
+                return true;
+            }
+        }
+
+        $gaceta->loadMissing('solicitudes.actos');
+        $actos = $gaceta->solicitudes->flatMap(fn($solicitud) => $solicitud->actos);
+
+        return $actos->isNotEmpty()
+            && $actos->every(fn($acto) => !empty($acto->archivo_pdf) && $storage->exists($acto->archivo_pdf));
+    }
+
+    /**
+     * Devuelve la ruta absoluta del mejor PDF disponible para la vista previa.
+     *
+     * Orden de preferencia: PDF consolidado de los actos → PDF final publicado →
+     * unión de los PDFs de los actos → escaneo físico heredado (sumario + escaneo).
+     * Devuelve null si no hay ningún archivo legible en el servidor.
+     */
+    public function obtenerRutaVistaPrevia(Gaceta $gaceta): ?string
+    {
+        $storage = Storage::disk('public');
+
+        // El PDF consolidado de los actos va primero: la portada y el sumario
+        // ya se muestran en HTML, así que usar pdf_final duplicaría esas páginas.
+        if ($gaceta->archivo_pdf_completo && $storage->exists($gaceta->archivo_pdf_completo)) {
+            return $storage->path($gaceta->archivo_pdf_completo);
+        }
+
+        if ($gaceta->pdf_final && $storage->exists($gaceta->pdf_final)) {
+            return $storage->path($gaceta->pdf_final);
+        }
+
+        $gaceta->loadMissing(['gobernador.titulo', 'solicitudes.institucion', 'solicitudes.actos']);
+        $actos = $gaceta->solicitudes->flatMap(fn($solicitud) => $solicitud->actos);
+
+        $todosConPdf = $actos->isNotEmpty()
+            && $actos->every(fn($acto) => !empty($acto->archivo_pdf) && $storage->exists($acto->archivo_pdf));
+
+        if ($todosConPdf) {
+            try {
+                $relativePath = $this->mergeActPdfs($gaceta);
+                $gaceta->forceFill(['archivo_pdf_completo' => $relativePath])->save();
+
+                if ($storage->exists($relativePath)) {
+                    return $storage->path($relativePath);
+                }
+            } catch (\Throwable $e) {
+                // Se intenta el escaneo físico heredado antes de rendirse.
+            }
+        }
+
+        if ($gaceta->ruta_archivo) {
+            $legacyPublico = public_path('gacetas_pdf/' . $gaceta->ruta_archivo);
+
+            if (is_file($legacyPublico)) {
+                return $legacyPublico;
+            }
+
+            try {
+                return $this->generarPreviewTemporal($gaceta);
+            } catch (\Throwable $e) {
+                return null;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -255,6 +352,45 @@ class GacetaPdfService
     }
 
     /**
+     * Alto (mm) de la banda reservada para el título institucional.
+     *
+     * @param array<int, string> $lineas
+     */
+    private function altoBandaTitulo(array $lineas): float
+    {
+        return count($lineas) > 1 ? 24.0 : 18.0;
+    }
+
+    /**
+     * Agrega una página copiando el template y, si se indica, reserva una banda
+     * superior escalando el contenido proporcionalmente para no recortarlo.
+     */
+    private function agregarPaginaEscalada(Fpdi $pdf, int|string $tplId, float $bandaSuperior): void
+    {
+        $size = $pdf->getTemplateSize($tplId);
+        $ancho = (float) $size['width'];
+        $alto = (float) $size['height'];
+
+        $pdf->AddPage($size['orientation'], [$ancho, $alto]);
+
+        $anchoPagina = $pdf->GetPageWidth();
+        $altoPagina = $pdf->GetPageHeight();
+
+        if ($bandaSuperior <= 0) {
+            $pdf->useTemplate($tplId, 0, 0, $ancho, $alto);
+            return;
+        }
+
+        $altoDisponible = max(1.0, $altoPagina - $bandaSuperior);
+        $escala = min($anchoPagina / max(1.0, $ancho), $altoDisponible / max(1.0, $alto));
+        $anchoEscalado = $ancho * $escala;
+        $altoEscalado = $alto * $escala;
+        $x = ($anchoPagina - $anchoEscalado) / 2;
+
+        $pdf->useTemplate($tplId, $x, $bandaSuperior, $anchoEscalado, $altoEscalado);
+    }
+
+    /**
      * Dibuja el título institucional en la parte superior de la página actual.
      *
      * @param array<int, string> $lineas
@@ -262,15 +398,19 @@ class GacetaPdfService
     private function estamparTituloActo(Fpdi $pdf, array $lineas): void
     {
         $anchoPagina = $pdf->GetPageWidth();
-        $altoBanda = count($lineas) > 1 ? 26.0 : 20.0;
+        $altoBanda = $this->altoBandaTitulo($lineas);
 
         $pdf->SetFillColor(255, 255, 255);
         $pdf->Rect(0, 0, $anchoPagina, $altoBanda, 'F');
 
         $pdf->SetTextColor(0, 0, 0);
 
+        // Centra verticalmente el bloque de texto dentro de la banda reservada.
+        $altoTexto = isset($lineas[1]) ? 11.0 : 6.0;
+        $y = max(3.0, ($altoBanda - $altoTexto) / 2);
+
         $pdf->SetFont('Helvetica', 'B', 12);
-        $pdf->SetXY(15, 14);
+        $pdf->SetXY(15, $y);
         $pdf->Cell($anchoPagina - 30, 6, $this->textoPdf($lineas[0]), 0, 1, 'C');
 
         if (isset($lineas[1])) {
@@ -289,7 +429,7 @@ class GacetaPdfService
         $anchoPagina = $pdf->GetPageWidth();
 
         $pdf->SetFillColor(255, 255, 255);
-        $pdf->Rect(0, 0, $anchoPagina, 12, 'F');
+        $pdf->Rect(0, 0, $anchoPagina, self::ALTO_BANDA_ENCABEZADO, 'F');
 
         $pdf->SetTextColor(0, 0, 0);
         $pdf->SetDrawColor(0, 0, 0);

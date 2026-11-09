@@ -22,13 +22,8 @@
     </x-slot>
 
     @php
-        $pdfPreviewUrl = null;
-
-        if ($gaceta->archivo_pdf_completo) {
-            $pdfPreviewUrl = asset('storage/' . $gaceta->archivo_pdf_completo);
-        } elseif ($gaceta->ruta_archivo && file_exists(public_path('gacetas_pdf/' . $gaceta->ruta_archivo))) {
-            $pdfPreviewUrl = asset('gacetas_pdf/' . $gaceta->ruta_archivo);
-        }
+        $pdfPreviewUrl = $pdfDisponible ? route('gacetas.pdf', $gaceta->id, false) : null;
+        $tieneReferenciaPdf = $gaceta->pdf_final || $gaceta->archivo_pdf_completo || $gaceta->ruta_archivo;
     @endphp
 
     <div class="bg-slate-200 py-12">
@@ -55,7 +50,12 @@
                     <div class="relative mx-auto bg-white text-black shadow-2xl"
                         style="width: 100%; max-width: 850px; padding: 3rem 4rem;">
                         <div class="w-full border-2 border-dashed border-slate-300 bg-slate-50 py-16 text-center text-slate-500">
-                            <p>Las páginas del documento aparecerán aquí cuando el PDF sea subido.</p>
+                            @if($tieneReferenciaPdf)
+                                <p class="font-bold text-amber-700">El PDF de esta Gaceta no está disponible en el servidor.</p>
+                                <p class="mt-1 text-sm">El archivo fue registrado pero no existe en el almacenamiento. Vuelva a subirlo o contacte al administrador.</p>
+                            @else
+                                <p>Las páginas del documento aparecerán aquí cuando el PDF sea subido.</p>
+                            @endif
                         </div>
                     </div>
                 @endif

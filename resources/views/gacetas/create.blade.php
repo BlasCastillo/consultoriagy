@@ -48,7 +48,8 @@
                                 <div class="mb-4 grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-slate-700">Año Político <span class="text-red-500">*</span></label>
-                                        <input type="text" name="ano_politico" value="{{ old('ano_politico') }}" maxlength="100" required placeholder="Ej: 168°" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                        <input type="text" name="ano_politico" value="{{ old('ano_politico') }}" maxlength="100" required placeholder="Ej: 118°" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                        <p class="mt-1 text-xs text-slate-500">Escriba el año en números (ej. 118); se guardará como CXVIII.</p>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-slate-700">Mes Político <span class="text-red-500">*</span></label>
