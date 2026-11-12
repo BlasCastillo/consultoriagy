@@ -305,6 +305,10 @@
                                                             icon="fa-solid fa-eye"
                                                             tone="view"
                                                             target="_blank" />
+                                                        <x-action-button :href="route('gacetas.actos.recortar', [$gaceta->id, $acto->id])"
+                                                            action="Recortar acto"
+                                                            icon="fa-solid fa-scissors"
+                                                            tone="edit" />
                                                     @endif
                                                     <form method="POST" action="{{ route('gacetas.actos.pdf.delete', [$gaceta->id, $acto->id]) }}"
                                                         onsubmit="event.preventDefault(); const form = this; Swal.fire({ title: '¿Quitar el PDF de este acto?', text: 'El archivo se desvinculará del acto administrativo.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#b91c1c', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, quitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { form.submit(); } });">

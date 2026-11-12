@@ -281,6 +281,134 @@ class GacetaController extends Controller
     }
 
     /**
+     * Muestra el editor para recortar las hojas del PDF de un acto administrativo.
+     */
+    public function mostrarRecortePdf(string $id, string $actoId)
+    {
+        $gaceta = Gaceta::findOrFail($id);
+
+        $acto = \App\Models\ActoAdministrativo::whereHas('solicitud', function ($query) use ($gaceta) {
+            $query->where('gaceta_id', $gaceta->id);
+        })->findOrFail($actoId);
+
+        $storage = \Illuminate\Support\Facades\Storage::disk('public');
+
+        if (empty($acto->archivo_pdf) || !$storage->exists($acto->archivo_pdf)) {
+            return redirect()
+                ->route('gacetas.upload_pdf', $gaceta->id)
+                ->with('error', 'El acto no tiene un PDF disponible para recortar.');
+        }
+
+        return view('gacetas.recortar_pdf', [
+            'gaceta' => $gaceta,
+            'acto' => $acto,
+            'pdfUrl' => route('gacetas.actos.pdf.ver', [$gaceta->id, $acto->id], false),
+            'tamanoMb' => round($storage->size($acto->archivo_pdf) / 1048576, 2),
+        ]);
+    }
+
+    /**
+     * Aplica el recorte solicitado (hojas eliminadas y zonas recortadas).
+     */
+    public function guardarRecortePdf(
+        Request $request,
+        string $id,
+        string $actoId,
+        \App\Services\RecortePdfService $recorteService
+    ) {
+        $gaceta = Gaceta::findOrFail($id);
+
+        $acto = \App\Models\ActoAdministrativo::whereHas('solicitud', function ($query) use ($gaceta) {
+            $query->where('gaceta_id', $gaceta->id);
+        })->findOrFail($actoId);
+
+        $request->validate([
+            'paginas' => 'required|string',
+        ], [
+            'paginas.required' => 'Debe conservar al menos una hoja del PDF.',
+        ]);
+
+        $paginas = json_decode((string) $request->input('paginas'), true);
+
+        if (!is_array($paginas) || empty($paginas)) {
+            return redirect()
+                ->route('gacetas.actos.recortar', [$gaceta->id, $acto->id])
+                ->with('error', 'No se recibió la configuración del recorte. Intente de nuevo.');
+        }
+
+        $storage = \Illuminate\Support\Facades\Storage::disk('public');
+
+        if (empty($acto->archivo_pdf) || !$storage->exists($acto->archivo_pdf)) {
+            return redirect()
+                ->route('gacetas.upload_pdf', $gaceta->id)
+                ->with('error', 'El PDF del acto ya no está disponible en el servidor.');
+        }
+
+        $rutaActual = $acto->archivo_pdf;
+        $directorio = dirname($rutaActual);
+        $nombreBase = pathinfo($rutaActual, PATHINFO_FILENAME);
+        $rutaTemporal = $directorio . '/.recorte_' . $nombreBase . '_' . uniqid() . '.pdf';
+
+        try {
+            $hojasConservadas = $recorteService->recortar(
+                $storage->path($rutaActual),
+                $paginas,
+                $storage->path($rutaTemporal)
+            );
+        } catch (\Throwable $e) {
+            // Limpiar el temporal si alcanzó a crearse.
+            if ($storage->exists($rutaTemporal)) {
+                $storage->delete($rutaTemporal);
+            }
+
+            return redirect()
+                ->route('gacetas.actos.recortar', [$gaceta->id, $acto->id])
+                ->with('error', 'No se pudo recortar el PDF: ' . $e->getMessage());
+        }
+
+        // Respaldo del original antes de reemplazarlo.
+        $rutaRespaldo = $directorio . '/respaldos/' . $nombreBase . '_' . date('Ymd_His') . '.pdf';
+
+        if (!$storage->copy($rutaActual, $rutaRespaldo)) {
+            if ($storage->exists($rutaTemporal)) {
+                $storage->delete($rutaTemporal);
+            }
+
+            return redirect()
+                ->route('gacetas.actos.recortar', [$gaceta->id, $acto->id])
+                ->with('error', 'No se pudo crear el respaldo del PDF original. No se aplicaron cambios.');
+        }
+
+        // Reemplazar conservando la misma ruta registrada en la base de datos.
+        $storage->delete($rutaActual);
+
+        if (!$storage->move($rutaTemporal, $rutaActual)) {
+            // Restaurar el original desde el respaldo si el reemplazo falla.
+            $storage->copy($rutaRespaldo, $rutaActual);
+
+            if ($storage->exists($rutaTemporal)) {
+                $storage->delete($rutaTemporal);
+            }
+
+            return redirect()
+                ->route('gacetas.actos.recortar', [$gaceta->id, $acto->id])
+                ->with('error', 'No se pudo reemplazar el PDF del acto. Se restauró el archivo original.');
+        }
+
+        $this->invalidarPdfConsolidado($gaceta);
+
+        activity()
+            ->useLog('BPM_Gacetas')
+            ->performedOn($gaceta)
+            ->causedBy(auth()->user())
+            ->log("PDF del acto {$acto->tipo_acto} {$acto->numero} recortado: {$hojasConservadas} hoja(s) conservada(s).");
+
+        return redirect()
+            ->route('gacetas.upload_pdf', $gaceta->id)
+            ->with('success', "PDF del acto {$acto->tipo_acto} N° {$acto->numero} recortado. Se conservaron {$hojasConservadas} hoja(s) y se guardó un respaldo del original.");
+    }
+
+    /**
      * Sirve el PDF consolidado de la Gaceta para la vista previa incrustada.
      * Se entrega vía controlador para no depender del enlace público de storage.
      */
@@ -316,7 +444,7 @@ class GacetaController extends Controller
         })->findOrFail($actoId);
 
         $request->validate([
-            'archivo_pdf' => 'required|mimes:pdf|max:20480',
+            'archivo_pdf' => 'required|mimes:pdf|max:' . config('sgcj.archivos.max_pdf_kb'),
         ]);
 
         // Reemplazar el archivo anterior si existía.
@@ -353,15 +481,17 @@ class GacetaController extends Controller
             return back()->with('error', 'Seleccione al menos un archivo PDF para subir.');
         }
 
+        $maxPdfMb = intdiv((int) config('sgcj.archivos.max_pdf_kb'), 1024);
+
         $validator = \Illuminate\Support\Facades\Validator::make(
             ['archivos' => $archivos->all()],
             [
                 'archivos' => 'required|array',
-                'archivos.*' => 'file|mimes:pdf|max:20480',
+                'archivos.*' => 'file|mimes:pdf|max:' . config('sgcj.archivos.max_pdf_kb'),
             ],
             [
                 'archivos.*.mimes' => 'Todos los archivos deben ser PDF.',
-                'archivos.*.max' => 'Cada PDF debe pesar como máximo 20 MB.',
+                'archivos.*.max' => "Cada PDF debe pesar como máximo {$maxPdfMb} MB.",
             ]
         );
 
@@ -453,7 +583,7 @@ class GacetaController extends Controller
     public function savePdf(Request $request, string $id)
     {
         $request->validate([
-            'ruta_archivo' => 'required|mimes:pdf|max:10240',
+            'ruta_archivo' => 'required|mimes:pdf|max:' . config('sgcj.archivos.max_pdf_kb'),
         ]);
 
         $gaceta = Gaceta::findOrFail($id);
@@ -532,7 +662,7 @@ class GacetaController extends Controller
         $gaceta = Gaceta::with(['solicitudes.actos'])->findOrFail($id);
 
         $request->validate([
-            'archivo_pdf_completo' => 'nullable|mimes:pdf|max:20480' // Máximo 20MB
+            'archivo_pdf_completo' => 'nullable|mimes:pdf|max:' . config('sgcj.archivos.max_pdf_kb')
         ]);
 
         $actos = $gaceta->solicitudes->flatMap(fn($solicitud) => $solicitud->actos);

@@ -38,7 +38,7 @@ class SolicitudController extends Controller
     {
         $request->validate([
             'titulo_acto' => 'required|string|max:255',
-            'archivo_pdf' => 'required|mimes:pdf|max:51200', // 50MB unificado
+            'archivo_pdf' => 'required|mimes:pdf|max:' . config('sgcj.archivos.max_pdf_kb'),
             'institucion_id' => [
                 \Illuminate\Validation\Rule::requiredIf(fn() => !auth()->user()->institucion_id),
                 'nullable',
@@ -163,7 +163,7 @@ class SolicitudController extends Controller
 
         $request->validate([
             'titulo_acto' => 'required|string|max:255',
-            'archivo_pdf' => 'nullable|mimes:pdf|max:51200', // 50MB unificado
+            'archivo_pdf' => 'nullable|mimes:pdf|max:' . config('sgcj.archivos.max_pdf_kb'),
             'institucion_id' => [
                 \Illuminate\Validation\Rule::requiredIf(fn() => !auth()->user()->institucion_id),
                 'nullable',

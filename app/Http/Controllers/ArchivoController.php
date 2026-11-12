@@ -35,7 +35,7 @@ class ArchivoController extends Controller
             'fecha_publicacion' => 'required|date',
             'gobernador_id' => 'required|exists:gobernadores,id',
             'meta_trimestral_id' => 'nullable|integer|exists:meta_trimestrals,id',
-            'archivo_pdf_completo' => 'required|mimes:pdf|max:20480',
+            'archivo_pdf_completo' => 'required|mimes:pdf|max:' . config('sgcj.archivos.max_pdf_kb'),
             'actos' => 'required|array|min:1',
             'actos.*.institucion_id' => 'required|exists:instituciones,id',
             'actos.*.tipo_acto' => 'required|string|max:255',

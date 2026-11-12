@@ -1,13 +1,25 @@
 {{-- ── VISTA PREVIA PDF (misma que upload_pdf) ───────────────────────────
      Requiere: $pdfUrl con la URL del PDF y los contenedores #pdf-pages-container
      y #pdf-loading presentes en la vista.
+
+     Opcionales:
+     - $incluirPortada: si la portada HTML ocupa la página 1 (por defecto true).
+     - $mostrarEncabezado: si se dibuja el encabezado "GACETA OFICIAL..." sobre
+       cada página. Las gacetas históricas ya traen su maquetación original.
      ──────────────────────────────────────────────────────────────────── --}}
+@php
+    $incluirPortada = $incluirPortada ?? true;
+    $mostrarEncabezado = $mostrarEncabezado ?? true;
+    $paginaBase = $incluirPortada ? 1 : 0;
+@endphp
 <script src="{{ asset('assets/vendor/js/pdf.min.js') }}"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const url = @json($pdfUrl);
         const container = document.getElementById('pdf-pages-container');
         const loadingMsg = document.getElementById('pdf-loading');
+        const mostrarEncabezado = @json($mostrarEncabezado);
+        const paginaBase = {{ $paginaBase }};
 
         if (!container) {
             return;
@@ -65,7 +77,7 @@
 
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
-                    const numPaginaReal = i + 1; // La portada HTML es la página 1.
+                    const numPaginaReal = i + paginaBase; // La portada HTML es la página 1.
                     const esPar = (numPaginaReal % 2 === 0);
 
                     const viewport = page.getViewport({ scale: 2.0 });
@@ -80,29 +92,32 @@
                     hojaDiv.className = "bg-white shadow-2xl relative text-black";
                     hojaDiv.style.cssText = "width:100%; max-width:850px; padding:3rem 4rem; min-height:1100px; margin-bottom:2rem;";
 
-                    const headerDiv = document.createElement('div');
-                    headerDiv.style.borderBottom = "4px solid black";
-                    headerDiv.className = "flex justify-between items-end pb-1 mb-8 font-sans font-bold text-sm uppercase";
+                    if (mostrarEncabezado) {
+                        const headerDiv = document.createElement('div');
+                        headerDiv.style.borderBottom = "4px solid black";
+                        headerDiv.className = "flex justify-between items-end pb-1 mb-8 font-sans font-bold text-sm uppercase";
 
-                    const textPagina = `<span class="text-[1.1rem]">PAGINA N° ${numPaginaReal}</span>`;
-                    const textTitulo = `<span class="tracking-widest text-[1rem]">GACETA OFICIAL DEL ESTADO YARACUY</span>`;
+                        const textPagina = `<span class="text-[1.1rem]">PAGINA N° ${numPaginaReal}</span>`;
+                        const textTitulo = `<span class="tracking-widest text-[1rem]">GACETA OFICIAL DEL ESTADO YARACUY</span>`;
 
-                    const colIzq = document.createElement('div');
-                    colIzq.className = "w-1/4 text-left";
-                    colIzq.innerHTML = esPar ? textPagina : '';
+                        const colIzq = document.createElement('div');
+                        colIzq.className = "w-1/4 text-left";
+                        colIzq.innerHTML = esPar ? textPagina : '';
 
-                    const colCen = document.createElement('div');
-                    colCen.className = "w-2/4 text-center";
-                    colCen.innerHTML = textTitulo;
+                        const colCen = document.createElement('div');
+                        colCen.className = "w-2/4 text-center";
+                        colCen.innerHTML = textTitulo;
 
-                    const colDer = document.createElement('div');
-                    colDer.className = "w-1/4 text-right";
-                    colDer.innerHTML = !esPar ? textPagina : '';
+                        const colDer = document.createElement('div');
+                        colDer.className = "w-1/4 text-right";
+                        colDer.innerHTML = !esPar ? textPagina : '';
 
-                    headerDiv.appendChild(colIzq);
-                    headerDiv.appendChild(colCen);
-                    headerDiv.appendChild(colDer);
-                    hojaDiv.appendChild(headerDiv);
+                        headerDiv.appendChild(colIzq);
+                        headerDiv.appendChild(colCen);
+                        headerDiv.appendChild(colDer);
+                        hojaDiv.appendChild(headerDiv);
+                    }
+
                     hojaDiv.appendChild(canvasRecortado);
                     container.appendChild(hojaDiv);
                 }

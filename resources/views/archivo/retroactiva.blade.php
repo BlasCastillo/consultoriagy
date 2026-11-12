@@ -66,13 +66,14 @@
                                     <input type="text" name="mes_politico" value="{{ old('mes_politico') }}" maxlength="100" required placeholder="Ej: 164°" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                 </div>
                                 <div class="md:col-span-3">
-                                    <label class="block text-sm font-medium text-slate-700">Archivo PDF Escaneado (Max 20MB) <span class="text-red-500">*</span></label>
+                                    <label class="block text-sm font-medium text-slate-700">Archivo PDF Escaneado (Máx. {{ intdiv((int) config('sgcj.archivos.max_pdf_kb'), 1024) }} MB) <span class="text-red-500">*</span></label>
                                     <input type="file" name="archivo_pdf_completo" accept="application/pdf" required class="mt-1 block w-full text-sm text-slate-500
                                         file:mr-4 file:py-2 file:px-4
                                         file:rounded-md file:border-0
                                         file:text-sm file:font-semibold
                                         file:bg-emerald-50 file:text-emerald-700
                                         hover:file:bg-emerald-100 border border-slate-300 rounded-md">
+                                    <p class="mt-1 text-xs text-slate-500">Suba la gaceta completa tal como fue publicada, con su portada original. El sistema no generará una portada adicional.</p>
                                 </div>
                             </div>
                         </div>

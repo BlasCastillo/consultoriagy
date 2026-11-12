@@ -82,7 +82,7 @@
                                             <input id="imagenes" name="imagenes[]" type="file" multiple accept="image/*" class="sr-only">
                                         </label>
                                     </div>
-                                    <p class="text-xs text-slate-500">PNG, JPG, GIF hasta 5MB</p>
+                                    <p class="text-xs text-slate-500">PNG, JPG, GIF hasta {{ intdiv((int) config('sgcj.archivos.max_imagen_kb'), 1024) }}MB</p>
                                 </div>
                             </div>
                         </div>

@@ -139,6 +139,8 @@ Route::middleware('auth')->group(function () {
         Route::post('gacetas/{gaceta}/actos/pdf', [GacetaController::class, 'subirPdfsActos'])->name('gacetas.actos.pdf.bulk');
         Route::post('gacetas/{gaceta}/actos/{acto}/pdf', [GacetaController::class, 'subirPdfActo'])->name('gacetas.actos.pdf');
         Route::get('gacetas/{gaceta}/actos/{acto}/pdf/ver', [GacetaController::class, 'verPdfActo'])->name('gacetas.actos.pdf.ver');
+        Route::get('gacetas/{gaceta}/actos/{acto}/recortar', [GacetaController::class, 'mostrarRecortePdf'])->name('gacetas.actos.recortar');
+        Route::post('gacetas/{gaceta}/actos/{acto}/recortar', [GacetaController::class, 'guardarRecortePdf'])->name('gacetas.actos.recortar.save');
         Route::delete('gacetas/{gaceta}/actos/{acto}/pdf', [GacetaController::class, 'eliminarPdfActo'])->name('gacetas.actos.pdf.delete');
         Route::patch('gacetas/{gaceta}/devolver', [GacetaController::class, 'devolver'])->name('gacetas.devolver');
     });

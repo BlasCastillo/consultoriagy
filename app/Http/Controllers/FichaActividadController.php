@@ -45,7 +45,7 @@ class FichaActividadController extends Controller
             'cantidad_beneficiados' => 'required|integer|min:0',
             'instituciones_involucradas' => 'nullable|string',
             'objetivo_logrado' => 'nullable|string',
-            'imagenes.*' => 'image|max:5120' // 5MB
+            'imagenes.*' => 'image|max:' . config('sgcj.archivos.max_imagen_kb')
         ]);
 
         $ficha = FichaActividad::create($request->except('imagenes'));

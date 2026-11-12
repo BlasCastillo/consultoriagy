@@ -49,7 +49,7 @@ class EvidenciaController extends Controller
         }
 
         $request->validate([
-            'archivo' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'archivo' => 'required|file|mimes:pdf,jpg,jpeg,png|max:' . config('sgcj.archivos.max_pdf_kb'),
             'descripcion' => 'nullable|string|max:1000',
             'tipo' => 'required|string|in:Informe,Ficha,Foto',
         ]);

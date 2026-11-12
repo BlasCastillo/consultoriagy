@@ -145,6 +145,21 @@ class GacetaPdfService
      */
     public function generarPdfFinal(Gaceta $gaceta): string
     {
+        $storage = Storage::disk('public');
+
+        // Las gacetas históricas cargadas desde el módulo de Archivo ya fueron
+        // publicadas y su PDF incluye la portada original. Se devuelve tal cual
+        // para no anteponer otro sumario ni estampar encabezados adicionales.
+        if ($gaceta->es_retroactiva) {
+            if ($gaceta->archivo_pdf_completo && $storage->exists($gaceta->archivo_pdf_completo)) {
+                return $gaceta->archivo_pdf_completo;
+            }
+
+            if ($gaceta->pdf_final && $storage->exists($gaceta->pdf_final)) {
+                return $gaceta->pdf_final;
+            }
+        }
+
         $gaceta->load(['gobernador.titulo', 'solicitudes.institucion', 'solicitudes.actos']);
 
         $sourceRelative = $gaceta->archivo_pdf_completo;
@@ -321,6 +336,12 @@ class GacetaPdfService
     {
         $storage = Storage::disk('public');
         $rutaDescarga = null;
+
+        // Gaceta histórica: el archivo subido desde Archivo ya es el documento
+        // final (con su portada). Se descarga sin regenerarlo.
+        if ($gaceta->es_retroactiva && $gaceta->archivo_pdf_completo && $storage->exists($gaceta->archivo_pdf_completo)) {
+            return $storage->path($gaceta->archivo_pdf_completo);
+        }
 
         if ($gaceta->pdf_final && $storage->exists($gaceta->pdf_final)) {
             $rutaDescarga = $storage->path($gaceta->pdf_final);

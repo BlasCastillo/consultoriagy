@@ -22,6 +22,7 @@
     </x-slot>
 
     @php
+        $esHistorica = (bool) $gaceta->es_retroactiva;
         $pdfPreviewUrl = $pdfDisponible ? route('gacetas.pdf', $gaceta->id, false) : null;
         $tieneReferenciaPdf = $gaceta->pdf_final || $gaceta->archivo_pdf_completo || $gaceta->ruta_archivo;
     @endphp
@@ -37,7 +38,11 @@
 
             <div class="space-y-8 w-full flex flex-col items-center">
 
-                @include('gacetas.partials.portada')
+                {{-- Las gacetas históricas ya traen su propia portada y sumario
+                     dentro del PDF; mostrar la portada HTML duplicaría esa hoja. --}}
+                @unless($esHistorica)
+                    @include('gacetas.partials.portada')
+                @endunless
 
                 @if($pdfPreviewUrl)
                     <div id="pdf-pages-container" class="space-y-8 w-full flex flex-col items-center">
@@ -65,7 +70,11 @@
     </div>
 
     @if($pdfPreviewUrl)
-        @include('gacetas.partials.preview-pdf', ['pdfUrl' => $pdfPreviewUrl])
+        @include('gacetas.partials.preview-pdf', [
+            'pdfUrl' => $pdfPreviewUrl,
+            'incluirPortada' => !$esHistorica,
+            'mostrarEncabezado' => !$esHistorica,
+        ])
     @endif
 
     {{-- Al publicar, se descarga automáticamente el PDF final (sumario + actos). --}}
