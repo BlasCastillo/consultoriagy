@@ -14,9 +14,17 @@ color 0E
 ::     clientes de las subredes indicadas en SGCJ_REDES.
 ::   - Ejecutar con clic derecho > "Ejecutar como administrador"
 ::
-::  Si cambia la IP del servidor, ajusta SGCJ_REDES aqui abajo.
+::  La subred del hotspot Wi-Fi (192.168.137.x) se detecta automaticamente.
+::  Si necesitas autorizar otra red fija, agregala a SGCJ_REDES.
 :: ============================================================
-set "SGCJ_REDES=172.16.0.0/16,192.168.137.0/24"
+set "SGCJ_REDES=172.16.0.0/16"
+set "SGCJ_HOTSPOT_IP="
+for /f "delims=" %%i in ('powershell -NoProfile -Command "$hot=(Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { $_.IPAddress -like '192.168.137.*' } | Select-Object -First 1).IPAddress; if($hot){Write-Output $hot}"') do set "SGCJ_HOTSPOT_IP=%%i"
+if defined SGCJ_HOTSPOT_IP (
+    for /f "tokens=1,2,3 delims=." %%a in ("%SGCJ_HOTSPOT_IP%") do set "SGCJ_REDES=%SGCJ_REDES%,%%a.%%b.%%c.0/24"
+) else (
+    set "SGCJ_REDES=%SGCJ_REDES%,192.168.137.0/24"
+)
 
 net session >nul 2>&1
 if errorlevel 1 (

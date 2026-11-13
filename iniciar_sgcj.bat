@@ -3,25 +3,34 @@ title Iniciando SGCJ - Entorno de Desarrollo
 color 0B
 
 :: ============================================================
-::  IP DEL SERVIDOR EN LA RED LOCAL
-::    Cable / mismo router .... 172.16.0.108
-::    Punto de acceso Wi-Fi ... 192.168.137.1
+::  IPs DEL SERVIDOR (se detectan automaticamente al iniciar)
+::    LAN / cable ...... IP del adaptador con puerta de enlace
+::    Hotspot Wi-Fi .... IP del adaptador Wi-Fi Direct (192.168.137.x)
 ::
-::  Si esta IP cambia, actualiza tambien en .env:
-::    APP_URL=http://IP:8000
-::    VITE_REVERB_HOST="IP"
-::  y luego ejecuta:  npm run build   y   php artisan optimize:clear
+::  Las URLs que se muestran abajo son las que deben usar los demas
+::  equipos. No hace falta editar .env ni recompilar: los WebSockets
+::  usan el mismo host desde el que se abre la pagina.
 :: ============================================================
-set "SGCJ_LAN_IP=172.16.0.108"
 set "SGCJ_HTTP_PORT=8000"
 set "SGCJ_REVERB_PORT=8081"
+set "SGCJ_LAN_IP="
+set "SGCJ_HOTSPOT_IP="
+
+for /f "tokens=1,2" %%a in ('powershell -NoProfile -Command "$lan=''; try { $r=Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction Stop | Sort-Object RouteMetric | Select-Object -First 1; if($r){ $lan=@(Get-NetIPAddress -InterfaceIndex $r.InterfaceIndex -AddressFamily IPv4 -ErrorAction Stop)[0].IPAddress } } catch {}; $hot=(Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { $_.IPAddress -like '192.168.137.*' } | Select-Object -First 1).IPAddress; if(-not $lan){$lan='172.16.0.108'}; if(-not $hot){$hot='192.168.137.1'}; Write-Output ($lan + ' ' + $hot)"') do (
+    set "SGCJ_LAN_IP=%%a"
+    set "SGCJ_HOTSPOT_IP=%%b"
+)
+if not defined SGCJ_LAN_IP set "SGCJ_LAN_IP=172.16.0.108"
+if not defined SGCJ_HOTSPOT_IP set "SGCJ_HOTSPOT_IP=192.168.137.1"
 
 echo ===================================================
 echo    SISTEMA DE GESTION DE CONSULTORIA JURIDICA
 echo ===================================================
-echo   En este equipo : http://127.0.0.1:%SGCJ_HTTP_PORT%
-echo   En la red LAN  : http://%SGCJ_LAN_IP%:%SGCJ_HTTP_PORT%
-echo   WebSockets     : ws://%SGCJ_LAN_IP%:%SGCJ_REVERB_PORT%
+echo   En este equipo   : http://127.0.0.1:%SGCJ_HTTP_PORT%
+echo   En la red LAN    : http://%SGCJ_LAN_IP%:%SGCJ_HTTP_PORT%
+echo   Por hotspot WiFi : http://%SGCJ_HOTSPOT_IP%:%SGCJ_HTTP_PORT%
+echo   WebSockets LAN   : ws://%SGCJ_LAN_IP%:%SGCJ_REVERB_PORT%
+echo   WebSockets WiFi  : ws://%SGCJ_HOTSPOT_IP%:%SGCJ_REVERB_PORT%
 echo ===================================================
 echo.
 
@@ -70,8 +79,15 @@ timeout /t 3 /nobreak > NUL
 
 :: 5.2 Frontend: se sirven los assets ya compilados (public\build).
 ::     NO se usa "npm run dev": en otras PC "localhost:5173" no existe.
+::     Se recompila si el manifest no existe o si el codigo fuente es mas nuevo.
+set "SGCJ_NECESITA_BUILD=0"
 if not exist public\build\manifest.json (
-    echo [!] No hay assets compilados. Ejecutando npm run build...
+    set "SGCJ_NECESITA_BUILD=1"
+) else (
+    for /f %%f in ('powershell -NoProfile -Command "if((Get-ChildItem resources\js,resources\css -Recurse -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1).LastWriteTime -gt (Get-Item public\build\manifest.json).LastWriteTime){1}else{0}"') do set "SGCJ_NECESITA_BUILD=%%f"
+)
+if "%SGCJ_NECESITA_BUILD%"=="1" (
+    echo [!] Assets del frontend desactualizados. Ejecutando npm run build...
     call npm run build
 ) else (
     echo [OK] Assets del frontend ya compilados ^(npm run build^).
@@ -101,8 +117,9 @@ start "SGCJ - Task Scheduler" cmd /k "php artisan schedule:work"
 echo.
 echo Listo! Todos los microservicios estan en linea sin colisiones.
 echo.
-echo   Desde este equipo : http://127.0.0.1:%SGCJ_HTTP_PORT%
-echo   Desde la red LAN  : http://%SGCJ_LAN_IP%:%SGCJ_HTTP_PORT%
+echo   Desde este equipo    : http://127.0.0.1:%SGCJ_HTTP_PORT%
+echo   Desde la red LAN     : http://%SGCJ_LAN_IP%:%SGCJ_HTTP_PORT%
+echo   Desde el hotspot WiFi: http://%SGCJ_HOTSPOT_IP%:%SGCJ_HTTP_PORT%
 echo.
 echo   Si otra PC no puede entrar, ejecuta como administrador:
 echo      abrir_firewall_sgcj.bat

@@ -424,14 +424,16 @@ VITE_REVERB_HOST="172.16.0.108"
 
 - `APP_URL` debe ser la URL que usan las otras PC.
 - `REVERB_SERVER_HOST=0.0.0.0` permite que Reverb acepte conexiones de la red.
-- `VITE_REVERB_HOST` debe apuntar a la IP del servidor y requiere **recompilar** con `npm run build`.
+- `VITE_REVERB_HOST` ya **no** se usa: `resources/js/echo.js` toma el host de
+  `window.location.hostname`, así que los WebSockets funcionan igual por
+  `127.0.0.1`, por LAN o por el hotspot Wi-Fi. Se conserva solo como referencia.
 
 **Si cambia la IP del servidor:**
 
-1. Actualizar `APP_URL` y `VITE_REVERB_HOST` en `.env`.
-2. Actualizar `SGCJ_LAN_IP` en `iniciar_sgcj.bat`.
-3. Actualizar `SGCJ_REDES` en `abrir_firewall_sgcj.bat`.
-4. Ejecutar `npm run build` y `php artisan optimize:clear`.
+1. Actualizar `APP_URL` en `.env` (informativo).
+2. `iniciar_sgcj.bat` detecta automáticamente la IP de LAN y la del hotspot.
+3. `abrir_firewall_sgcj.bat` detecta automáticamente la subred del hotspot.
+4. Ejecutar `npm run build` solo si cambió código fuente; el arranque lo detecta.
 
 ---
 
