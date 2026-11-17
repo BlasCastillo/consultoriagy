@@ -24,7 +24,7 @@ class GacetaPdfService
      * Posición de la línea negra que cierra el sumario y deja el área libre
      * para colocar el acto único en la misma hoja.
      */
-    private const LINEA_SUMARIO_Y = 100.0;
+    private const LINEA_SUMARIO_Y = 112.0;
     private const RESERVA_ACTO_Y = self::LINEA_SUMARIO_Y + 4.0;
     private const MARGEN_ACTO_X = 15.0;
     private const MARGEN_ACTO_INFERIOR = 12.0;

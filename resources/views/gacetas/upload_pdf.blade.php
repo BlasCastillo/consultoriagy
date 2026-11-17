@@ -400,6 +400,11 @@
             const loadingMsg = document.getElementById('pdf-loading');
             const estiloActoUnico = @json($actoUnico);
 
+            // Mismas medidas que colocarActoDebajoDelSumario() usa en el PDF final.
+            const MM_A_PX = 96 / 25.4;
+            const ANCHO_ACTO_PX = 185.9 * MM_A_PX;
+            const ALTO_ACTO_PX = 151.4 * MM_A_PX;
+
             if (!container) {
                 return;
             }
@@ -465,19 +470,27 @@
                         for (let i = 1; i <= pdf.numPages; i++) {
                             const page = await pdf.getPage(i);
                             const esPar = (numPaginaReal % 2 === 0);
-                            const viewport = page.getViewport({ scale: 2.0 });
+                            let viewport;
+                            if (estiloActoUnico) {
+                                const base = page.getViewport({ scale: 1 });
+                                const escala = Math.min(ANCHO_ACTO_PX / base.width, ALTO_ACTO_PX / base.height);
+                                viewport = page.getViewport({ scale: escala });
+                            } else {
+                                viewport = page.getViewport({ scale: 2.0 });
+                            }
 
                             const tempCanvas = document.createElement('canvas');
                             tempCanvas.height = viewport.height;
                             tempCanvas.width = viewport.width;
                             await page.render({ canvasContext: tempCanvas.getContext('2d'), viewport }).promise;
 
-                            const canvasRecortado = cropWhitespaceTop(tempCanvas);
+                            // El PDF final no recorta blanco: el preview tampoco debe hacerlo.
+                            const canvasRecortado = estiloActoUnico ? tempCanvas : cropWhitespaceTop(tempCanvas);
 
                             const hojaDiv = document.createElement('div');
                             hojaDiv.className = "bg-white text-black" + (estiloActoUnico ? "" : " shadow-2xl relative");
                             hojaDiv.style.cssText = estiloActoUnico
-                                ? "width:100%; margin-bottom:1rem;"
+                                ? "width:100%; display:flex; justify-content:center; margin-bottom:1rem;"
                                 : "width:100%; max-width:850px; padding:3rem 4rem; min-height:1100px; margin-bottom:2rem;";
 
                             if (!estiloActoUnico) {
