@@ -47,16 +47,20 @@
                     <div class="rounded-lg bg-slate-200 px-4 py-8">
                         <div class="flex w-full flex-col items-center space-y-8">
 
-                            @include('gacetas.partials.portada')
+                            @include('gacetas.partials.portada', ['actoUnico' => $actoUnico && $pdfDisponible])
 
-                            {{-- ── PDF ESCANEADO (páginas siguientes a la portada) ── --}}
+                            {{-- ── PDF ESCANEADO (páginas siguientes a la portada) ──
+                                 Con acto único, el contenedor ya va dentro de la portada
+                                 (debajo de la línea negra), así que aquí no se dibuja otro. --}}
                             @if($pdfDisponible)
-                                <div id="pdf-pages-container" class="flex w-full flex-col items-center space-y-8">
-                                    <div id="pdf-loading" class="bg-slate-50 py-10 text-center font-bold text-slate-500">
-                                        <i class="fa-solid fa-spinner fa-spin mb-3 text-3xl"></i><br>
-                                        Cargando páginas del documento escaneado...
+                                @unless($actoUnico)
+                                    <div id="pdf-pages-container" class="flex w-full flex-col items-center space-y-8">
+                                        <div id="pdf-loading" class="bg-slate-50 py-10 text-center font-bold text-slate-500">
+                                            <i class="fa-solid fa-spinner fa-spin mb-3 text-3xl"></i><br>
+                                            Cargando páginas del documento escaneado...
+                                        </div>
                                     </div>
-                                </div>
+                                @endunless
                             @else
                                 <div class="relative mx-auto bg-white text-black shadow-2xl"
                                     style="width: 100%; max-width: 850px; padding: 3rem 4rem;">
@@ -181,7 +185,11 @@
     PDF.JS: misma vista previa que upload_pdf (páginas completas).
     ══════════════════════════════════════════════════════════════════ --}}
     @if($pdfDisponible)
-        @include('gacetas.partials.preview-pdf', ['pdfUrl' => route('gacetas.pdf', $gaceta->id, false)])
+        @include('gacetas.partials.preview-pdf', [
+            'pdfUrl' => route('gacetas.pdf', $gaceta->id, false),
+            'mostrarEncabezado' => !$actoUnico,
+            'estiloActoUnico' => $actoUnico,
+        ])
     @endif
 
 </x-app-layout>

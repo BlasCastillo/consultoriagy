@@ -126,4 +126,14 @@
     </div>
 
     <div style="border-top: 4px solid black; width: 100%; margin-top: 24px; margin-bottom: 8px;"></div>
+
+    @if($actoUnico ?? false)
+        {{-- Un solo acto: continúa en esta misma hoja, debajo de la línea negra. --}}
+        <div id="pdf-pages-container" class="w-full flex flex-col items-center">
+            <div id="pdf-loading" class="w-full py-6 text-center font-bold text-slate-500">
+                <i class="fa-solid fa-spinner fa-spin mb-3 text-3xl"></i><br>
+                Cargando el acto...
+            </div>
+        </div>
+    @endif
 </div>{{-- /hoja-portada --}}

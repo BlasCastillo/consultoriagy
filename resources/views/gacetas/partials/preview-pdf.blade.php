@@ -6,10 +6,15 @@
      - $incluirPortada: si la portada HTML ocupa la página 1 (por defecto true).
      - $mostrarEncabezado: si se dibuja el encabezado "GACETA OFICIAL..." sobre
        cada página. Las gacetas históricas ya traen su maquetación original.
+     - $estiloActoUnico: cuando el único acto continúa debajo de la línea negra
+       del sumario dentro de la propia portada. En ese caso los canvas se
+       dibujan sin padding, sin altura mínima y sin encabezado, para que queden
+       pegados al contenedor interno de la portada.
      ──────────────────────────────────────────────────────────────────── --}}
 @php
     $incluirPortada = $incluirPortada ?? true;
     $mostrarEncabezado = $mostrarEncabezado ?? true;
+    $estiloActoUnico = $estiloActoUnico ?? false;
     $paginaBase = $incluirPortada ? 1 : 0;
 @endphp
 <script src="{{ asset('assets/vendor/js/pdf.min.js') }}"></script>
@@ -19,6 +24,7 @@
         const container = document.getElementById('pdf-pages-container');
         const loadingMsg = document.getElementById('pdf-loading');
         const mostrarEncabezado = @json($mostrarEncabezado);
+        const estiloActoUnico = @json($estiloActoUnico);
         const paginaBase = {{ $paginaBase }};
 
         if (!container) {
@@ -89,10 +95,12 @@
                     const canvasRecortado = cropWhitespaceTop(tempCanvas);
 
                     const hojaDiv = document.createElement('div');
-                    hojaDiv.className = "bg-white shadow-2xl relative text-black";
-                    hojaDiv.style.cssText = "width:100%; max-width:850px; padding:3rem 4rem; min-height:1100px; margin-bottom:2rem;";
+                    hojaDiv.className = "bg-white text-black" + (estiloActoUnico ? "" : " shadow-2xl relative");
+                    hojaDiv.style.cssText = estiloActoUnico
+                        ? "width:100%; margin-bottom:1rem;"
+                        : "width:100%; max-width:850px; padding:3rem 4rem; min-height:1100px; margin-bottom:2rem;";
 
-                    if (mostrarEncabezado) {
+                    if (mostrarEncabezado && !estiloActoUnico) {
                         const headerDiv = document.createElement('div');
                         headerDiv.style.borderBottom = "4px solid black";
                         headerDiv.className = "flex justify-between items-end pb-1 mb-8 font-sans font-bold text-sm uppercase";

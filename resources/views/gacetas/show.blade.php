@@ -25,6 +25,7 @@
         $esHistorica = (bool) $gaceta->es_retroactiva;
         $pdfPreviewUrl = $pdfDisponible ? route('gacetas.pdf', $gaceta->id, false) : null;
         $tieneReferenciaPdf = $gaceta->pdf_final || $gaceta->archivo_pdf_completo || $gaceta->ruta_archivo;
+        $actoUnicoEnPortada = $actoUnico && !$esHistorica && (bool) $pdfPreviewUrl;
     @endphp
 
     <div class="bg-slate-200 py-12">
@@ -41,16 +42,18 @@
                 {{-- Las gacetas históricas ya traen su propia portada y sumario
                      dentro del PDF; mostrar la portada HTML duplicaría esa hoja. --}}
                 @unless($esHistorica)
-                    @include('gacetas.partials.portada')
+                    @include('gacetas.partials.portada', ['actoUnico' => $actoUnicoEnPortada])
                 @endunless
 
                 @if($pdfPreviewUrl)
-                    <div id="pdf-pages-container" class="space-y-8 w-full flex flex-col items-center">
-                        <div id="pdf-loading" class="bg-slate-50 py-10 text-center font-bold text-slate-500">
-                            <i class="fa-solid fa-spinner fa-spin mb-3 text-3xl"></i><br>
-                            Cargando las páginas de la Gaceta...
+                    @unless($actoUnicoEnPortada)
+                        <div id="pdf-pages-container" class="space-y-8 w-full flex flex-col items-center">
+                            <div id="pdf-loading" class="bg-slate-50 py-10 text-center font-bold text-slate-500">
+                                <i class="fa-solid fa-spinner fa-spin mb-3 text-3xl"></i><br>
+                                Cargando las páginas de la Gaceta...
+                            </div>
                         </div>
-                    </div>
+                    @endunless
                 @else
                     <div class="relative mx-auto bg-white text-black shadow-2xl"
                         style="width: 100%; max-width: 850px; padding: 3rem 4rem;">
@@ -73,7 +76,8 @@
         @include('gacetas.partials.preview-pdf', [
             'pdfUrl' => $pdfPreviewUrl,
             'incluirPortada' => !$esHistorica,
-            'mostrarEncabezado' => !$esHistorica,
+            'mostrarEncabezado' => !$esHistorica && !$actoUnicoEnPortada,
+            'estiloActoUnico' => $actoUnicoEnPortada,
         ])
     @endif
 

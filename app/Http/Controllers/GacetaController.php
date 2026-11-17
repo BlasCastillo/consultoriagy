@@ -253,7 +253,9 @@ class GacetaController extends Controller
             'solicitudes.actos',
         ])->findOrFail($id);
 
-        return view('gacetas.upload_pdf', compact('gaceta'));
+        $actoUnico = $this->pdfService->esActoUnico($gaceta);
+
+        return view('gacetas.upload_pdf', compact('gaceta', 'actoUnico'));
     }
 
     /**
@@ -720,7 +722,9 @@ class GacetaController extends Controller
         ])->findOrFail($id);
         $pdfDisponible = $this->pdfService->tienePdfDisponible($gaceta);
 
-        return view('gacetas.revision', compact('gaceta', 'pdfDisponible'));
+        $actoUnico = $this->pdfService->esActoUnico($gaceta);
+
+        return view('gacetas.revision', compact('gaceta', 'pdfDisponible', 'actoUnico'));
     }
 
     public function publicarGaceta(Request $request, string $id)
@@ -884,7 +888,9 @@ public function subsanarGaceta(Request $request, string $id)
         ])->findOrFail($id);
         $pdfDisponible = $this->pdfService->tienePdfDisponible($gaceta);
 
-        return view('gacetas.show', compact('gaceta', 'pdfDisponible'));
+        $actoUnico = $this->pdfService->esActoUnico($gaceta);
+
+        return view('gacetas.show', compact('gaceta', 'pdfDisponible', 'actoUnico'));
     }
 
     public function edit(string $id) 

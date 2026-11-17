@@ -147,16 +147,20 @@
                     <div class="rounded-lg bg-slate-200 px-4 py-8">
                         <div class="flex w-full flex-col items-center space-y-8">
 
-                            {{-- Portada + sumario con títulos y firmas por institución --}}
-                            @include('gacetas.partials.portada')
+                            {{-- Portada + sumario con títulos y firmas por institución.
+                                 Con un solo acto, el contenedor de páginas ya va
+                                 dentro de la portada, debajo de la línea negra. --}}
+                            @include('gacetas.partials.portada', ['actoUnico' => $actoUnico])
 
                             {{-- Páginas de cada PDF de acto, renderizadas con PDF.js --}}
-                            <div id="pdf-pages-container" class="space-y-8 w-full flex flex-col items-center">
-                                <div id="pdf-loading" class="bg-slate-50 py-10 text-center font-bold text-slate-500">
-                                    <i class="fa-solid fa-spinner fa-spin mb-3 text-3xl"></i><br>
-                                    Cargando páginas de los actos...
+                            @unless($actoUnico)
+                                <div id="pdf-pages-container" class="space-y-8 w-full flex flex-col items-center">
+                                    <div id="pdf-loading" class="bg-slate-50 py-10 text-center font-bold text-slate-500">
+                                        <i class="fa-solid fa-spinner fa-spin mb-3 text-3xl"></i><br>
+                                        Cargando páginas de los actos...
+                                    </div>
                                 </div>
-                            </div>
+                            @endunless
                         </div>
                     </div>
                 </div>
@@ -394,9 +398,16 @@
             const documentos = @json($actosConPdf);
             const container = document.getElementById('pdf-pages-container');
             const loadingMsg = document.getElementById('pdf-loading');
+            const estiloActoUnico = @json($actoUnico);
+
+            if (!container) {
+                return;
+            }
 
             if (!documentos.length) {
-                loadingMsg.innerHTML = '<span class="font-bold text-slate-500">Aún no hay PDFs asignados. Suba el primer archivo para ver la vista previa.</span>';
+                if (loadingMsg) {
+                    loadingMsg.innerHTML = '<span class="font-bold text-slate-500">Aún no hay PDFs asignados. Suba el primer archivo para ver la vista previa.</span>';
+                }
                 return;
             }
 
@@ -464,46 +475,50 @@
                             const canvasRecortado = cropWhitespaceTop(tempCanvas);
 
                             const hojaDiv = document.createElement('div');
-                            hojaDiv.className = "bg-white shadow-2xl relative text-black";
-                            hojaDiv.style.cssText = "width:100%; max-width:850px; padding:3rem 4rem; min-height:1100px; margin-bottom:2rem;";
+                            hojaDiv.className = "bg-white text-black" + (estiloActoUnico ? "" : " shadow-2xl relative");
+                            hojaDiv.style.cssText = estiloActoUnico
+                                ? "width:100%; margin-bottom:1rem;"
+                                : "width:100%; max-width:850px; padding:3rem 4rem; min-height:1100px; margin-bottom:2rem;";
 
-                            const headerDiv = document.createElement('div');
-                            headerDiv.style.borderBottom = "4px solid black";
-                            headerDiv.className = "flex justify-between items-end pb-1 mb-8 font-sans font-bold text-sm uppercase";
+                            if (!estiloActoUnico) {
+                                const headerDiv = document.createElement('div');
+                                headerDiv.style.borderBottom = "4px solid black";
+                                headerDiv.className = "flex justify-between items-end pb-1 mb-8 font-sans font-bold text-sm uppercase";
 
-                            const textPagina = `<span class="text-[1.1rem]">PAGINA N° ${numPaginaReal}</span>`;
-                            const textTitulo = `<span class="tracking-widest text-[1rem]">GACETA OFICIAL DEL ESTADO YARACUY</span>`;
+                                const textPagina = `<span class="text-[1.1rem]">PAGINA N° ${numPaginaReal}</span>`;
+                                const textTitulo = `<span class="tracking-widest text-[1rem]">GACETA OFICIAL DEL ESTADO YARACUY</span>`;
 
-                            const colIzq = document.createElement('div');
-                            colIzq.className = "w-1/4 text-left";
-                            colIzq.innerHTML = esPar ? textPagina : '';
+                                const colIzq = document.createElement('div');
+                                colIzq.className = "w-1/4 text-left";
+                                colIzq.innerHTML = esPar ? textPagina : '';
 
-                            const colCen = document.createElement('div');
-                            colCen.className = "w-2/4 text-center";
-                            colCen.innerHTML = textTitulo;
+                                const colCen = document.createElement('div');
+                                colCen.className = "w-2/4 text-center";
+                                colCen.innerHTML = textTitulo;
 
-                            const colDer = document.createElement('div');
-                            colDer.className = "w-1/4 text-right";
-                            colDer.innerHTML = !esPar ? textPagina : '';
+                                const colDer = document.createElement('div');
+                                colDer.className = "w-1/4 text-right";
+                                colDer.innerHTML = !esPar ? textPagina : '';
 
-                            headerDiv.appendChild(colIzq);
-                            headerDiv.appendChild(colCen);
-                            headerDiv.appendChild(colDer);
-                            hojaDiv.appendChild(headerDiv);
+                                headerDiv.appendChild(colIzq);
+                                headerDiv.appendChild(colCen);
+                                headerDiv.appendChild(colDer);
+                                hojaDiv.appendChild(headerDiv);
 
-                            // Título institucional en la primera hoja de cada acto.
-                            if (i === 1 && Array.isArray(doc.titulo_lineas) && doc.titulo_lineas.length) {
-                                const tituloDiv = document.createElement('div');
-                                tituloDiv.className = "text-center font-sans font-bold text-slate-900";
+                                // Título institucional en la primera hoja de cada acto.
+                                if (i === 1 && Array.isArray(doc.titulo_lineas) && doc.titulo_lineas.length) {
+                                    const tituloDiv = document.createElement('div');
+                                    tituloDiv.className = "text-center font-sans font-bold text-slate-900";
 
-                                doc.titulo_lineas.forEach(function (linea, indice) {
-                                    const p = document.createElement('p');
-                                    p.className = indice === 0 ? "text-base tracking-wide" : "text-sm tracking-wide";
-                                    p.textContent = linea;
-                                    tituloDiv.appendChild(p);
-                                });
+                                    doc.titulo_lineas.forEach(function (linea, indice) {
+                                        const p = document.createElement('p');
+                                        p.className = indice === 0 ? "text-base tracking-wide" : "text-sm tracking-wide";
+                                        p.textContent = linea;
+                                        tituloDiv.appendChild(p);
+                                    });
 
-                                hojaDiv.appendChild(tituloDiv);
+                                    hojaDiv.appendChild(tituloDiv);
+                                }
                             }
 
                             hojaDiv.appendChild(canvasRecortado);

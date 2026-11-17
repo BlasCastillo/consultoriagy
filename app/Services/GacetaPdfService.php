@@ -15,6 +15,21 @@ class GacetaPdfService
     private const ALTO_BANDA_ENCABEZADO = 12.0;
 
     /**
+     * Medidas de la hoja Carta en milímetros.
+     */
+    private const ANCHO_CARTA = 215.9;
+    private const ALTO_CARTA = 279.4;
+
+    /**
+     * Posición de la línea negra que cierra el sumario y deja el área libre
+     * para colocar el acto único en la misma hoja.
+     */
+    private const LINEA_SUMARIO_Y = 100.0;
+    private const RESERVA_ACTO_Y = self::LINEA_SUMARIO_Y + 4.0;
+    private const MARGEN_ACTO_X = 15.0;
+    private const MARGEN_ACTO_INFERIOR = 12.0;
+
+    /**
      * Une los PDFs de todos los actos (en el orden del sumario) en un solo archivo,
      * estampando el título institucional en la primera página de cada acto.
      *
@@ -140,6 +155,19 @@ class GacetaPdfService
     }
 
     /**
+     * Indica si la Gaceta tiene un único acto administrativo con PDF asignado.
+     * En ese caso el acto se coloca debajo del sumario, en la misma hoja.
+     */
+    public function esActoUnico(Gaceta $gaceta): bool
+    {
+        $gaceta->loadMissing('solicitudes.actos');
+
+        $actos = $gaceta->solicitudes->flatMap(fn($solicitud) => $solicitud->actos);
+
+        return $actos->count() === 1 && !empty($actos->first()->archivo_pdf);
+    }
+
+    /**
      * Genera el PDF final de la Gaceta (sumario DomPDF + PDF de los actos)
      * y devuelve su ruta relativa dentro del disco público.
      */
@@ -186,6 +214,12 @@ class GacetaPdfService
 
         if (!$sourceAbsolute) {
             throw new \Exception('No se encontró el PDF de los actos para generar la Gaceta.');
+        }
+
+        // Un único acto: se continúa en la misma hoja, justo debajo de la
+        // línea negra del sumario, sin hoja nueva ni encabezado intermedio.
+        if ($this->esActoUnico($gaceta)) {
+            return $this->generarPdfFinalActoUnico($gaceta, $sourceAbsolute);
         }
 
         // Sumario en PDF (DomPDF) para incrustarlo como portada.
@@ -240,6 +274,82 @@ class GacetaPdfService
         }
 
         return $relativePath;
+    }
+
+    /**
+     * Genera el PDF final cuando la Gaceta tiene un solo acto: la portada y el
+     * sumario ocupan la parte superior de la hoja y el acto continúa debajo de
+     * la línea negra, sin salto de página ni encabezado intermedio.
+     */
+    private function generarPdfFinalActoUnico(Gaceta $gaceta, string $sourceAbsolute): string
+    {
+        $sumarioPath = storage_path('app/SGCJ/temp_sumario_unico_' . $gaceta->id . '.pdf');
+        if (!is_dir(dirname($sumarioPath))) {
+            mkdir(dirname($sumarioPath), 0775, true);
+        }
+
+        Pdf::loadView('gacetas.pdf_sumario_acto_unico', compact('gaceta'))
+            ->setPaper('letter', 'portrait')
+            ->save($sumarioPath);
+
+        $fpdi = new Fpdi();
+
+        $paginasSumario = $fpdi->setSourceFile($sumarioPath);
+        for ($i = 1; $i <= $paginasSumario; $i++) {
+            $tplId = $fpdi->importPage($i);
+            $size = $fpdi->getTemplateSize($tplId);
+            $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
+            $fpdi->useTemplate($tplId);
+        }
+
+        // La primera página del acto se dibuja sobre la hoja del sumario.
+        $paginasActos = $fpdi->setSourceFile($sourceAbsolute);
+        $primerPagina = $fpdi->importPage(1);
+        $this->colocarActoDebajoDelSumario($fpdi, $primerPagina);
+
+        // Las páginas restantes del acto continúan en hojas nuevas, pero sin
+        // la banda de encabezado que se usa cuando hay varios actos.
+        for ($i = 2; $i <= $paginasActos; $i++) {
+            $tplId = $fpdi->importPage($i);
+            $this->agregarPaginaEscalada($fpdi, $tplId, 0.0);
+        }
+
+        $relativePath = 'gacetas/publicadas/gaceta_' . $gaceta->id . '_'
+            . $this->slugArchivo((string) $gaceta->numero) . '_' . $gaceta->anio . '.pdf';
+        $absoluteOutput = Storage::disk('public')->path($relativePath);
+
+        if (!is_dir(dirname($absoluteOutput))) {
+            mkdir(dirname($absoluteOutput), 0775, true);
+        }
+
+        $fpdi->Output($absoluteOutput, 'F');
+
+        if (file_exists($sumarioPath)) {
+            unlink($sumarioPath);
+        }
+
+        return $relativePath;
+    }
+
+    /**
+     * Coloca la primera página del acto en el área reservada debajo del
+     * sumario, escalándola proporcionalmente para no recortar su contenido.
+     */
+    private function colocarActoDebajoDelSumario(Fpdi $pdf, int|string $tplId): void
+    {
+        $size = $pdf->getTemplateSize($tplId);
+        $ancho = (float) $size['width'];
+        $alto = (float) $size['height'];
+
+        $anchoDisponible = self::ANCHO_CARTA - (2 * self::MARGEN_ACTO_X);
+        $altoDisponible = self::ALTO_CARTA - self::RESERVA_ACTO_Y - self::MARGEN_ACTO_INFERIOR;
+
+        $escala = min($anchoDisponible / max(1.0, $ancho), $altoDisponible / max(1.0, $alto));
+        $anchoEscalado = $ancho * $escala;
+        $altoEscalado = $alto * $escala;
+        $x = self::MARGEN_ACTO_X + ($anchoDisponible - $anchoEscalado) / 2;
+
+        $pdf->useTemplate($tplId, $x, self::RESERVA_ACTO_Y, $anchoEscalado, $altoEscalado);
     }
 
     /**
