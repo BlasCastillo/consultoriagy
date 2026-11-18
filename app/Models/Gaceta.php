@@ -95,6 +95,64 @@ class Gaceta extends Model
         return $this->belongsTo(User::class, 'digitalizador_id');
     }
 
+    /**
+     * Calcula el periodo político (año y mes) a partir de una fecha.
+     *
+     * Regla de mes: cada periodo inicia el día 10 y finaliza el día 9.
+     *   I:   10 Sep - 09 Oct, II:  10 Oct - 09 Nov, III: 10 Nov - 09 Dec,
+     *   IV:  10 Dec - 09 Ene, V:   10 Ene - 09 Feb, VI:  10 Feb - 09 Mar,
+     *   VII: 10 Mar - 09 Abr, VIII:10 Abr - 09 May, IX:  10 May - 09 Jun,
+     *   X:   10 Jun - 09 Jul, XI:  10 Jul - 09 Ago, XII: 10 Ago - 09 Sep.
+     *
+     * Regla de año: periodo 10 Sep - 09 Sep. El periodo iniciado el 10 Sep 2026
+     * corresponde a CXVII (117).
+     */
+    public static function calcularPeriodoPolitico($fecha): array
+    {
+        $date = $fecha instanceof \Carbon\Carbon
+            ? $fecha->copy()
+            : \Carbon\Carbon::parse($fecha);
+
+        $day = (int) $date->day;
+        $month = (int) $date->month;
+        $year = (int) $date->year;
+
+        $mesClave = $day >= 10 ? $month : ($month === 1 ? 12 : $month - 1);
+        $mapaMes = [
+            9  => 'I',   // 10 Sep - 09 Oct
+            10 => 'II',  // 10 Oct - 09 Nov
+            11 => 'III', // 10 Nov - 09 Dec
+            12 => 'IV',  // 10 Dec - 09 Ene
+            1  => 'V',   // 10 Ene - 09 Feb
+            2  => 'VI',  // 10 Feb - 09 Mar
+            3  => 'VII', // 10 Mar - 09 Abr
+            4  => 'VIII',// 10 Abr - 09 May
+            5  => 'IX',  // 10 May - 09 Jun
+            6  => 'X',   // 10 Jun - 09 Jul
+            7  => 'XI',  // 10 Jul - 09 Ago
+            8  => 'XII', // 10 Ago - 09 Sep
+        ];
+
+        $inicioPeriodo = ($month > 9 || ($month === 9 && $day >= 10)) ? $year : ($year - 1);
+        $numeroAno = $inicioPeriodo - 1909; // 2026 -> CXVII
+
+        return [
+            'ano_politico' => self::numeroARomano((string) max($numeroAno, 1)),
+            'mes_politico' => $mapaMes[$mesClave] ?? 'I',
+            'numero_ano'   => $numeroAno,
+        ];
+    }
+
+    public static function calcularAnoPolitico($fecha): string
+    {
+        return self::calcularPeriodoPolitico($fecha)['ano_politico'];
+    }
+
+    public static function calcularMesPolitico($fecha): string
+    {
+        return self::calcularPeriodoPolitico($fecha)['mes_politico'];
+    }
+
     public static function numeroARomano($valor): string
     {
         if ($valor === null || $valor === '') {

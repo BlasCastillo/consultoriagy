@@ -84,8 +84,8 @@ class GacetaController extends Controller
         $request->validate([
             'numero'                => ['required', 'integer', 'min:1', $uniqueRule],
             'tipo'                  => 'required|in:Ordinaria,Extraordinaria',
-            'ano_politico'          => 'required|string|max:100',
-            'mes_politico'          => 'required|string|max:100',
+            'ano_politico'          => 'nullable|string|max:100',
+            'mes_politico'          => 'nullable|string|max:100',
             'fecha_publicacion'     => 'required|date',
             'gobernador_id'         => 'required|exists:gobernadores,id',
             'digitalizador_id'      => 'required|exists:users,id',
@@ -96,16 +96,18 @@ class GacetaController extends Controller
         try {
             DB::beginTransaction();
 
+            $periodoPolitico = Gaceta::calcularPeriodoPolitico($request->fecha_publicacion);
+
             $gaceta = new Gaceta();
-            $gaceta->numero           = $request->numero;
-            $gaceta->tipo             = $request->tipo;
-            $gaceta->ano_politico     = $request->ano_politico;
-            $gaceta->mes_politico     = $request->mes_politico;
+            $gaceta->numero            = $request->numero;
+            $gaceta->tipo              = $request->tipo;
+            $gaceta->ano_politico      = $periodoPolitico['ano_politico'];
+            $gaceta->mes_politico      = $periodoPolitico['mes_politico'];
             $gaceta->fecha_publicacion = $request->fecha_publicacion;
-            $gaceta->gobernador_id    = $request->gobernador_id;
-            $gaceta->digitalizador_id = $request->digitalizador_id;
-            $gaceta->estado           = Gaceta::ESTADO_EN_PROCESO;
-            $gaceta->anio             = date('Y', strtotime($request->fecha_publicacion));
+            $gaceta->gobernador_id     = $request->gobernador_id;
+            $gaceta->digitalizador_id  = $request->digitalizador_id;
+            $gaceta->estado            = Gaceta::ESTADO_EN_PROCESO;
+            $gaceta->anio              = date('Y', strtotime($request->fecha_publicacion));
             $gaceta->save();
 
             // Persistir cada apartado con su posición exacta tal como el usuario la definió.

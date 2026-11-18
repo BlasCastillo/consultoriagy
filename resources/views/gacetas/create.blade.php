@@ -45,21 +45,22 @@
                                     </select>
                                 </div>
 
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700">Fecha de Publicación <span class="text-red-500">*</span></label>
+                                    <input type="date" id="fecha_publicacion" name="fecha_publicacion" value="{{ old('fecha_publicacion') }}" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                </div>
+
                                 <div class="mb-4 grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-slate-700">Año Político <span class="text-red-500">*</span></label>
-                                        <input type="text" name="ano_politico" value="{{ old('ano_politico') }}" maxlength="100" required placeholder="Ej: 118°" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
-                                        <p class="mt-1 text-xs text-slate-500">Escriba el año en números (ej. 118); se guardará como CXVIII.</p>
+                                        <input type="text" id="ano_politico" name="ano_politico" value="{{ old('ano_politico') }}" maxlength="100" required readonly class="mt-1 block w-full rounded-md border-slate-300 bg-slate-100 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                        <p class="mt-1 text-xs text-slate-500">Se calcula automáticamente según la fecha de publicación.</p>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-slate-700">Mes Político <span class="text-red-500">*</span></label>
-                                        <input type="text" name="mes_politico" value="{{ old('mes_politico') }}" maxlength="100" required placeholder="Ej: 120°" class="val-texto-limpio mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                        <input type="text" id="mes_politico" name="mes_politico" value="{{ old('mes_politico') }}" maxlength="100" required readonly class="mt-1 block w-full rounded-md border-slate-300 bg-slate-100 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
+                                        <p class="mt-1 text-xs text-slate-500">Ciclo: del 10 al 9 de cada mes (I = 10 sep - 09 oct).</p>
                                     </div>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700">Fecha de Publicación <span class="text-red-500">*</span></label>
-                                    <input type="date" name="fecha_publicacion" value="{{ old('fecha_publicacion') }}" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-800 focus:ring-blue-800 sm:text-sm">
                                 </div>
                                 
                                 <div>
@@ -201,6 +202,67 @@
             });
 
             actualizarContador();
+
+            // ─── PERIODO POLÍTICO AUTOMÁTICO ──────────────────────────
+            const fechaPublicacion = document.getElementById('fecha_publicacion');
+            const anoPolitico = document.getElementById('ano_politico');
+            const mesPolitico = document.getElementById('mes_politico');
+
+            function numeroARomanoJS(num) {
+                if (!Number.isInteger(num) || num <= 0 || num >= 4000) return '';
+                const mapa = [
+                    ['M', 1000], ['CM', 900], ['D', 500], ['CD', 400],
+                    ['C', 100], ['XC', 90], ['L', 50], ['XL', 40],
+                    ['X', 10], ['IX', 9], ['V', 5], ['IV', 4], ['I', 1],
+                ];
+                let resultado = '';
+                mapa.forEach(([rom, val]) => {
+                    while (num >= val) {
+                        resultado += rom;
+                        num -= val;
+                    }
+                });
+                return resultado;
+            }
+
+            function calcularPeriodoPoliticoJS(fechaStr) {
+                if (!fechaStr) return { ano: '', mes: '' };
+                const partes = fechaStr.split('-');
+                if (partes.length !== 3) return { ano: '', mes: '' };
+
+                const year = parseInt(partes[0], 10);
+                const month = parseInt(partes[1], 10);
+                const day = parseInt(partes[2], 10);
+                if (!year || !month || !day) return { ano: '', mes: '' };
+
+                const mesClave = day >= 10 ? month : (month === 1 ? 12 : month - 1);
+                const mapaMes = {
+                    9: 'I', 10: 'II', 11: 'III', 12: 'IV',
+                    1: 'V', 2: 'VI', 3: 'VII', 4: 'VIII',
+                    5: 'IX', 6: 'X', 7: 'XI', 8: 'XII',
+                };
+
+                const inicioPeriodo = (month > 9 || (month === 9 && day >= 10)) ? year : (year - 1);
+                const numeroAno = inicioPeriodo - 1909; // Periodo iniciado el 10 Sep 2026 = CXVII
+
+                return {
+                    ano: numeroARomanoJS(numeroAno),
+                    mes: mapaMes[mesClave] || '',
+                };
+            }
+
+            function actualizarPeriodoPolitico() {
+                if (!fechaPublicacion || !anoPolitico || !mesPolitico) return;
+                const periodo = calcularPeriodoPoliticoJS(fechaPublicacion.value);
+                anoPolitico.value = periodo.ano;
+                mesPolitico.value = periodo.mes;
+            }
+
+            if (fechaPublicacion) {
+                fechaPublicacion.addEventListener('change', actualizarPeriodoPolitico);
+                fechaPublicacion.addEventListener('input', actualizarPeriodoPolitico);
+                actualizarPeriodoPolitico();
+            }
         });
 
         // ─── CONSTRUIR CAMPOS HIDDEN ANTES DE ENVIAR ──────────────────
